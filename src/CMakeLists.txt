@@ -18,8 +18,6 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required (VERSION 3.5)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
-project (sippak VERSION 1.0.0 LANGUAGES C)
-
-add_subdirectory (src)
+add_executable (sippak main.c)
