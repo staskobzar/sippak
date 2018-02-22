@@ -17,22 +17,4 @@
 # You should have received a copy of the GNU General Public License
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include )
-
-configure_file (
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/sippak.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/sippak.h"
-  @ONLY)
-
-# PJPROJECT compile flags
-include (FindPkgConfig)
-pkg_check_modules (PJSIP REQUIRED libpjproject>=2.7.1)
-include_directories (${PJSIP_INCLUDE_DIRS})
-link_directories (${PJSIP_LIBRARY_DIRS})
-set(CMAKE_CXX_FLAGS ${PJSIP_CFLAGS_OTHER})
-
-add_subdirectory (mod_logger)
-
-add_executable (${PROJECT_NAME} main.c)
-target_link_libraries (${PROJECT_NAME} ${PJSIP_LIBRARIES} mod_logger)
+add_library (mod_logger logger.c)

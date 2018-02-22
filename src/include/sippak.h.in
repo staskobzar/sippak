@@ -24,4 +24,11 @@
  */
 #ifndef __SIPPAK_H
 #define __SIPPAK_H
+
+#define PROJECT_NAME "@PROJECT_NAME@"
+#define PROJECT_VERSION "@sippak_VERSION@"
+#define PROJECT_URL "@PROJECT_URL@"
+#define PROJECT_AUTHOR "@PROJECT_AUTHOR@"
+
+pjsip_module* mod_logger();
 #endif

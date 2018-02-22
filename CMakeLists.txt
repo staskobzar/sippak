@@ -21,5 +21,7 @@
 cmake_minimum_required (VERSION 3.5)
 
 project (sippak VERSION 1.0.0 LANGUAGES C)
+set (PROJECT_URL "https://gitlab.com/staskobzar/sippak")
+set (PROJECT_AUTHOR "Stas Kobzar <staskobzar@gmail.com>")
 
 add_subdirectory (src)
