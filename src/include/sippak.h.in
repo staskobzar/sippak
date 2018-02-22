@@ -30,5 +30,5 @@
 #define PROJECT_URL "@PROJECT_URL@"
 #define PROJECT_AUTHOR "@PROJECT_AUTHOR@"
 
-pjsip_module* mod_logger();
+void mod_logger_register(pjsip_endpoint *endpt);
 #endif

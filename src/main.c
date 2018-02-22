@@ -50,8 +50,7 @@ int main(int argc, const char *argv[])
   status = pjsip_endpt_create(&pool.factory, "sippak", &endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_module *mod_loger = mod_logger();
-  status = pjsip_endpt_register_module(endpt, &mod_logger);
+  mod_logger_register(endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pj_sockaddr_in_init(&addr, NULL, 0);
