@@ -78,7 +78,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
   return PJ_SUCCESS;
 }
 
-void mod_logger_register(pjsip_endpoint *endpt)
+pj_status_t sippak_mod_logger_register(pjsip_endpoint *endpt)
 {
-  pjsip_endpt_register_module(endpt, msg_logger);
+  return pjsip_endpt_register_module(endpt, msg_logger);
 }

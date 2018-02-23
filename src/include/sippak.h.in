@@ -22,6 +22,7 @@
  * @file sippak.h
  * @brief sippak core include file
  */
+#include <pjsip.h>
 #ifndef __SIPPAK_H
 #define __SIPPAK_H
 
@@ -30,5 +31,6 @@
 #define PROJECT_URL "@PROJECT_URL@"
 #define PROJECT_AUTHOR "@PROJECT_AUTHOR@"
 
-void mod_logger_register(pjsip_endpoint *endpt);
+pj_status_t sippak_mod_logger_register(pjsip_endpoint *endpt);
+pj_status_t sippak_set_resolver_ns(pjsip_endpoint *endpt);
 #endif
