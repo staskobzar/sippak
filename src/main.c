@@ -27,6 +27,7 @@
 
 #include <pjsip.h>
 #include <pjlib.h>
+#include <resolv.h>
 
 #include "sippak.h"
 
@@ -38,9 +39,11 @@ int main(int argc, const char *argv[])
   pj_status_t status;
   pj_caching_pool pool;
   pj_sockaddr_in addr;
+  char addr_str[PJ_INET_ADDRSTRLEN];
   pj_str_t str;
   pjsip_tx_data *tdata;
   pjsip_transport *tp;
+  pj_dns_resolver *resv;
 
   status = pj_init();
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
@@ -53,8 +56,19 @@ int main(int argc, const char *argv[])
   mod_logger_register(endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  pjsip_endpt_create_resolver(endpt, &resv);
   pj_sockaddr_in_init(&addr, NULL, 0);
 
+  res_init();
+  PJ_LOG(1, ("sippak", "Name servers %d", _res.nscount));
+  for (unsigned i = 0; i < _res.nscount; i++) {
+    pj_inet_ntop (pj_AF_INET(), &_res.nsaddr_list[i].sin_addr, addr_str, sizeof(addr_str));
+    PJ_LOG(1, ("sippak", "Name server #%d: %s:%d", i + 1, addr_str, htons(_res.nsaddr_list[i].sin_port)));
+  }
+  pj_str_t nameservers[1];
+  nameservers[0] = pj_str("8.8.8.8");
+  status = pj_dns_resolver_set_ns(resv, 1, nameservers, NULL);
+  pjsip_endpt_set_resolver(endpt, resv);
   status = pjsip_endpt_create_request(endpt,
               &pjsip_options_method,  // method OPTIONS
               pj_cstr(&str, "sip:1234@office.modulis.clusterpbx.com"), // request URI
@@ -68,7 +82,9 @@ int main(int argc, const char *argv[])
   pjsip_udp_transport_start( endpt, &addr, NULL, 1, &tp);
   pjsip_endpt_acquire_transport(endpt, PJSIP_TRANSPORT_UDP, &addr, sizeof(addr), NULL, &tp);
   pjsip_endpt_send_request_stateless(endpt, tdata, NULL, NULL);
-  pjsip_endpt_handle_events(endpt, NULL);
+
+  for (;;)
+    pjsip_endpt_handle_events(endpt, NULL);
 
   pj_caching_pool_destroy(&pool);
 

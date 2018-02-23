@@ -28,12 +28,12 @@
 #include <pjlib.h>
 #include "logger.h"
 
-pjsip_module msg_logger[] =
+static pjsip_module msg_logger[] =
 {{
     NULL, NULL,                 /* prev, next.    */
     { "mod-logger", 11 },      /* Name.    */
     -1,                         /* Id      */
-    PJSIP_MOD_PRIORITY_TRANSPORT_LAYER-1, /* Priority          */
+    PJSIP_MOD_PRIORITY_TRANSPORT_LAYER - 1, /* Priority          */
     NULL,                       /* load()    */
     NULL,                       /* start()    */
     NULL,                       /* stop()    */
