@@ -19,37 +19,15 @@
  */
 
 /**
- * @file sippak.h
- * @brief sippak core include file
+ * @file getopts.c
+ * @brief sippak helper parsing cli arguments and set configuration structure.
+ *
+ * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
-#include <pjsip.h>
-#ifndef __SIPPAK_H
-#define __SIPPAK_H
 
-#define PROJECT_NAME      "@PROJECT_NAME@"
-#define PROJECT_VERSION   "@sippak_VERSION@"
-#define PROJECT_URL       "@PROJECT_URL@"
-#define PROJECT_AUTHOR    "@PROJECT_AUTHOR@"
+#include "sippak.h"
 
-#define POOL_INIT 1024
-#define POOL_INCR 1024
+void sippak_getopts (int argc, const char **argv)
+{
+}
 
-enum app_command {
-  UNKNOWN = 0,
-  PING
-} app_command;
-
-struct sippak_app {
-  pjsip_endpoint *endpt;
-  pj_pool_t *pool;
-  struct {
-    enum app_command cmd;
-  } config;
-};
-
-pj_status_t sippak_mod_logger_register(struct sippak_app *app);
-pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
-pj_status_t sippak_cmd_ping(struct sippak_app *endpt);
-void sippak_loop_cancel();
-
-#endif

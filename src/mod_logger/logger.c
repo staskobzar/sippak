@@ -26,6 +26,7 @@
  */
 #include <pjsip.h>
 #include <pjlib.h>
+#include "sippak.h"
 #include "logger.h"
 
 static pjsip_module msg_logger[] =
@@ -49,7 +50,7 @@ static pjsip_module msg_logger[] =
 /* Notification on incoming messages */
 static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 {
-  PJ_LOG(1,("FOO", "RX %d bytes %s from %s %s:%d:\n"
+  PJ_LOG(2,("FOO", "RX %d bytes %s from %s %s:%d:\n"
         "%.*s\n"
         "--end msg--",
         rdata->msg_info.len,
@@ -65,7 +66,7 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 /* Notification on outgoing messages */
 static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 {
-  PJ_LOG(1,("FOO", "TX %d bytes %s to %s %s:%d:\n"
+  PJ_LOG(2,("FOO", "TX %d bytes %s to %s %s:%d:\n"
         "%.*s\n"
         "--end msg--",
         (tdata->buf.cur - tdata->buf.start),
@@ -78,7 +79,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
   return PJ_SUCCESS;
 }
 
-pj_status_t sippak_mod_logger_register(pjsip_endpoint *endpt)
+pj_status_t sippak_mod_logger_register(struct sippak_app *app)
 {
-  return pjsip_endpt_register_module(endpt, msg_logger);
+  return pjsip_endpt_register_module(app->endpt, msg_logger);
 }

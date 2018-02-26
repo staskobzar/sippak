@@ -30,53 +30,52 @@
 
 #include "sippak.h"
 
+static pj_bool_t sippak_loop_stop = PJ_FALSE;
+struct sippak_app app;
 
-static pjsip_endpoint *endpt;
+static void sippak_main_loop()
+{
+  for (;;) {
+    pjsip_endpt_handle_events(app.endpt, NULL);
+    if (sippak_loop_stop)
+      break;
+  }
+}
+
+void sippak_loop_cancel()
+{
+  sippak_loop_stop = PJ_TRUE;
+}
 
 int main(int argc, const char *argv[])
 {
   pj_status_t status;
-  pj_caching_pool pool;
-  pj_sockaddr_in addr;
-  char addr_str[PJ_INET_ADDRSTRLEN];
-  pj_str_t str;
-  pjsip_tx_data *tdata;
-  pjsip_transport *tp;
+  pj_caching_pool cp;
 
   status = pj_init();
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
 
-  pj_caching_pool_init(&pool, &pj_pool_factory_default_policy, 0);
+  pj_log_set_level(3);
 
-  status = pjsip_endpt_create(&pool.factory, "sippak", &endpt);
+  pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
+
+  status = pjsip_endpt_create(&cp.factory, "sippak", &app.endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = sippak_mod_logger_register(endpt);
+  app.pool = pjsip_endpt_create_pool(app.endpt, "sippak", POOL_INIT, POOL_INCR);
+
+  status = sippak_mod_logger_register(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pj_sockaddr_in_init(&addr, NULL, 0);
-
-  status = sippak_set_resolver_ns (endpt);
+  status = sippak_set_resolver_ns (&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_endpt_create_request(endpt,
-              &pjsip_options_method,  // method OPTIONS
-              pj_cstr(&str, "sip:1234@office.modulis.clusterpbx.com"), // request URI
-              pj_cstr(&str, "sip:pjsip@localhost"),                    // from header value
-              pj_cstr(&str, "sip:1234@office.modulis.clusterpbx.com"), // to header value
-              NULL,                   // Contact header
-              NULL,                   // Call-ID
-              -1,                     // CSeq
-              NULL,                   // body
-              &tdata);
-  pjsip_udp_transport_start( endpt, &addr, NULL, 1, &tp);
-  pjsip_endpt_acquire_transport(endpt, PJSIP_TRANSPORT_UDP, &addr, sizeof(addr), NULL, &tp);
-  pjsip_endpt_send_request_stateless(endpt, tdata, NULL, NULL);
+  status = sippak_cmd_ping(&app);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  for (;;)
-    pjsip_endpt_handle_events(endpt, NULL);
+  sippak_main_loop();
 
-  pj_caching_pool_destroy(&pool);
+  pj_caching_pool_destroy(&cp);
 
   return 0;
 }

@@ -33,11 +33,15 @@ link_directories (${PJSIP_LIBRARY_DIRS})
 set(CMAKE_CXX_FLAGS ${PJSIP_CFLAGS_OTHER})
 
 add_subdirectory (mod_logger)
+add_subdirectory (mod_ping)
 add_subdirectory (dns_helper)
+add_subdirectory (app_helper)
 
 add_executable (${PROJECT_NAME} main.c
   $<TARGET_OBJECTS:mod_logger>
+  $<TARGET_OBJECTS:mod_ping>
   $<TARGET_OBJECTS:dns_helper>
+  $<TARGET_OBJECTS:app_helper>
   )
 target_link_libraries (${PROJECT_NAME} ${PJSIP_LIBRARIES} resolv)
 

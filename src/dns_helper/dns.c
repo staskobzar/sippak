@@ -26,34 +26,55 @@
  */
 
 #include <pjsip.h>
+#include <pjlib.h>
 #include <resolv.h>
 
-#define NAME "dns_helper"
-#define MAX_NS_COUNT 3
+#include "sippak.h"
 
-pj_status_t sippak_set_resolver_ns(pjsip_endpoint *endpt)
+#define NAME "dns_helper"
+#define MAX_NS_COUNT 3 // must be less then PJ_DNS_RESOLVER_MAX_NS, 16
+
+pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
 {
   pj_status_t status;
   pj_dns_resolver *resv;
+  char addr_str[PJ_INET_ADDRSTRLEN];
+  pj_str_t nameservers[MAX_NS_COUNT];
+  pj_uint16_t ports[MAX_NS_COUNT];
+  unsigned serv_num = 0;
+  pj_str_t *dst;
 
   if (res_init() == -1) {
-    PJ_LOG(0, (NAME, "failed to init resolv lib"));
+    PJ_LOG(1, (NAME, "failed to init resolv lib"));
     return PJ_ERESOLVE;
   }
 
-  status = pjsip_endpt_create_resolver(endpt, &resv);
+  status = pjsip_endpt_create_resolver(app->endpt, &resv);
   if (status != PJ_SUCCESS) return status;
 
-  /*
-  PJ_LOG(1, ("sippak", "Found name servers %d, max allowed server %d",
+  PJ_LOG(3, (NAME, "Found name servers %d, max allowed server %d",
         _res.nscount, MAX_NS_COUNT));
-  for (unsigned i = 0; i < _res.nscount; i++) {
+
+  for (unsigned i = 0; i < (_res.nscount > MAX_NS_COUNT ? MAX_NS_COUNT : _res.nscount); i++) {
+    if (_res.nsaddr_list[i].sin_family != pj_AF_INET()) {
+      PJ_LOG(3, (NAME, "skip non IPv4 name server"));
+      continue;
+    }
+
     pj_inet_ntop (pj_AF_INET(), &_res.nsaddr_list[i].sin_addr, addr_str, sizeof(addr_str));
-    PJ_LOG(1, ("sippak", "Name server #%d: %s:%d", i + 1, addr_str, htons(_res.nsaddr_list[i].sin_port)));
+
+    nameservers[serv_num] = pj_strdup3(app->pool, addr_str);
+    ports[serv_num] = pj_ntohs(_res.nsaddr_list[i].sin_port);
+
+    serv_num++;
   }
-  pj_str_t nameservers[1];
-  nameservers[0] = pj_str("8.8.8.8");
-  status = pj_dns_resolver_set_ns(resv, 1, nameservers, NULL);
-  return pjsip_endpt_set_resolver(endpt, resv);
-  */
+
+  // debug name servers
+  for (unsigned i = 0; i < serv_num; i++) {
+    PJ_LOG(3, (NAME, "Name server #%d: %.*s:%d", i + 1, nameservers[i].slen, nameservers[i].ptr, ports[i]));
+  }
+  status = pj_dns_resolver_set_ns(resv, 1, nameservers, ports);
+  if (status != PJ_SUCCESS) return status;
+
+  return pjsip_endpt_set_resolver(app->endpt, resv);
 }
