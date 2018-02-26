@@ -52,10 +52,15 @@ int main(int argc, const char *argv[])
   pj_status_t status;
   pj_caching_pool cp;
 
+  sippak_init(&app);
+
+  status = sippak_getopts(argc, argv);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  pj_log_set_level(app.cfg.log_level);
+
   status = pj_init();
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
-
-  pj_log_set_level(3);
 
   pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
 
@@ -73,6 +78,7 @@ int main(int argc, const char *argv[])
   status = sippak_cmd_ping(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  // main loop
   sippak_main_loop();
 
   pj_caching_pool_destroy(&cp);

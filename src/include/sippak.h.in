@@ -30,26 +30,33 @@
 #define PROJECT_VERSION   "@sippak_VERSION@"
 #define PROJECT_URL       "@PROJECT_URL@"
 #define PROJECT_AUTHOR    "@PROJECT_AUTHOR@"
+#define PJSIP_VERSION     "@PJSIP_VERSION@"
 
 #define POOL_INIT 1024
 #define POOL_INCR 1024
 
 enum app_command {
-  UNKNOWN = 0,
-  PING
+  CMD_UNKNOWN = 0,
+  CMD_PING
 } app_command;
 
 struct sippak_app {
   pjsip_endpoint *endpt;
   pj_pool_t *pool;
+
   struct {
+    int log_level;
     enum app_command cmd;
-  } config;
+  } cfg;
+
 };
 
 pj_status_t sippak_mod_logger_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
-pj_status_t sippak_cmd_ping(struct sippak_app *endpt);
+pj_status_t sippak_cmd_ping(struct sippak_app *app);
+pj_status_t sippak_getopts(int argc, const char **argv);
+void sippak_init (struct sippak_app *app);
 void sippak_loop_cancel();
+void usage();
 
 #endif

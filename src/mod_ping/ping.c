@@ -46,7 +46,6 @@ static pjsip_module mod_ping[] =
     NULL,         /* on_tx_request.  */
     NULL,         /* on_tx_response()  */
     NULL,                       /* on_tsx_state()  */
-
 }};
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)

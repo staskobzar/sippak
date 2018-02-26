@@ -29,5 +29,18 @@
 
 void usage ()
 {
+  puts(PROJECT_NAME " " PROJECT_VERSION " built with pjproject " PJSIP_VERSION );
+  puts("(c) 2018 " PROJECT_AUTHOR);
+  puts("project site and bug report: " PROJECT_URL);
+  puts("");
+  puts("Usage: " PROJECT_NAME " [COMMAND] [OPTIONS] [DESTINATION]");
+  puts("");
+  puts("  COMMAND:");
+  puts("  Default commans is \"PING\".");
+  puts("    PING    Send OPTIONS packet to destination.");
+  puts("");
+  puts("  OPTIONS:");
+  puts("    -h, --help    Print this usage message.");
+  puts("");
 }
 
