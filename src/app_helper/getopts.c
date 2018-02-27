@@ -29,8 +29,8 @@
 
 void sippak_init (struct sippak_app *app)
 {
-  app->cfg.log_level = 2;
-  app->cfg.cmd = CMD_PING;
+  app->cfg.log_level  = 2;
+  app->cfg.cmd        = CMD_PING;
 }
 
 pj_status_t sippak_getopts (int argc, const char **argv)

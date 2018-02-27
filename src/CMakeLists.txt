@@ -18,15 +18,12 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include )
-
 configure_file (
   "${CMAKE_CURRENT_SOURCE_DIR}/include/sippak.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/include/sippak.h"
   @ONLY)
 
 # PJPROJECT compile flags
-include (FindPkgConfig)
 pkg_check_modules (PJSIP REQUIRED libpjproject>=2.7.1)
 include_directories (${PJSIP_INCLUDE_DIRS})
 link_directories (${PJSIP_LIBRARY_DIRS})

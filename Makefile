@@ -1,4 +1,4 @@
-.PHONY: build clean ctags
+.PHONY: build clean ctags tests
 
 BUILD_DIR=build
 all: build
@@ -6,6 +6,9 @@ all: build
 build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake .. && make
+
+test:
+	@cd build && env CTEST_OUTPUT_ON_FAILURE=1 ctest
 
 ctags:
 	@echo -n 'Generating ctags...'

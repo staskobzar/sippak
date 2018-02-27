@@ -18,4 +18,12 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-project (tests C)
+include(CTest)
+
+pkg_check_modules (CMOCKA cmocka>=1.0.1)
+if (CMOCKA_FOUND)
+  add_subdirectory (unit)
+else (CMOCKA_FOUND)
+  message (WARNING "CMocka lib is not found. Will not continue with unit testing.")
+endif (CMOCKA_FOUND)
+

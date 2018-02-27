@@ -37,6 +37,7 @@
 
 enum app_command {
   CMD_UNKNOWN = 0,
+  CMD_HELP,
   CMD_PING
 } app_command;
 

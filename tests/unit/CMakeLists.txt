@@ -18,16 +18,19 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required (VERSION 3.5)
+function (ADD_CMOCKA_TEST test_name test_src obj_src)
+  add_executable(${test_name} ${test_src} ${obj_src})
+  target_link_libraries(${test_name} ${CMOCKA_LIBRARIES})
+  add_test(${test_name} ${test_name})
+  if (USE_MEMTEST)
+    add_test (${test_name}_valgrind valgrind
+      --error-exitcode=1 --read-var-info=yes
+      --leak-check=full --show-leak-kinds=all
+      ./${test_name}
+      )
+  endif (USE_MEMTEST)
+endfunction (ADD_CMOCKA_TEST)
 
-project (sippak VERSION 1.0.0 LANGUAGES C)
-set (PROJECT_URL "https://gitlab.com/staskobzar/sippak")
-set (PROJECT_AUTHOR "Stas Kobzar <staskobzar@gmail.com>")
+add_cmocka_test(test_getopts test_getopts.c
+  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c)
 
-include (FindPkgConfig)
-
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/src/include )
-add_subdirectory (src)
-
-enable_testing()
-add_subdirectory (tests)
