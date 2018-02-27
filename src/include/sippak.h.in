@@ -31,14 +31,18 @@
 #define PROJECT_URL       "@PROJECT_URL@"
 #define PROJECT_AUTHOR    "@PROJECT_AUTHOR@"
 #define PJSIP_VERSION     "@PJSIP_VERSION@"
+#define PROJECT_BUILTTIME "@PROJECT_BUILTTIME@"
+#define PROJECT_ARCH      "@CMAKE_SYSTEM_PROCESSOR@"
 
 #define POOL_INIT 1024
 #define POOL_INCR 1024
 
 enum app_command {
-  CMD_UNKNOWN = 0,
+
+  CMD_UNKNOWN = 0x100,
   CMD_HELP,
   CMD_PING
+
 } app_command;
 
 struct sippak_app {
@@ -55,7 +59,7 @@ struct sippak_app {
 pj_status_t sippak_mod_logger_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
-pj_status_t sippak_getopts(int argc, const char **argv);
+pj_status_t sippak_getopts(int argc, const char **argv, struct sippak_app *app);
 void sippak_init (struct sippak_app *app);
 void sippak_loop_cancel();
 void usage();

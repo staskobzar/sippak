@@ -54,7 +54,7 @@ int main(int argc, const char *argv[])
 
   sippak_init(&app);
 
-  status = sippak_getopts(argc, argv);
+  status = sippak_getopts(argc, argv, &app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pj_log_set_level(app.cfg.log_level);

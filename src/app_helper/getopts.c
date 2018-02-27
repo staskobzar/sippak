@@ -24,8 +24,13 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
-
+#include <pjlib-util.h>
 #include "sippak.h"
+
+struct pj_getopt_option sippak_long_opts[] = {
+  {"help",  0,  0,  'h'},
+  { NULL,   0,  0,  0  }
+};
 
 void sippak_init (struct sippak_app *app)
 {
@@ -33,8 +38,28 @@ void sippak_init (struct sippak_app *app)
   app->cfg.cmd        = CMD_PING;
 }
 
-pj_status_t sippak_getopts (int argc, const char **argv)
+pj_status_t sippak_getopts (int argc, const char **argv, struct sippak_app *app)
 {
+  int c, opt_index;
+
+  if (argc == 1) {
+
+    app->cfg.cmd = CMD_HELP;
+    return PJ_SUCCESS;
+
+  }
+
+  while ((c = pj_getopt_long(argc, argv, "h", sippak_long_opts, &opt_index)) != -1)
+  {
+    switch (c) {
+      case 'h':
+        app->cfg.cmd = CMD_HELP;
+        break;
+      default:
+        // PJ_LOG(1, ("invalid argument %s", argv[opt_index]));
+        return PJ_EINVAL;
+    }
+  }
   return PJ_SUCCESS;
 }
 
