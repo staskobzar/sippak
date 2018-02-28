@@ -47,7 +47,7 @@ void sippak_loop_cancel()
   sippak_loop_stop = PJ_TRUE;
 }
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
   pj_status_t status;
   pj_caching_pool cp;

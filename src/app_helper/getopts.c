@@ -28,19 +28,25 @@
 #include "sippak.h"
 
 struct pj_getopt_option sippak_long_opts[] = {
-  {"help",  0,  0,  'h'},
-  { NULL,   0,  0,  0  }
+  {"help",      0,  0,  'h'},
+  {"version",   0,  0,  'V'},
+  { NULL,       0,  0,   0 }
 };
 
 void sippak_init (struct sippak_app *app)
 {
-  app->cfg.log_level  = 2;
+  app->cfg.log_level  = 3;
   app->cfg.cmd        = CMD_PING;
 }
 
-pj_status_t sippak_getopts (int argc, const char **argv, struct sippak_app *app)
+pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
-  int c, opt_index;
+  int c = 0, opt_index = 0;
+  /*
+   * Member of getopts.c. Need to reset this to make
+   * sure multiple calls from unit tests work fine.
+   */
+  pj_optind = 1;
 
   if (argc == 1) {
 
@@ -49,11 +55,14 @@ pj_status_t sippak_getopts (int argc, const char **argv, struct sippak_app *app)
 
   }
 
-  while ((c = pj_getopt_long(argc, argv, "h", sippak_long_opts, &opt_index)) != -1)
+  while ((c = pj_getopt_long (argc, argv, "hV", sippak_long_opts, &opt_index)) != -1)
   {
     switch (c) {
       case 'h':
         app->cfg.cmd = CMD_HELP;
+        break;
+      case 'V':
+        app->cfg.cmd = CMD_VERSION;
         break;
       default:
         // PJ_LOG(1, ("invalid argument %s", argv[opt_index]));

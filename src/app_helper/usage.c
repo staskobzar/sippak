@@ -29,10 +29,7 @@
 
 void usage ()
 {
-  puts(PROJECT_NAME " " PROJECT_VERSION " built with pjproject " PJSIP_VERSION );
-  puts("(c) 2018 " PROJECT_AUTHOR);
-  puts("project site and bug report: " PROJECT_URL);
-  puts("");
+  version ();
   puts("Usage: " PROJECT_NAME " [COMMAND] [OPTIONS] [DESTINATION]");
   puts("");
   puts("  COMMAND:");
@@ -44,3 +41,11 @@ void usage ()
   puts("");
 }
 
+void version ()
+{
+  puts(PROJECT_NAME " " PROJECT_VERSION " (" PROJECT_ARCH ") " LICENSE);
+  puts("built with pjproject " PJSIP_VERSION ", at " PROJECT_BUILTTIME);
+  puts("(c) 2018 " PROJECT_AUTHOR);
+  puts("project site and bug report: " PROJECT_URL);
+  puts("");
+}

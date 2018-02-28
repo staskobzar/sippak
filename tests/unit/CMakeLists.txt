@@ -20,7 +20,7 @@
 
 function (ADD_CMOCKA_TEST test_name test_src obj_src)
   add_executable(${test_name} ${test_src} ${obj_src})
-  target_link_libraries(${test_name} ${CMOCKA_LIBRARIES})
+  target_link_libraries(${test_name} ${CMOCKA_LIBRARIES} ${PJSIP_LIBRARIES})
   add_test(${test_name} ${test_name})
   if (USE_MEMTEST)
     add_test (${test_name}_valgrind valgrind
