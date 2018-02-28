@@ -14,6 +14,7 @@ test:
 # watchman-make -p 'src/**/*' 'tests/**/*' 'CMakeLists.txt' 'Makefile' -t dev-test
 dev-test: build
 	@./build/tests/unit/test_getopts
+	@./build/tests/unit/test_dns_helper
 
 ctags:
 	@echo -n 'Generating ctags...'

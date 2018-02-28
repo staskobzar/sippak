@@ -18,8 +18,8 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-function (ADD_CMOCKA_TEST test_name test_src obj_src)
-  add_executable(${test_name} ${test_src} ${obj_src})
+function (ADD_CMOCKA_TEST test_name test_src)
+  add_executable(${test_name} ${test_src} ${ARGV})
   target_link_libraries(${test_name} ${CMOCKA_LIBRARIES} ${PJSIP_LIBRARIES})
   add_test(${test_name} ${test_name})
   if (USE_MEMTEST)
@@ -33,4 +33,10 @@ endfunction (ADD_CMOCKA_TEST)
 
 add_cmocka_test(test_getopts test_getopts.c
   ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c)
+
+add_cmocka_test(test_dns_helper test_dns_helper.c
+  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c
+  ${CMAKE_SOURCE_DIR}/src/dns_helper/dns.c
+  )
+target_link_libraries (test_dns_helper resolv)
 

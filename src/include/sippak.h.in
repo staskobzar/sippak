@@ -39,6 +39,9 @@
 #define POOL_INIT 1024
 #define POOL_INCR 1024
 
+#define MAX_NS_COUNT 3 // must be less then PJ_DNS_RESOLVER_MAX_NS, 16
+#define MIN_LOG_LEVEL 3 // minimum verbosity level
+
 enum app_command {
 
   CMD_UNKNOWN = 0x100,
@@ -53,8 +56,11 @@ struct sippak_app {
   pj_pool_t *pool;
 
   struct {
+
     int log_level;
     enum app_command cmd;
+    char *nameservers;
+
   } cfg;
 
 };
@@ -63,9 +69,25 @@ pj_status_t sippak_mod_logger_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
+
 void sippak_init (struct sippak_app *app);
 void sippak_loop_cancel();
 void usage ();
 void version ();
+
+/**
+ * Get name servers and ports list and store in "ns" and "ports" arrays.
+ * If "nameservers" argument is NULL, will try to get system nameserves
+ * using "resolv" library. First argument, "nameservers", should contain
+ * string of servers (and ports, optionally) of the form:
+ * "8.8.8.8,127.0.0.1" or "8.8.4.1:553" or "8.8.4.4,6.6.6.1:887"
+ *
+ * @param app      sippak main application structure.
+ * @param ns       Array where servers will by stored as pj_str_t
+ * @param ports    Array of ports corresponding to the servers. Default 53.
+ *
+ * @return              Number of found servers or 0.
+ */
+int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
 
 #endif

@@ -24,19 +24,26 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
+#include <stdlib.h> // atoi
 #include <pjlib-util.h>
 #include "sippak.h"
+
+#define OPT_NS    1
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
   {"version",   0,  0,  'V'},
+  {"ns",        1,  0,  OPT_NS },
+  {"verbose",   2,  0,  'v' },
+  {"quiet",     0,  0,  'q' },
   { NULL,       0,  0,   0 }
 };
 
 void sippak_init (struct sippak_app *app)
 {
-  app->cfg.log_level  = 3;
-  app->cfg.cmd        = CMD_PING;
+  app->cfg.log_level    = MIN_LOG_LEVEL;
+  app->cfg.cmd          = CMD_PING;
+  app->cfg.nameservers  = NULL;
 }
 
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
@@ -55,7 +62,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 
   }
 
-  while ((c = pj_getopt_long (argc, argv, "hV", sippak_long_opts, &opt_index)) != -1)
+  while ((c = pj_getopt_long (argc, argv, "hVvq", sippak_long_opts, &opt_index)) != -1)
   {
     switch (c) {
       case 'h':
@@ -63,6 +70,19 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'V':
         app->cfg.cmd = CMD_VERSION;
+        break;
+      case OPT_NS:
+        app->cfg.nameservers = pj_optarg;
+        break;
+      case 'v':
+        if (pj_optarg) {
+          app->cfg.log_level += atoi (pj_optarg);
+        } else {
+          app->cfg.log_level++;
+        }
+        break;
+      case 'q':
+          app->cfg.log_level = 0;
         break;
       default:
         // PJ_LOG(1, ("invalid argument %s", argv[opt_index]));

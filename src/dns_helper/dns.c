@@ -32,7 +32,13 @@
 #include "sippak.h"
 
 #define NAME "dns_helper"
-#define MAX_NS_COUNT 3 // must be less then PJ_DNS_RESOLVER_MAX_NS, 16
+
+int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports)
+{
+  ns[0] = pj_str("2.2.3.4");
+  ports[0] = 53;
+  return 1;
+}
 
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
 {
@@ -43,6 +49,8 @@ pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
   pj_uint16_t ports[MAX_NS_COUNT];
   unsigned serv_num = 0;
   pj_str_t *dst;
+
+  printf("=============> _PATH_RESCONF " _PATH_RESCONF " \n");
 
   if (res_init() == -1) {
     PJ_LOG(1, (NAME, "failed to init resolv lib"));
