@@ -25,9 +25,6 @@
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
 
-#include <pjsip.h>
-#include <pjlib.h>
-
 #include "sippak.h"
 
 static pj_bool_t sippak_loop_stop = PJ_FALSE;
@@ -50,24 +47,14 @@ void sippak_loop_cancel()
 int main(int argc, char *argv[])
 {
   pj_status_t status;
-  pj_caching_pool cp;
 
-  sippak_init(&app);
+  status = sippak_init(&app);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = sippak_getopts(argc, argv, &app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pj_log_set_level(app.cfg.log_level);
-
-  status = pj_init();
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
-
-  pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
-
-  status = pjsip_endpt_create(&cp.factory, "sippak", &app.endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-  app.pool = pjsip_endpt_create_pool(app.endpt, "sippak", POOL_INIT, POOL_INCR);
 
   status = sippak_mod_logger_register(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -81,7 +68,7 @@ int main(int argc, char *argv[])
   // main loop
   sippak_main_loop();
 
-  pj_caching_pool_destroy(&cp);
+  pj_caching_pool_destroy(app.cp);
 
   return 0;
 }

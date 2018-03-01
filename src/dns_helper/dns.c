@@ -33,11 +33,58 @@
 
 #define NAME "dns_helper"
 
+static int get_port (pj_str_t server)
+{
+  pj_ssize_t found_idx = 0;
+  pj_str_t token;
+  int port = 53; // default DNS port is 53
+  pj_str_t delim = pj_str(":");
+
+  found_idx = pj_strtok (&server, &delim, &token, 0);
+  found_idx = pj_strtok (&server, &delim, &token, found_idx + token.slen);
+
+  if (found_idx == server.slen) {
+    // port in server string is not found
+    return port; // return default port
+  }
+
+  port = pj_strtol (&token);
+
+  return port;
+}
+
+static char *get_server_ip (pj_str_t *server)
+{
+  pj_ssize_t found_idx = 0;
+  pj_str_t token;
+  pj_str_t delim = pj_str(":");
+
+  found_idx = pj_strtok (server, &delim, &token, 0);
+  return token.ptr;
+}
+
 int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports)
 {
-  ns[0] = pj_str("2.2.3.4");
-  ports[0] = 53;
-  return 1;
+  pj_ssize_t found_idx = 0;
+  pj_str_t token;
+  int ns_idx = 0;
+  pj_str_t ns_str= pj_str(app->cfg.nameservers);
+  pj_str_t delim = pj_str(",");
+
+  for (
+      found_idx = pj_strtok (&ns_str, &delim, &token, 0);
+      found_idx != ns_str.slen;
+      found_idx = pj_strtok (&ns_str, &delim, &token, found_idx + token.slen),
+      ns_idx++
+      )
+  {
+    char *srv_ip = get_server_ip(&token);
+    printf("================= srv_ip %s\n",  srv_ip);
+    ns[ns_idx] = pj_strdup3(app->pool, srv_ip);
+    ports[ns_idx] = get_port(token);
+  }
+
+  return ns_idx;
 }
 
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app)

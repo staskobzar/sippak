@@ -23,6 +23,7 @@
  * @brief sippak core include file
  */
 #include <pjsip.h>
+#include <pjlib.h>
 
 #ifndef __SIPPAK_H
 #define __SIPPAK_H
@@ -54,6 +55,7 @@ enum app_command {
 struct sippak_app {
   pjsip_endpoint *endpt;
   pj_pool_t *pool;
+  pj_caching_pool *cp;
 
   struct {
 
@@ -70,7 +72,7 @@ pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
-void sippak_init (struct sippak_app *app);
+pj_status_t sippak_init (struct sippak_app *app);
 void sippak_loop_cancel();
 void usage ();
 void version ();
