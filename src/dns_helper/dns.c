@@ -24,15 +24,12 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
-
-#include <pjsip.h>
-#include <pjlib.h>
 #include <resolv.h>
-
 #include "sippak.h"
 
 #define NAME "dns_helper"
 
+/* get port as int from server string. token ":". */
 static int get_port (pj_str_t server)
 {
   pj_ssize_t found_idx = 0;
@@ -49,42 +46,103 @@ static int get_port (pj_str_t server)
   }
 
   port = pj_strtol (&token);
+  port = port == 0 ? 53 : port;
 
   return port;
 }
 
-static char *get_server_ip (pj_str_t *server)
+/* get server ip from pj_str without port if exists. */
+static pj_str_t get_server_ip (pj_str_t token)
 {
-  pj_ssize_t found_idx = 0;
-  pj_str_t token;
-  pj_str_t delim = pj_str(":");
+  pj_str_t ip_str;
+  int idx = 0;
+  char *ptr = token.ptr;
 
-  found_idx = pj_strtok (server, &delim, &token, 0);
-  return token.ptr;
+  for (; idx < token.slen && ptr[idx] != ':'; idx++);
+
+  ip_str.ptr = token.ptr;
+  ip_str.slen = idx;
+  return ip_str;
 }
 
-int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports)
+static int parse_nameservers_string (char *nameservers,
+                                     pj_str_t *ns,
+                                     pj_uint16_t *ports)
 {
   pj_ssize_t found_idx = 0;
   pj_str_t token;
   int ns_idx = 0;
-  pj_str_t ns_str= pj_str(app->cfg.nameservers);
+  pj_str_t ns_str= pj_str(nameservers);
   pj_str_t delim = pj_str(",");
 
   for (
       found_idx = pj_strtok (&ns_str, &delim, &token, 0);
       found_idx != ns_str.slen;
-      found_idx = pj_strtok (&ns_str, &delim, &token, found_idx + token.slen),
-      ns_idx++
+      found_idx = pj_strtok (&ns_str, &delim, &token, found_idx + token.slen)
       )
   {
-    char *srv_ip = get_server_ip(&token);
-    printf("================= srv_ip %s\n",  srv_ip);
-    ns[ns_idx] = pj_strdup3(app->pool, srv_ip);
+    if (ns_idx >= MAX_NS_COUNT) {
+      PJ_LOG(4, (NAME, "More NS servers then allowed. Skip server %.*s", token.slen, token.ptr));
+      continue;
+    }
+    ns[ns_idx] = get_server_ip(token);
     ports[ns_idx] = get_port(token);
+    ns_idx++;
   }
 
   return ns_idx;
+}
+
+/* when nameservers are not given, try to get from system resolv.conf */
+static int system_resolv_ns ( pj_str_t *ns,
+                              pj_uint16_t *ports)
+{
+  int ns_idx = 0;
+  int loop_ns = 0;
+  char addr_str[PJ_INET_ADDRSTRLEN];
+
+  if (res_init() == -1) {
+    PJ_LOG(1, (NAME, "Failed to init resolv lib. DNS is disabled."));
+    return 0;
+  }
+
+  PJ_LOG(4, (NAME, "Found %d name servers configured on system, max allowed server %d",
+        _res.nscount, MAX_NS_COUNT));
+
+  loop_ns = _res.nscount > MAX_NS_COUNT ? MAX_NS_COUNT : _res.nscount;
+
+  for (unsigned i = 0; ns_idx < loop_ns && i < _res.nscount ; i++ ) {
+    if (_res.nsaddr_list[i].sin_family != pj_AF_INET()) {
+        PJ_LOG(4, (NAME, "Skip non IPv4 name server"));
+        continue;
+    }
+
+    pj_inet_ntop (pj_AF_INET(), &_res.nsaddr_list[i].sin_addr, addr_str, sizeof(addr_str));
+
+    ns[ns_idx] = pj_str(addr_str); // TODO: need to dup str
+    ports[ns_idx] = pj_ntohs(_res.nsaddr_list[i].sin_port);
+
+    ns_idx++;
+  }
+
+  ns[0] = pj_str("172.31.1.1");
+  ports[0] = 53;
+  return 1;
+}
+
+int sippak_get_ns_list (struct sippak_app *app,
+                        pj_str_t *ns,
+                        pj_uint16_t *ports)
+{
+  if (app->cfg.nameservers == NULL) {
+
+    return system_resolv_ns (ns, ports);
+
+  } else {
+
+    return parse_nameservers_string (app->cfg.nameservers, ns, ports);
+
+  }
 }
 
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
