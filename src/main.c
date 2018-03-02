@@ -47,6 +47,11 @@ void sippak_loop_cancel()
 int main(int argc, char *argv[])
 {
   pj_status_t status;
+  pj_caching_pool cp;
+
+  pj_log_set_level(MIN_LOG_LEVEL);
+  status = pj_init();
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
 
   status = sippak_init(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -55,6 +60,13 @@ int main(int argc, char *argv[])
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pj_log_set_level(app.cfg.log_level);
+
+  pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
+
+  status = pjsip_endpt_create(&cp.factory, PROJECT_NAME, &app.endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  app.pool = pjsip_endpt_create_pool(app.endpt, PROJECT_NAME, POOL_INIT, POOL_INCR);
 
   status = sippak_mod_logger_register(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -68,7 +80,7 @@ int main(int argc, char *argv[])
   // main loop
   sippak_main_loop();
 
-  pj_caching_pool_destroy(app.cp);
+  pj_caching_pool_destroy(&cp);
 
   return 0;
 }

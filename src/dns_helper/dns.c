@@ -94,7 +94,8 @@ static int parse_nameservers_string (char *nameservers,
 }
 
 /* when nameservers are not given, try to get from system resolv.conf */
-static int system_resolv_ns ( pj_str_t *ns,
+static int system_resolv_ns ( pj_pool_t *pool,
+                              pj_str_t *ns,
                               pj_uint16_t *ports)
 {
   int ns_idx = 0;
@@ -106,7 +107,7 @@ static int system_resolv_ns ( pj_str_t *ns,
     return 0;
   }
 
-  PJ_LOG(4, (NAME, "Found %d name servers configured on system, max allowed server %d",
+  PJ_LOG(4, (NAME, "Found %d name servers configured on system. Will use first IPv4 one.",
         _res.nscount, MAX_NS_COUNT));
 
   loop_ns = _res.nscount > MAX_NS_COUNT ? MAX_NS_COUNT : _res.nscount;
@@ -119,15 +120,13 @@ static int system_resolv_ns ( pj_str_t *ns,
 
     pj_inet_ntop (pj_AF_INET(), &_res.nsaddr_list[i].sin_addr, addr_str, sizeof(addr_str));
 
-    ns[ns_idx] = pj_str(addr_str); // TODO: need to dup str
+    ns[ns_idx] = pj_strdup3(pool, addr_str);
     ports[ns_idx] = pj_ntohs(_res.nsaddr_list[i].sin_port);
 
     ns_idx++;
   }
 
-  ns[0] = pj_str("172.31.1.1");
-  ports[0] = 53;
-  return 1;
+  return ns_idx;
 }
 
 int sippak_get_ns_list (struct sippak_app *app,
@@ -136,7 +135,7 @@ int sippak_get_ns_list (struct sippak_app *app,
 {
   if (app->cfg.nameservers == NULL) {
 
-    return system_resolv_ns (ns, ports);
+    return system_resolv_ns (app->pool, ns, ports);
 
   } else {
 
@@ -149,44 +148,16 @@ pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
 {
   pj_status_t status;
   pj_dns_resolver *resv;
-  char addr_str[PJ_INET_ADDRSTRLEN];
   pj_str_t nameservers[MAX_NS_COUNT];
   pj_uint16_t ports[MAX_NS_COUNT];
   unsigned serv_num = 0;
-  pj_str_t *dst;
 
-  printf("=============> _PATH_RESCONF " _PATH_RESCONF " \n");
-
-  if (res_init() == -1) {
-    PJ_LOG(1, (NAME, "failed to init resolv lib"));
-    return PJ_ERESOLVE;
-  }
+  serv_num = sippak_get_ns_list (app, nameservers, ports);
 
   status = pjsip_endpt_create_resolver(app->endpt, &resv);
-  if (status != PJ_SUCCESS) return status;
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  PJ_LOG(3, (NAME, "Found name servers %d, max allowed server %d",
-        _res.nscount, MAX_NS_COUNT));
-
-  for (unsigned i = 0; i < (_res.nscount > MAX_NS_COUNT ? MAX_NS_COUNT : _res.nscount); i++) {
-    if (_res.nsaddr_list[i].sin_family != pj_AF_INET()) {
-      PJ_LOG(3, (NAME, "skip non IPv4 name server"));
-      continue;
-    }
-
-    pj_inet_ntop (pj_AF_INET(), &_res.nsaddr_list[i].sin_addr, addr_str, sizeof(addr_str));
-
-    nameservers[serv_num] = pj_strdup3(app->pool, addr_str);
-    ports[serv_num] = pj_ntohs(_res.nsaddr_list[i].sin_port);
-
-    serv_num++;
-  }
-
-  // debug name servers
-  for (unsigned i = 0; i < serv_num; i++) {
-    PJ_LOG(3, (NAME, "Name server #%d: %.*s:%d", i + 1, nameservers[i].slen, nameservers[i].ptr, ports[i]));
-  }
-  status = pj_dns_resolver_set_ns(resv, 1, nameservers, ports);
+  status = pj_dns_resolver_set_ns(resv, serv_num, nameservers, ports);
   if (status != PJ_SUCCESS) return status;
 
   return pjsip_endpt_set_resolver(app->endpt, resv);

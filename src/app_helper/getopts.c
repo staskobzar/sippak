@@ -39,40 +39,14 @@ struct pj_getopt_option sippak_long_opts[] = {
   { NULL,       0,  0,   0 }
 };
 
-void sippak_app_cfg_init (struct sippak_app *app)
+pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
   app->cfg.log_level    = MIN_LOG_LEVEL;
   app->cfg.cmd          = CMD_PING;
   app->cfg.nameservers  = NULL;
-}
 
-pj_status_t sippak_init (struct sippak_app *app)
-{
-  pj_status_t status;
-  pjsip_endpoint *endpt;
-  pj_pool_t *pool;
-  pj_caching_pool cp;
-
-  pj_log_set_level(0); // do not print pj debug on init
-
-  status = pj_init();
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
-
-  pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
-
-  status = pjsip_endpt_create(&cp.factory, PROJECT_NAME, &endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-  pool = pjsip_endpt_create_pool(endpt, PROJECT_NAME, POOL_INIT, POOL_INCR);
-
-  app->endpt = endpt;
-  app->pool  = pool;
-  app->cp    = &cp;
-
-  sippak_app_cfg_init (app);
-
-  return status;
+  return PJ_SUCCESS;
 }
 
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)

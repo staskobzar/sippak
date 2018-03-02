@@ -35,7 +35,6 @@ add_cmocka_test(test_getopts test_getopts.c
   ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c)
 
 # use bogus resolv.conf for tests
-add_definitions(-D_PATH_RESCONF="${CMAKE_CURRENT_SOURCE_DIR}fixtures/resolve_01.conf")
 add_cmocka_test(test_dns_helper test_dns_helper.c
   ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c
   ${CMAKE_SOURCE_DIR}/src/dns_helper/dns.c
