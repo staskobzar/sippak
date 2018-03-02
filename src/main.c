@@ -74,12 +74,33 @@ int main(int argc, char *argv[])
   status = sippak_set_resolver_ns (&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = sippak_cmd_ping(&app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  // run
+  switch (app.cfg.cmd)
+  {
+    case CMD_VERSION:
+      version ();
+      goto done;
+      break;
+    case CMD_HELP:
+      usage ();
+      goto done;
+      break;
+
+    // fail
+    case CMD_UNKNOWN:
+    default:
+      PJ_LOG(1,(PROJECT_NAME, "Invalid or missing parameters. Use --help/-h for usage message."));
+      status = PJ_EINVAL;
+      goto done;
+      break;
+  }
+  // status = sippak_cmd_ping(&app);
+  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   // main loop
   sippak_main_loop();
 
+done:
   pj_caching_pool_destroy(&cp);
 
   return 0;

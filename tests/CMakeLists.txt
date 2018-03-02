@@ -27,3 +27,4 @@ else (CMOCKA_FOUND)
   message (WARNING "CMocka lib is not found. Will not continue with unit testing.")
 endif (CMOCKA_FOUND)
 
+add_subdirectory (acceptance)

@@ -39,12 +39,12 @@ void usage ()
   puts("  OPTIONS:");
   puts("    -h, --help      Print this usage message and exit.");
   puts("    -V, --version   Print version and exit.");
-printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list up to %d servers.\n", MAX_NS_COUNT);
-  puts("                    Can be defined with ports. If ports are not defined will use default port 53.");
-  puts("                    For example: --ns=8.8.8.8 or --ns=4.4.4.4:553,3.3.3.3");
   puts("    -v, --verbose   Verbosity increase. Short option can be repeated multiple times.");
   puts("                    Long option can have value. Example: --verbose=6");
   puts("    -q, --quiet     Silent or quiet mode. Mute sippak.");
+printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list up to %d servers.\n", MAX_NS_COUNT);
+  puts("                    Can be defined with ports. If ports are not defined will use default port 53.");
+  puts("                    For example: --ns=8.8.8.8 or --ns=4.4.4.4:553,3.3.3.3");
   puts("");
 }
 
