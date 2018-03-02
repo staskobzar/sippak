@@ -61,6 +61,7 @@ struct sippak_app {
     int log_level;
     enum app_command cmd;
     char *nameservers;
+    char *dest;
 
   } cfg;
 

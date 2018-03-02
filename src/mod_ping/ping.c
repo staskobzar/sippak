@@ -28,6 +28,8 @@
 #include <pjlib.h>
 #include "sippak.h"
 
+#define NAME "mod_ping"
+
 static pj_status_t on_tx_response (pjsip_tx_data *rdata);
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 
@@ -50,9 +52,15 @@ static pjsip_module mod_ping[] =
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 {
-  puts("=============> on_rx_response");
+  pjsip_msg *msg = rdata->msg_info.msg;
+
+  PJ_LOG(3, (NAME, "Response received: %d %s",
+        msg->line.status.code,
+        msg->line.status.reason));
+
   sippak_loop_cancel();
-  return PJ_FALSE;
+
+  return PJ_TRUE;
 }
 
 pj_status_t sippak_cmd_ping (struct sippak_app *app)
@@ -69,9 +77,9 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
 
   status = pjsip_endpt_create_request(app->endpt,
               &pjsip_options_method,  // method OPTIONS
-              pj_cstr(&str, "sip:1234@office.modulis.clusterpbx.com"), // request URI
-              pj_cstr(&str, "sip:pjsip@localhost"),                    // from header value
-              pj_cstr(&str, "sip:1234@office.modulis.clusterpbx.com"), // to header value
+              pj_cstr(&str, app->cfg.dest), // request URI
+              pj_cstr(&str, app->cfg.dest), // from header value
+              pj_cstr(&str, app->cfg.dest), // to header value
               NULL,                   // Contact header
               NULL,                   // Call-ID
               -1,                     // CSeq

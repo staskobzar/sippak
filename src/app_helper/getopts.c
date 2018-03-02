@@ -39,12 +39,50 @@ struct pj_getopt_option sippak_long_opts[] = {
   { NULL,       0,  0,   0 }
 };
 
+static int parse_command_str (const char *cmd)
+{
+  if (pj_ansi_strnicmp(cmd, "ping", 4) == 0) {
+    return CMD_PING;
+  }
+
+  return CMD_UNKNOWN;
+}
+
+static void sippak_parse_argv_left (struct sippak_app *app,
+                                    int argc, char *argv[],
+                                    int pj_optind)
+{
+  int idx = pj_optind;
+
+  if (idx == argc) {
+    return; // no command or destination is given
+  }
+
+  if (1 == (argc - idx)) {
+    // only one arg left. Consider it is a destination.
+    app->cfg.dest = argv[idx];
+    return; // assign destination and exit
+  }
+
+  // command and destination are provided
+  // set command
+  app->cfg.cmd = parse_command_str (argv[idx]);
+
+  // set destination
+  app->cfg.dest = argv[idx + 1];
+
+  if (argc > (idx + 2)) {
+    PJ_LOG(3, (PROJECT_NAME, "Extra arguments will be skipped"));
+  }
+}
+
 pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
   app->cfg.log_level    = MIN_LOG_LEVEL;
   app->cfg.cmd          = CMD_PING;
   app->cfg.nameservers  = NULL;
+  app->cfg.dest         = NULL;
 
   return PJ_SUCCESS;
 }
@@ -56,7 +94,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
    * Member of getopts.c. Need to reset this to make
    * sure multiple calls from unit tests work fine.
    */
-  pj_optind = 1;
+  pj_optind = 0;
 
   if (argc == 1) {
 
@@ -70,9 +108,11 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
     switch (c) {
       case 'h':
         app->cfg.cmd = CMD_HELP;
+        return PJ_SUCCESS;
         break;
       case 'V':
         app->cfg.cmd = CMD_VERSION;
+        return PJ_SUCCESS;
         break;
       case OPT_NS:
         app->cfg.nameservers = pj_optarg;
@@ -92,6 +132,10 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         return PJ_EINVAL;
     }
   }
+
+  // get command and destination
+  sippak_parse_argv_left (app, argc, argv, pj_optind);
+
   return PJ_SUCCESS;
 }
 

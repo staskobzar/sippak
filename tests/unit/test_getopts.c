@@ -161,6 +161,62 @@ static void suppress_verbosity_long (void **state)
   assert_int_equal (app.cfg.log_level, 0);
 }
 
+static void one_extra_arg_is_destination (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "sip:alice@example.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (app.cfg.cmd, CMD_PING);
+  assert_string_equal ("sip:alice@example.com", app.cfg.dest);
+}
+
+static void arg_cmd_ping_and_dest_set (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "ping", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (app.cfg.cmd, CMD_PING);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+}
+
+static void arg_cmd_ping_and_dest_set_case_insens (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "PiNg", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (app.cfg.cmd, CMD_PING);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+}
+
+static void arg_invalid_cmd (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "foo", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (app.cfg.cmd, CMD_UNKNOWN);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -177,6 +233,11 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(set_verbosity_long_with_val),
     cmocka_unit_test(suppress_verbosity_short),
     cmocka_unit_test(suppress_verbosity_long),
+
+    cmocka_unit_test(one_extra_arg_is_destination),
+    cmocka_unit_test(arg_cmd_ping_and_dest_set),
+    cmocka_unit_test(arg_cmd_ping_and_dest_set_case_insens),
+    cmocka_unit_test(arg_invalid_cmd),
   };
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);
 }

@@ -85,6 +85,9 @@ int main(int argc, char *argv[])
       usage ();
       goto done;
       break;
+    case CMD_PING:
+      status = sippak_cmd_ping(&app);
+      break;
 
     // fail
     case CMD_UNKNOWN:
@@ -94,14 +97,11 @@ int main(int argc, char *argv[])
       goto done;
       break;
   }
-  // status = sippak_cmd_ping(&app);
-  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
   // main loop
   sippak_main_loop();
 
 done:
   pj_caching_pool_destroy(&cp);
 
-  return 0;
+  return status;
 }
