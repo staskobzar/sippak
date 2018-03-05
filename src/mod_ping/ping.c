@@ -61,7 +61,7 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 
   sippak_loop_cancel();
 
-  return PJ_TRUE;
+  return PJ_FALSE; // continue with othe modules
 }
 
 pj_status_t sippak_cmd_ping (struct sippak_app *app)
@@ -81,7 +81,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
               pj_cstr(&str, app->cfg.dest), // request URI
               pj_cstr(&str, app->cfg.dest), // from header value
               pj_cstr(&str, app->cfg.dest), // to header value
-              NULL,                   // Contact header
+              pj_cstr(&str, app->cfg.dest), // Contact header
               NULL,                   // Call-ID
               -1,                     // CSeq
               NULL,                   // body

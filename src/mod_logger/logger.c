@@ -26,6 +26,7 @@
  */
 #include <pjsip.h>
 #include <pjlib.h>
+#include <pjsip/print_util.h>
 #include "sippak.h"
 #include "logger.h"
 
@@ -68,8 +69,32 @@ static void term_restore_color(void)
 #endif
 }
 
+static void print_sipmsg_body(pjsip_msg_body *body)
+{
+  char clenh_holder[256] = {0};
+  char len[12] = {0};
+  pj_str_t clen = { clenh_holder, 0 };
+  pj_strcat2(&clen, pjsip_hdr_names[PJSIP_H_CONTENT_LENGTH].name);
+  pj_strcat2(&clen, ": ");
+  if (body == NULL) {
+    pj_strcat2(&clen, "0");
+  } else {
+    pj_utoa(body->len, len);
+    pj_strcat2(&clen, len);
+  }
+  print_generic_header(clen.ptr, clen.slen);
+  if (body) {
+    term_set_color (PJ_TERM_COLOR_B);
+    printf("\n[SIP MESSAGE BODY]\n");
+    term_restore_color ();
+  }
+}
+
 static void print_sipmsg_head(pjsip_msg *msg)
 {
+  char uri_buf[128] = { 0 };
+  int uri_len = 0;
+
   if (msg->type == PJSIP_RESPONSE_MSG) {
     term_set_color (PJ_TERM_COLOR_B);
     printf("SIP");
@@ -78,10 +103,17 @@ static void print_sipmsg_head(pjsip_msg *msg)
     term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
     printf("2.0 %d ", msg->line.status.code);
     term_set_color (PJ_TERM_COLOR_G);
-    printf("%.*s%c\n", msg->line.status.reason.slen, msg->line.status.reason.ptr, EOL);
+    printf("%.*s%c\n", (int)msg->line.status.reason.slen, msg->line.status.reason.ptr, EOL);
   } else {
     term_set_color (PJ_TERM_COLOR_G);
-    printf("%.*s ", msg->line.req.method.name.slen, msg->line.req.method.name.ptr);
+    printf("%.*s ", (int)msg->line.req.method.name.slen, msg->line.req.method.name.ptr);
+
+    uri_len = pjsip_uri_print (PJSIP_URI_IN_REQ_URI,
+        msg->line.req.uri, uri_buf, 128);
+    term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
+    printf("%.*s ", uri_len, uri_buf);
+    term_set_color (PJ_TERM_COLOR_G);
+    printf("SIP/2.0\n");
   }
   term_restore_color ();
 }
@@ -93,20 +125,26 @@ static void print_generic_header (const char *header, int len)
     PJ_LOG(1, (NAME, "Invalid SIP header: %s", header));
     return;
   }
+  int hname_len = hname_col - header;
+  int hval_len = len - (hname_col - header) - 1;
 
   term_set_color (PJ_TERM_COLOR_G);
-  printf("%.*s", hname_col - header, header);
+  printf("%.*s", hname_len, header); // SIP header name
   term_set_color (PJ_TERM_COLOR_R);
   printf(":");
   term_set_color (PJ_TERM_COLOR_R | PJ_TERM_COLOR_G);
-  printf("%.*s.\n", len - (hname_col - header) -1, hname_col + 1);
+  printf("%.*s.\n", hval_len, hname_col + 1);
   term_restore_color ();
 }
 
 /* Notification on incoming messages */
 static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 {
-  PJ_LOG(2,(PROJECT_NAME, "RX %d bytes %s from %s %s:%d:\n",
+  pjsip_msg *msg = rdata->msg_info.msg;
+  pjsip_hdr *hdr = NULL;
+  char value[ 512 ] = { 0 };
+
+  PJ_LOG(3, (PROJECT_NAME, "RX %d bytes %s from %s %s:%d:\n",
         rdata->msg_info.len,
         pjsip_rx_data_get_info(rdata),
         rdata->tp_info.transport->type_name,
@@ -114,21 +152,11 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
         rdata->pkt_info.src_port,
         (int)rdata->msg_info.len));
 
-  pjsip_msg *msg = rdata->msg_info.msg;
-  pjsip_hdr *hdr;
-  char value[ 512 ] = { 0 };
-
   print_sipmsg_head(msg);
 
   for (hdr=msg->hdr.next; hdr!=&msg->hdr; hdr=hdr->next) {
-    pjsip_generic_string_hdr *h = pjsip_msg_find_hdr (msg, hdr->type, NULL);
-
     int len = hdr->vptr->print_on( hdr, value, 512 );
     print_generic_header (value, len);
-
-    if (hdr->type == 0 || hdr->type == 15) continue;
-    // printf("name: %.*s; value: %.*s\n", h->name.slen, h->name.ptr,
-        // h->hvalue.slen, h->hvalue.ptr);
   }
   printf("%.*s", (int)rdata->msg_info.len, rdata->msg_info.msg_buf);
   return PJ_FALSE; // continue with othe modules
@@ -138,19 +166,25 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 {
   pjsip_msg *msg = tdata->msg;
+  pjsip_hdr *hdr = NULL;
+  char value[ 512 ] = { 0 };
 
-  print_sipmsg_head(msg);
-
-  PJ_LOG(3,("FOO", "TX %d bytes %s to %s %s:%d:\n"
-        "%.*s\n"
-        "--end msg--",
+  PJ_LOG(3, (PROJECT_NAME, "TX %d bytes %s to %s %s:%d:\n",
         (tdata->buf.cur - tdata->buf.start),
         pjsip_tx_data_get_info(tdata),
         tdata->tp_info.transport->type_name,
         tdata->tp_info.dst_name,
-        tdata->tp_info.dst_port,
-        (int)(tdata->buf.cur - tdata->buf.start),
-        tdata->buf.start));
+        tdata->tp_info.dst_port));
+
+  print_sipmsg_head(msg);
+
+  for (hdr=msg->hdr.next; hdr!=&msg->hdr; hdr=hdr->next) {
+    int len = hdr->vptr->print_on( hdr, value, 512 );
+    print_generic_header (value, len);
+  }
+
+  print_sipmsg_body (msg->body);
+
   return PJ_SUCCESS; //continue with other modules
 }
 
