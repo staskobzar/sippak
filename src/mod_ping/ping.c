@@ -33,30 +33,31 @@
 static pj_status_t on_tx_response (pjsip_tx_data *rdata);
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 
-static pjsip_module mod_ping[] =
-{{
-    NULL, NULL,                 /* prev, next.    */
-    { "mod-ping", 9 },      /* Name.    */
-    -1,                         /* Id      */
-    PJSIP_MOD_PRIORITY_APPLICATION, /* Priority          */
-    NULL,                       /* load()    */
-    NULL,                       /* start()    */
-    NULL,                       /* stop()    */
-    NULL,                       /* unload()    */
-    NULL,         /* on_rx_request()  */
-    &on_rx_response,         /* on_rx_response()  */
-    NULL,         /* on_tx_request.  */
-    NULL,         /* on_tx_response()  */
-    NULL,                       /* on_tsx_state()  */
-}};
+static pjsip_module mod_ping =
+{
+  NULL, NULL,                 /* prev, next.    */
+  { "mod-ping", 9 },      /* Name.    */
+  -1,                         /* Id      */
+  PJSIP_MOD_PRIORITY_APPLICATION, /* Priority          */
+  NULL,                       /* load()    */
+  NULL,                       /* start()    */
+  NULL,                       /* stop()    */
+  NULL,                       /* unload()    */
+  NULL,         /* on_rx_request()  */
+  &on_rx_response,         /* on_rx_response()  */
+  NULL,         /* on_tx_request.  */
+  NULL,         /* on_tx_response()  */
+  NULL,                       /* on_tsx_state()  */
+};
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 {
   pjsip_msg *msg = rdata->msg_info.msg;
 
-  PJ_LOG(3, (NAME, "Response received: %d %s",
+  PJ_LOG(3, (NAME, "Response received: %d %.*s",
         msg->line.status.code,
-        msg->line.status.reason));
+        msg->line.status.reason.slen,
+        msg->line.status.reason.ptr));
 
   sippak_loop_cancel();
 
@@ -71,7 +72,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   pjsip_transport *tp;
   pjsip_tx_data *tdata;
 
-  status = pjsip_endpt_register_module(app->endpt, mod_ping);
+  status = pjsip_endpt_register_module(app->endpt, &mod_ping);
 
   pj_sockaddr_in_init(&addr, NULL, 0);
 

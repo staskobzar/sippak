@@ -84,6 +84,17 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.nameservers  = NULL;
   app->cfg.dest         = NULL;
 
+  pj_log_set_decor(
+      // PJ_LOG_HAS_TIME |
+      // PJ_LOG_HAS_MICRO_SEC |
+      // PJ_LOG_HAS_SENDER |
+      PJ_LOG_HAS_NEWLINE |
+      // PJ_LOG_HAS_SPACE |
+      PJ_LOG_HAS_COLOR |
+      PJ_LOG_HAS_THREAD_SWC |
+      // PJ_LOG_HAS_INDENT |
+      0
+      );
   return PJ_SUCCESS;
 }
 
