@@ -1,6 +1,8 @@
 #ifndef __MOD_LOGGER_LOGGER_H
 #define __MOD_LOGGER_LOGGER_H
 
+static pj_bool_t ENABLE_COLORS = PJ_FALSE;
+
 static void term_set_color(int level);
 static void term_restore_color(void);
 static void print_sipmsg_body(pjsip_msg_body *body);

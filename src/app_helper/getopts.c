@@ -29,6 +29,7 @@
 #include "sippak.h"
 
 #define OPT_NS    1
+#define OPT_COLOR 2
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
@@ -36,6 +37,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"ns",        1,  0,  OPT_NS },
   {"verbose",   2,  0,  'v' },
   {"quiet",     0,  0,  'q' },
+  {"color",     0,  0,  OPT_COLOR },
   { NULL,       0,  0,   0 }
 };
 
@@ -83,18 +85,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.cmd          = CMD_PING;
   app->cfg.nameservers  = NULL;
   app->cfg.dest         = NULL;
+  app->cfg.log_decor    = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
 
-  pj_log_set_decor(
-      // PJ_LOG_HAS_TIME |
-      // PJ_LOG_HAS_MICRO_SEC |
-      // PJ_LOG_HAS_SENDER |
-      PJ_LOG_HAS_NEWLINE |
-      // PJ_LOG_HAS_SPACE |
-      PJ_LOG_HAS_COLOR |
-      PJ_LOG_HAS_THREAD_SWC |
-      // PJ_LOG_HAS_INDENT |
-      0
-      );
   return PJ_SUCCESS;
 }
 
@@ -128,6 +120,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_NS:
         app->cfg.nameservers = pj_optarg;
         break;
+      case OPT_COLOR:
+        app->cfg.log_decor |= PJ_LOG_HAS_COLOR;
+        break;
       case 'v':
         if (pj_optarg) {
           app->cfg.log_level += atoi (pj_optarg);
@@ -146,6 +141,8 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 
   // get command and destination
   sippak_parse_argv_left (app, argc, argv, pj_optind);
+
+  pj_log_set_decor(app->cfg.log_decor);
 
   return PJ_SUCCESS;
 }

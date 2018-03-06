@@ -217,6 +217,19 @@ static void arg_invalid_cmd (void **state)
   assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
 }
 
+static void enable_color_argument (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--color", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (PJ_LOG_HAS_COLOR, app.cfg.log_decor & PJ_LOG_HAS_COLOR);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -238,6 +251,8 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(arg_cmd_ping_and_dest_set),
     cmocka_unit_test(arg_cmd_ping_and_dest_set_case_insens),
     cmocka_unit_test(arg_invalid_cmd),
+
+    cmocka_unit_test(enable_color_argument),
   };
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);
 }

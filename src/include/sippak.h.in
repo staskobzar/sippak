@@ -59,6 +59,7 @@ struct sippak_app {
   struct {
 
     int log_level;
+    unsigned log_decor;
     enum app_command cmd;
     char *nameservers;
     char *dest;

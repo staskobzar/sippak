@@ -18,15 +18,17 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set (EXECMD ${CMAKE_BINARY_DIR}/src/${PROJECT_NAME})
+set (SCENARIO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sipp_scenarios)
 
-# test CLI opts and arguments
-include(CMakeGetopts.cmake)
+# basic OPTIONS request send
+execute_process (
+  COMMAND ${SIPP} -timeout 10s -m 1 -bg -sf ${SCENARIO_DIR}/options.basic.xml
+  TIMEOUT 10
+  )
+add_test (
+  OPTIONS_Basic_Request
+  ${EXECMD} sip:alice@127.0.0.1
+  )
+set_tests_properties ( OPTIONS_Basic_Request
+  PROPERTIES PASS_REGULAR_EXPRESSION "OK Basic OPTIONS")
 
-# test sipp scenarious
-find_program (SIPP NAMES sipp)
-if (SIPP)
-  include (CMakeSIPPScenarios.cmake)
-else (SIPP)
-  message (WARNING "Application \"sipp\" not found. Will not run sipp scenarious.")
-endif (SIPP)

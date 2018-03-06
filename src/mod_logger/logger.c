@@ -54,6 +54,8 @@ static pjsip_module msg_logger[] =
 
 static void term_set_color(int level)
 {
+  if (ENABLE_COLORS != PJ_TRUE)
+    return;
 #if defined(PJ_TERM_HAS_COLOR) && PJ_TERM_HAS_COLOR != 0
     pj_term_set_color(level);
 #else
@@ -63,6 +65,8 @@ static void term_set_color(int level)
 
 static void term_restore_color(void)
 {
+  if (ENABLE_COLORS != PJ_TRUE)
+    return;
 #if defined(PJ_TERM_HAS_COLOR) && PJ_TERM_HAS_COLOR != 0
     /* Set terminal to its default color */
     pj_term_set_color(pj_log_get_color(77));
@@ -158,7 +162,7 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
     int len = hdr->vptr->print_on( hdr, value, 512 );
     print_generic_header (value, len);
   }
-  printf("%.*s", (int)rdata->msg_info.len, rdata->msg_info.msg_buf);
+  puts("");
   return PJ_FALSE; // continue with othe modules
 }
 
@@ -185,10 +189,14 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 
   print_sipmsg_body (msg->body);
 
+  puts("");
   return PJ_SUCCESS; //continue with other modules
 }
 
 pj_status_t sippak_mod_logger_register(struct sippak_app *app)
 {
+  ENABLE_COLORS = (app->cfg.log_decor & PJ_LOG_HAS_COLOR)
+    ? PJ_TRUE
+    : PJ_FALSE;
   return pjsip_endpt_register_module(app->endpt, msg_logger);
 }
