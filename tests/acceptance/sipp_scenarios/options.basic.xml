@@ -26,7 +26,7 @@
   <send retrans="500">
     <![CDATA[
 
-      SIP/2.0 200 OK Basic OPTIONS
+      SIP/2.0 200 OK Basic OPTIONS Test
       [last_Via:]
       [last_From:]
       [last_To:];tag=2d87f2a5aac2daedab4d366e4bc2064e.8ee7

@@ -21,7 +21,7 @@
 function (ADD_CMOCKA_TEST test_name test_src)
   add_executable(${test_name} ${test_src} ${ARGV})
   target_link_libraries(${test_name} ${CMOCKA_LIBRARIES} ${PJSIP_LIBRARIES})
-  add_test(${test_name} ${test_name})
+  add_test(unit_${test_name} ${test_name})
   if (USE_MEMTEST)
     add_test (${test_name}_valgrind valgrind
       --error-exitcode=1 --read-var-info=yes

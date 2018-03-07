@@ -32,8 +32,6 @@
 
 #define NAME "mod_logger"
 
-static char EOL = '.'; // end of line
-
 static pjsip_module msg_logger[] =
 {{
     NULL, NULL,                 /* prev, next.    */
@@ -73,20 +71,36 @@ static void term_restore_color(void)
 #endif
 }
 
+static void print_trail_chr ()
+{
+  if (PRINT_TRAIL_CHR == PJ_TRUE) {
+    term_set_color (PJ_TERM_COLOR_BRIGHT |
+                    PJ_TERM_COLOR_R |
+                    PJ_TERM_COLOR_G |
+                    PJ_TERM_COLOR_B);
+    printf("%c", TRAIL_CHR);
+  }
+  printf("\n");
+}
+
 static void print_sipmsg_body(pjsip_msg_body *body)
 {
   char clenh_holder[256] = {0};
   char len[12] = {0};
   pj_str_t clen = { clenh_holder, 0 };
+
   pj_strcat2(&clen, pjsip_hdr_names[PJSIP_H_CONTENT_LENGTH].name);
   pj_strcat2(&clen, ": ");
+
   if (body == NULL) {
     pj_strcat2(&clen, "0");
   } else {
     pj_utoa(body->len, len);
     pj_strcat2(&clen, len);
   }
+
   print_generic_header(clen.ptr, clen.slen);
+
   if (body) {
     term_set_color (PJ_TERM_COLOR_B);
     printf("\n[SIP MESSAGE BODY]\n");
@@ -107,8 +121,10 @@ static void print_sipmsg_head(pjsip_msg *msg)
     term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
     printf("2.0 %d ", msg->line.status.code);
     term_set_color (PJ_TERM_COLOR_G);
-    printf("%.*s%c\n", (int)msg->line.status.reason.slen, msg->line.status.reason.ptr, EOL);
+    printf("%.*s", (int)msg->line.status.reason.slen, msg->line.status.reason.ptr);
+
   } else {
+
     term_set_color (PJ_TERM_COLOR_G);
     printf("%.*s ", (int)msg->line.req.method.name.slen, msg->line.req.method.name.ptr);
 
@@ -117,8 +133,11 @@ static void print_sipmsg_head(pjsip_msg *msg)
     term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
     printf("%.*s ", uri_len, uri_buf);
     term_set_color (PJ_TERM_COLOR_G);
-    printf("SIP/2.0\n");
+    printf("SIP/2.0");
   }
+
+  print_trail_chr();
+
   term_restore_color ();
 }
 
@@ -137,7 +156,8 @@ static void print_generic_header (const char *header, int len)
   term_set_color (PJ_TERM_COLOR_R);
   printf(":");
   term_set_color (PJ_TERM_COLOR_R | PJ_TERM_COLOR_G);
-  printf("%.*s.\n", hval_len, hname_col + 1);
+  printf("%.*s", hval_len, hname_col + 1);
+  print_trail_chr();
   term_restore_color ();
 }
 
@@ -198,5 +218,8 @@ pj_status_t sippak_mod_logger_register(struct sippak_app *app)
   ENABLE_COLORS = (app->cfg.log_decor & PJ_LOG_HAS_COLOR)
     ? PJ_TRUE
     : PJ_FALSE;
+
+  PRINT_TRAIL_CHR = app->cfg.trail_dot;
+
   return pjsip_endpt_register_module(app->endpt, msg_logger);
 }

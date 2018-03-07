@@ -63,6 +63,7 @@ struct sippak_app {
     enum app_command cmd;
     char *nameservers;
     char *dest;
+    pj_bool_t trail_dot;
 
   } cfg;
 

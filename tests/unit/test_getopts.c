@@ -230,6 +230,19 @@ static void enable_color_argument (void **state)
   assert_int_equal (PJ_LOG_HAS_COLOR, app.cfg.log_decor & PJ_LOG_HAS_COLOR);
 }
 
+static void print_trailing_dot (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--trail-dot", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (PJ_TRUE, app.cfg.trail_dot);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -253,6 +266,7 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(arg_invalid_cmd),
 
     cmocka_unit_test(enable_color_argument),
+    cmocka_unit_test(print_trailing_dot),
   };
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);
 }

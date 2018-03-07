@@ -30,6 +30,7 @@
 
 #define OPT_NS    1
 #define OPT_COLOR 2
+#define OPT_TRAIL 3 // print trailing dot
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
@@ -38,6 +39,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"verbose",   2,  0,  'v' },
   {"quiet",     0,  0,  'q' },
   {"color",     0,  0,  OPT_COLOR },
+  {"trail-dot", 0,  0,  OPT_TRAIL },
   { NULL,       0,  0,   0 }
 };
 
@@ -86,6 +88,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.nameservers  = NULL;
   app->cfg.dest         = NULL;
   app->cfg.log_decor    = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
+  app->cfg.trail_dot    = PJ_FALSE;
 
   return PJ_SUCCESS;
 }
@@ -123,6 +126,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_COLOR:
         app->cfg.log_decor |= PJ_LOG_HAS_COLOR;
         break;
+      case OPT_TRAIL:
+        app->cfg.trail_dot = PJ_TRUE;
+        break;
       case 'v':
         if (pj_optarg) {
           app->cfg.log_level += atoi (pj_optarg);
@@ -134,8 +140,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
           app->cfg.log_level = 0;
         break;
       default:
-        // PJ_LOG(1, ("invalid argument %s", argv[opt_index]));
-        return PJ_EINVAL;
+        break;
     }
   }
 

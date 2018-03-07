@@ -18,17 +18,13 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set (SCENARIO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sipp_scenarios)
+set (SIPP_SCENARIO_PATH ${CMAKE_CURRENT_SOURCE_DIR}/sipp_scenarios)
 
-# basic OPTIONS request send
-execute_process (
-  COMMAND ${SIPP} -timeout 10s -m 1 -bg -sf ${SCENARIO_DIR}/options.basic.xml
-  TIMEOUT 10
-  )
-add_test (
-  OPTIONS_Basic_Request
-  ${EXECMD} sip:alice@127.0.0.1
-  )
-set_tests_properties ( OPTIONS_Basic_Request
-  PROPERTIES PASS_REGULAR_EXPRESSION "OK Basic OPTIONS")
+add_test ( OPTIONS_Basic_Request
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.options_basic.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
+add_test ( OPTIONS_Basic_With_Trailing_Dot
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.options_basic_trailing_dot.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
