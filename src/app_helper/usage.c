@@ -45,6 +45,8 @@ void usage ()
 printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list up to %d servers.\n", MAX_NS_COUNT);
   puts("                    Can be defined with ports. If ports are not defined will use default port 53.");
   puts("                    For example: --ns=8.8.8.8 or --ns=4.4.4.4:553,3.3.3.3");
+  puts("    --color         Enable colorized output. Disabled by default.");
+  puts("    --trail-dot     Output trailing dot '.' at the end of each SIP message line.");
   puts("");
 }
 

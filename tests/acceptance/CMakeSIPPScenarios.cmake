@@ -20,11 +20,7 @@
 
 set (SIPP_SCENARIO_PATH ${CMAKE_CURRENT_SOURCE_DIR}/sipp_scenarios)
 
-add_test ( OPTIONS_Basic_Request
-  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.options_basic.pl
-  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
-
-add_test ( OPTIONS_Basic_With_Trailing_Dot
-  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.options_basic_trailing_dot.pl
+add_test ( Basic_Ping_With_OPTIONS
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_options.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 

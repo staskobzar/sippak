@@ -19,25 +19,29 @@
 #
 
 # output version and exit
-add_test (PrintVersion ${EXECMD} -V )
-set_tests_properties (PrintVersion PROPERTIES PASS_REGULAR_EXPRESSION
+add_test (Print_Version ${EXECMD} -V )
+set_tests_properties (Print_Version PROPERTIES PASS_REGULAR_EXPRESSION
   "${PROJECT_NAME} ${PROJECT_VERSION}")
-set_tests_properties (PrintVersion PROPERTIES FAIL_REGULAR_EXPRESSION
+set_tests_properties (Print_Version PROPERTIES FAIL_REGULAR_EXPRESSION
   "Usage: ")
 
 # print usage when no arguments
-add_test (NoArgsUsage ${EXECMD})
-set_tests_properties (NoArgsUsage PROPERTIES PASS_REGULAR_EXPRESSION
+add_test (NoArgs_Usage ${EXECMD})
+set_tests_properties (NoArgs_Usage PROPERTIES PASS_REGULAR_EXPRESSION
   "Usage: ${PROJECT_NAME}")
 
 # print usage short argument
-add_test (ShortOptHelpUsage ${EXECMD} -h)
-set_tests_properties (ShortOptHelpUsage PROPERTIES PASS_REGULAR_EXPRESSION
+add_test (Short_Opt_Help_Usage ${EXECMD} -h)
+set_tests_properties (Short_Opt_Help_Usage PROPERTIES PASS_REGULAR_EXPRESSION
   "Usage: ${PROJECT_NAME}")
 
 # print usage long argument
-add_test (LongOptHelpUsage ${EXECMD} --help)
-set_tests_properties (LongOptHelpUsage PROPERTIES PASS_REGULAR_EXPRESSION
+add_test (Long_Opt_Help_Usage ${EXECMD} --help)
+set_tests_properties (Long_Opt_Help_Usage PROPERTIES PASS_REGULAR_EXPRESSION
   "Usage: ${PROJECT_NAME}")
 
+# usage has all options
+add_test (Usage_Has_All_Opts
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.usage_opts.pl
+  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c ${EXECMD})
 
