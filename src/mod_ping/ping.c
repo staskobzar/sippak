@@ -36,17 +36,17 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static pjsip_module mod_ping =
 {
   NULL, NULL,                 /* prev, next.    */
-  { "mod-ping", 9 },      /* Name.    */
+  { "mod-ping", 9 },          /* Name.    */
   -1,                         /* Id      */
   PJSIP_MOD_PRIORITY_APPLICATION, /* Priority          */
   NULL,                       /* load()    */
   NULL,                       /* start()    */
   NULL,                       /* stop()    */
   NULL,                       /* unload()    */
-  NULL,         /* on_rx_request()  */
-  &on_rx_response,         /* on_rx_response()  */
-  NULL,         /* on_tx_request.  */
-  NULL,         /* on_tx_response()  */
+  NULL,                       /* on_rx_request()  */
+  &on_rx_response,            /* on_rx_response()  */
+  NULL,                       /* on_tx_request.  */
+  NULL,                       /* on_tx_response()  */
   NULL,                       /* on_tsx_state()  */
 };
 

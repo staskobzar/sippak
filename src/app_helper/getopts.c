@@ -31,6 +31,9 @@
 #define OPT_NS    1
 #define OPT_COLOR 2
 #define OPT_TRAIL 3 // print trailing dot
+#define OPT_LOG_TIME 4 // print time and ms
+#define OPT_LOG_LEVEL 5
+#define OPT_LOG_SND 6
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
@@ -40,6 +43,9 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"quiet",     0,  0,  'q' },
   {"color",     0,  0,  OPT_COLOR },
   {"trail-dot", 0,  0,  OPT_TRAIL },
+  {"log-time",  0,  0,  OPT_LOG_TIME },
+  {"log-level", 0,  0,  OPT_LOG_LEVEL },
+  {"log-snd",   0,  0,  OPT_LOG_SND },
   { NULL,       0,  0,   0 }
 };
 
@@ -129,6 +135,15 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_TRAIL:
         app->cfg.trail_dot = PJ_TRUE;
         break;
+      case OPT_LOG_TIME:
+        app->cfg.log_decor |= PJ_LOG_HAS_TIME | PJ_LOG_HAS_MICRO_SEC;
+        break;
+      case OPT_LOG_LEVEL:
+        app->cfg.log_decor |= PJ_LOG_HAS_LEVEL_TEXT;
+        break;
+      case OPT_LOG_SND:
+        app->cfg.log_decor |= PJ_LOG_HAS_SENDER;
+        break;
       case 'v':
         if (pj_optarg) {
           app->cfg.log_level += atoi (pj_optarg);
@@ -147,6 +162,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
   // get command and destination
   sippak_parse_argv_left (app, argc, argv, pj_optind);
 
+  // set log decoration
   pj_log_set_decor(app->cfg.log_decor);
 
   return PJ_SUCCESS;

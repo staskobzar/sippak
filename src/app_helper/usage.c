@@ -47,6 +47,9 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    For example: --ns=8.8.8.8 or --ns=4.4.4.4:553,3.3.3.3");
   puts("    --color         Enable colorized output. Disabled by default.");
   puts("    --trail-dot     Output trailing dot '.' at the end of each SIP message line.");
+  puts("    --log-time      Print time and microseconds in logs.");
+  puts("    --log-level     Print log level: ERROR, INFO etc.");
+  puts("    --log-snd       Print log sender file or module name.");
   puts("");
 }
 

@@ -243,6 +243,46 @@ static void print_trailing_dot (void **state)
   assert_int_equal (PJ_TRUE, app.cfg.trail_dot);
 }
 
+static void log_has_time (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--log-time" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (PJ_LOG_HAS_TIME, app.cfg.log_decor & PJ_LOG_HAS_TIME);
+  assert_int_equal (PJ_LOG_HAS_MICRO_SEC, app.cfg.log_decor & PJ_LOG_HAS_MICRO_SEC);
+}
+
+static void log_has_level (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--log-level" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (PJ_LOG_HAS_LEVEL_TEXT, app.cfg.log_decor & PJ_LOG_HAS_LEVEL_TEXT);
+}
+
+static void log_has_sender (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--log-snd" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (PJ_LOG_HAS_SENDER, app.cfg.log_decor & PJ_LOG_HAS_SENDER);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -267,6 +307,10 @@ int main(int argc, const char *argv[])
 
     cmocka_unit_test(enable_color_argument),
     cmocka_unit_test(print_trailing_dot),
+    cmocka_unit_test(log_has_time),
+    cmocka_unit_test(log_has_level),
+    cmocka_unit_test(log_has_sender),
   };
+
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);
 }

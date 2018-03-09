@@ -74,11 +74,7 @@ static void term_restore_color(void)
 static void print_trail_chr ()
 {
   if (PRINT_TRAIL_CHR == PJ_TRUE) {
-    term_set_color (PJ_TERM_COLOR_BRIGHT |
-                    PJ_TERM_COLOR_R |
-                    PJ_TERM_COLOR_G |
-                    PJ_TERM_COLOR_B);
-    printf("%c", TRAIL_CHR);
+    PRINT_COLOR(COLOR_BRIGHT_WHITE, "%c", TRAIL_CHR);
   }
   printf("\n");
 }
@@ -102,8 +98,7 @@ static void print_sipmsg_body(pjsip_msg_body *body)
   print_generic_header(clen.ptr, clen.slen);
 
   if (body) {
-    term_set_color (PJ_TERM_COLOR_B);
-    printf("\n[SIP MESSAGE BODY]\n");
+    PRINT_COLOR (PJ_TERM_COLOR_B, "\n[SIP MESSAGE BODY]\n");
     term_restore_color ();
   }
 }
@@ -114,26 +109,20 @@ static void print_sipmsg_head(pjsip_msg *msg)
   int uri_len = 0;
 
   if (msg->type == PJSIP_RESPONSE_MSG) {
-    term_set_color (PJ_TERM_COLOR_B);
-    printf("SIP");
-    term_set_color (PJ_TERM_COLOR_R);
-    printf("/");
-    term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
-    printf("2.0 %d ", msg->line.status.code);
-    term_set_color (PJ_TERM_COLOR_G);
-    printf("%.*s", (int)msg->line.status.reason.slen, msg->line.status.reason.ptr);
+    PRINT_COLOR(COLOR_BLUE, "SIP/2.0 ");
+    PRINT_COLOR(COLOR_CYAN, "%d ", msg->line.status.code);
+    PRINT_COLOR(COLOR_GREEN, "%.*s",
+        (int)msg->line.status.reason.slen, msg->line.status.reason.ptr);
 
   } else {
 
-    term_set_color (PJ_TERM_COLOR_G);
-    printf("%.*s ", (int)msg->line.req.method.name.slen, msg->line.req.method.name.ptr);
+    PRINT_COLOR(COLOR_BLUE, "%.*s ",
+        (int)msg->line.req.method.name.slen, msg->line.req.method.name.ptr);
 
     uri_len = pjsip_uri_print (PJSIP_URI_IN_REQ_URI,
         msg->line.req.uri, uri_buf, 128);
-    term_set_color (PJ_TERM_COLOR_G | PJ_TERM_COLOR_B);
-    printf("%.*s ", uri_len, uri_buf);
-    term_set_color (PJ_TERM_COLOR_G);
-    printf("SIP/2.0");
+    PRINT_COLOR(COLOR_CYAN, "%.*s ", uri_len, uri_buf);
+    PRINT_COLOR(COLOR_GREEN, "SIP/2.0");
   }
 
   print_trail_chr();
@@ -151,38 +140,60 @@ static void print_generic_header (const char *header, int len)
   int hname_len = hname_col - header;
   int hval_len = len - (hname_col - header) - 1;
 
-  term_set_color (PJ_TERM_COLOR_G);
-  printf("%.*s", hname_len, header); // SIP header name
-  term_set_color (PJ_TERM_COLOR_R);
-  printf(":");
-  term_set_color (PJ_TERM_COLOR_R | PJ_TERM_COLOR_G);
-  printf("%.*s", hval_len, hname_col + 1);
+  PRINT_COLOR(COLOR_GREEN, "%.*s", hname_len, header); // SIP header name
+  PRINT_COLOR(COLOR_RED, ":");
+  PRINT_COLOR(COLOR_YELLOW, "%.*s", hval_len, hname_col + 1);
   print_trail_chr();
   term_restore_color ();
+}
+
+static void print_hdr_clid (pjsip_cid_hdr *cid)
+{
+  if (!cid) {
+    PJ_LOG(1, (NAME, "Failed to extract Call-ID header!"));
+    return;
+  }
+  PRINT_COLOR(COLOR_GREEN, "%.*s", cid->name.slen, cid->name.ptr);
+  PRINT_COLOR(COLOR_RED, ": ");
+  PRINT_COLOR(COLOR_BRIGHT_BLUE, "%.*s", cid->id.slen, cid->id.ptr);
+  print_trail_chr();
+  term_restore_color ();
+}
+
+static void print_sipmsg_headers (const pjsip_msg *msg)
+{
+  pjsip_hdr *hdr = NULL;
+  char value[ 512 ] = { 0 };
+
+  for (hdr=msg->hdr.next; hdr!=&msg->hdr; hdr=hdr->next) {
+    if (hdr->type == PJSIP_H_CALL_ID) {
+      print_hdr_clid (PJSIP_MSG_CID_HDR(msg));
+    } else {
+      int len = hdr->vptr->print_on( hdr, value, 512 );
+      print_generic_header (value, len);
+    }
+  }
+
 }
 
 /* Notification on incoming messages */
 static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 {
   pjsip_msg *msg = rdata->msg_info.msg;
-  pjsip_hdr *hdr = NULL;
-  char value[ 512 ] = { 0 };
 
   PJ_LOG(3, (PROJECT_NAME, "RX %d bytes %s from %s %s:%d:\n",
         rdata->msg_info.len,
         pjsip_rx_data_get_info(rdata),
         rdata->tp_info.transport->type_name,
         rdata->pkt_info.src_name,
-        rdata->pkt_info.src_port,
-        (int)rdata->msg_info.len));
+        rdata->pkt_info.src_port, (int)rdata->msg_info.len));
 
-  print_sipmsg_head(msg);
+  print_sipmsg_head (msg);
 
-  for (hdr=msg->hdr.next; hdr!=&msg->hdr; hdr=hdr->next) {
-    int len = hdr->vptr->print_on( hdr, value, 512 );
-    print_generic_header (value, len);
-  }
+  print_sipmsg_headers (msg);
+
   puts("");
+
   return PJ_FALSE; // continue with othe modules
 }
 
@@ -190,8 +201,6 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 {
   pjsip_msg *msg = tdata->msg;
-  pjsip_hdr *hdr = NULL;
-  char value[ 512 ] = { 0 };
 
   PJ_LOG(3, (PROJECT_NAME, "TX %d bytes %s to %s %s:%d:\n",
         (tdata->buf.cur - tdata->buf.start),
@@ -202,14 +211,12 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 
   print_sipmsg_head(msg);
 
-  for (hdr=msg->hdr.next; hdr!=&msg->hdr; hdr=hdr->next) {
-    int len = hdr->vptr->print_on( hdr, value, 512 );
-    print_generic_header (value, len);
-  }
+  print_sipmsg_headers (msg);
 
   print_sipmsg_body (msg->body);
 
   puts("");
+
   return PJ_SUCCESS; //continue with other modules
 }
 
