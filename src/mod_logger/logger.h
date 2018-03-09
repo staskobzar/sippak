@@ -4,8 +4,7 @@
 static void term_set_color(int level);
 static void term_restore_color(void);
 
-#define PRINT_COLOR(color, ...) \
-  term_set_color (color); printf(__VA_ARGS__);
+#define PRINT_COLOR(color, ...) term_set_color (color); printf(__VA_ARGS__);
 
 #define COLOR_BRIGHT_WHITE PJ_TERM_COLOR_BRIGHT | \
                            PJ_TERM_COLOR_R |      \

@@ -32,8 +32,7 @@
 
 #define NAME "mod_logger"
 
-static pjsip_module msg_logger[] =
-{{
+static pjsip_module msg_logger = {
     NULL, NULL,                 /* prev, next.    */
     { "mod-logger", 11 },      /* Name.    */
     -1,                         /* Id      */
@@ -48,7 +47,7 @@ static pjsip_module msg_logger[] =
     &logging_on_tx_msg,         /* on_tx_response()  */
     NULL,                       /* on_tsx_state()  */
 
-}};
+};
 
 static void term_set_color(int level)
 {
@@ -98,8 +97,8 @@ static void print_sipmsg_body(pjsip_msg_body *body)
   print_generic_header(clen.ptr, clen.slen);
 
   if (body) {
-    PRINT_COLOR (PJ_TERM_COLOR_B, "\n[SIP MESSAGE BODY]\n");
-    term_restore_color ();
+    PRINT_COLOR(COLOR_BLUE, "\n[SIP MESSAGE BODY]\n");
+    term_restore_color();
   }
 }
 
@@ -127,7 +126,7 @@ static void print_sipmsg_head(pjsip_msg *msg)
 
   print_trail_chr();
 
-  term_restore_color ();
+  term_restore_color();
 }
 
 static void print_generic_header (const char *header, int len)
@@ -153,11 +152,11 @@ static void print_hdr_clid (pjsip_cid_hdr *cid)
     PJ_LOG(1, (NAME, "Failed to extract Call-ID header!"));
     return;
   }
-  PRINT_COLOR(COLOR_GREEN, "%.*s", cid->name.slen, cid->name.ptr);
+  PRINT_COLOR(COLOR_GREEN, "%.*s", (int)cid->name.slen, cid->name.ptr);
   PRINT_COLOR(COLOR_RED, ": ");
-  PRINT_COLOR(COLOR_BRIGHT_BLUE, "%.*s", cid->id.slen, cid->id.ptr);
+  PRINT_COLOR(COLOR_BRIGHT_BLUE, "%.*s", (int)cid->id.slen, cid->id.ptr);
   print_trail_chr();
-  term_restore_color ();
+  term_restore_color();
 }
 
 static void print_sipmsg_headers (const pjsip_msg *msg)
@@ -209,7 +208,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
         tdata->tp_info.dst_name,
         tdata->tp_info.dst_port));
 
-  print_sipmsg_head(msg);
+  print_sipmsg_head (msg);
 
   print_sipmsg_headers (msg);
 
@@ -228,5 +227,5 @@ pj_status_t sippak_mod_logger_register(struct sippak_app *app)
 
   PRINT_TRAIL_CHR = app->cfg.trail_dot;
 
-  return pjsip_endpt_register_module(app->endpt, msg_logger);
+  return pjsip_endpt_register_module(app->endpt, &msg_logger);
 }
