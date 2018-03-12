@@ -50,6 +50,11 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    --log-time      Print time and microseconds in logs.");
   puts("    --log-level     Print log level: ERROR, INFO etc.");
   puts("    --log-snd       Print log sender file or module name.");
+
+  puts("    -p, --local-port=PORT");
+  puts("                    Bind local port. Default is random port.");
+  puts("    -u, --username=USER");
+  puts("                    Username part in Contact and From header URI. Default is 'alice'.");
   puts("");
 }
 

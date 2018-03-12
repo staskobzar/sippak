@@ -58,12 +58,16 @@ struct sippak_app {
 
   struct {
 
+    enum app_command cmd;
+
     int log_level;
     unsigned log_decor;
-    enum app_command cmd;
-    char *nameservers;
-    char *dest;
     pj_bool_t trail_dot;
+
+    pj_str_t dest;
+    char *nameservers;
+    pj_uint16_t local_port;
+    pj_str_t username;
 
   } cfg;
 

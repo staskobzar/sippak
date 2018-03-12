@@ -172,7 +172,7 @@ static void one_extra_arg_is_destination (void **state)
   status = sippak_getopts (argc, argv, &app);
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (app.cfg.cmd, CMD_PING);
-  assert_string_equal ("sip:alice@example.com", app.cfg.dest);
+  assert_string_equal ("sip:alice@example.com", app.cfg.dest.ptr);
 }
 
 static void arg_cmd_ping_and_dest_set (void **state)
@@ -186,7 +186,7 @@ static void arg_cmd_ping_and_dest_set (void **state)
   status = sippak_getopts (argc, argv, &app);
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (app.cfg.cmd, CMD_PING);
-  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest.ptr);
 }
 
 static void arg_cmd_ping_and_dest_set_case_insens (void **state)
@@ -200,7 +200,7 @@ static void arg_cmd_ping_and_dest_set_case_insens (void **state)
   status = sippak_getopts (argc, argv, &app);
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (app.cfg.cmd, CMD_PING);
-  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest.ptr);
 }
 
 static void arg_invalid_cmd (void **state)
@@ -214,7 +214,7 @@ static void arg_invalid_cmd (void **state)
   status = sippak_getopts (argc, argv, &app);
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (app.cfg.cmd, CMD_UNKNOWN);
-  assert_string_equal ("sip:bob@foo.com", app.cfg.dest);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.dest.ptr);
 }
 
 static void enable_color_argument (void **state)
@@ -283,6 +283,58 @@ static void log_has_sender (void **state)
   assert_int_equal (PJ_LOG_HAS_SENDER, app.cfg.log_decor & PJ_LOG_HAS_SENDER);
 }
 
+static void set_local_port_long (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--local-port=8899" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (8899, app.cfg.local_port);
+}
+
+static void set_local_port_short (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-p 9988" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (9988, app.cfg.local_port);
+}
+
+static void set_username_long (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--username=myuser" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("myuser", app.cfg.username.ptr);
+}
+
+static void set_username_short (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-u bobuser" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("bobuser", app.cfg.username.ptr);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -310,6 +362,11 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(log_has_time),
     cmocka_unit_test(log_has_level),
     cmocka_unit_test(log_has_sender),
+
+    cmocka_unit_test(set_local_port_long),
+    cmocka_unit_test(set_local_port_short),
+    cmocka_unit_test(set_username_long),
+    cmocka_unit_test(set_username_short),
   };
 
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

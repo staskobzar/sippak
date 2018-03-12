@@ -46,6 +46,8 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"log-time",  0,  0,  OPT_LOG_TIME },
   {"log-level", 0,  0,  OPT_LOG_LEVEL },
   {"log-snd",   0,  0,  OPT_LOG_SND },
+  {"local-port",1,  0,  'p' },
+  {"username",  1,  0,  'u' },
   { NULL,       0,  0,   0 }
 };
 
@@ -70,7 +72,7 @@ static void sippak_parse_argv_left (struct sippak_app *app,
 
   if (1 == (argc - idx)) {
     // only one arg left. Consider it is a destination.
-    app->cfg.dest = argv[idx];
+    app->cfg.dest = pj_str(argv[idx]);
     return; // assign destination and exit
   }
 
@@ -79,7 +81,7 @@ static void sippak_parse_argv_left (struct sippak_app *app,
   app->cfg.cmd = parse_command_str (argv[idx]);
 
   // set destination
-  app->cfg.dest = argv[idx + 1];
+  app->cfg.dest = pj_str(argv[idx + 1]);
 
   if (argc > (idx + 2)) {
     PJ_LOG(3, (PROJECT_NAME, "Extra arguments will be skipped"));
@@ -92,9 +94,10 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.log_level    = MIN_LOG_LEVEL;
   app->cfg.cmd          = CMD_PING;
   app->cfg.nameservers  = NULL;
-  app->cfg.dest         = NULL;
   app->cfg.log_decor    = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
   app->cfg.trail_dot    = PJ_FALSE;
+  app->cfg.local_port   = 0;
+  app->cfg.username     = pj_str("alice");
 
   return PJ_SUCCESS;
 }
@@ -102,6 +105,7 @@ pj_status_t sippak_init (struct sippak_app *app)
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
   int c = 0, opt_index = 0;
+  pj_str_t username;
   /*
    * Member of getopts.c. Need to reset this to make
    * sure multiple calls from unit tests work fine.
@@ -115,7 +119,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 
   }
 
-  while ((c = pj_getopt_long (argc, argv, "hVvq", sippak_long_opts, &opt_index)) != -1)
+  while ((c = pj_getopt_long (argc, argv, "hVvqp:u:", sippak_long_opts, &opt_index)) != -1)
   {
     switch (c) {
       case 'h':
@@ -143,6 +147,14 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_LOG_SND:
         app->cfg.log_decor |= PJ_LOG_HAS_SENDER;
+        break;
+      case 'p':
+        app->cfg.local_port = atoi (pj_optarg);
+        break;
+      case 'u':
+        username = pj_str (pj_optarg);
+        pj_strtrim(&username);
+        app->cfg.username = username;
         break;
       case 'v':
         if (pj_optarg) {

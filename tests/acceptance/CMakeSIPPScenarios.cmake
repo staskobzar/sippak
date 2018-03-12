@@ -24,3 +24,14 @@ add_test ( Basic_Ping_With_OPTIONS
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_options.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+option (TEST_TIMEOUT "Test timeout SIP. Takes around 30 sec." OFF)
+if (TEST_TIMEOUT)
+  add_test ( Basic_Ping_Timeoute_Retrans
+    perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_retrans.pl
+    ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+endif(TEST_TIMEOUT)
+
+add_test ( Contact_Source_Port_Host
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_src_port_host.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

@@ -32,10 +32,9 @@ struct sippak_app app;
 
 static void sippak_main_loop()
 {
-  for (;;) {
-    pjsip_endpt_handle_events(app.endpt, NULL);
-    if (sippak_loop_stop)
-      break;
+  while (sippak_loop_stop == PJ_FALSE) {
+    pj_time_val timeout = {0, 500};
+    pjsip_endpt_handle_events(app.endpt, &timeout);
   }
 }
 
@@ -87,6 +86,7 @@ int main(int argc, char *argv[])
       break;
     case CMD_PING:
       status = sippak_cmd_ping(&app);
+      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
       break;
 
     // fail
