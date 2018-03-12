@@ -68,6 +68,7 @@ struct sippak_app {
     char *nameservers;
     pj_uint16_t local_port;
     pj_str_t username;
+    pjsip_transport_type_e proto;
 
   } cfg;
 

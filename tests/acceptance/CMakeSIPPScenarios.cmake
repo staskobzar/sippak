@@ -24,6 +24,10 @@ add_test ( Basic_Ping_With_OPTIONS
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_options.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( Basic_Ping_over_TCP
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_options_tcp.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
 option (TEST_TIMEOUT "Test timeout SIP. Takes around 30 sec." OFF)
 if (TEST_TIMEOUT)
   add_test ( Basic_Ping_Timeoute_Retrans

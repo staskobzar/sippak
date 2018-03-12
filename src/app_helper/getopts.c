@@ -48,6 +48,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"log-snd",   0,  0,  OPT_LOG_SND },
   {"local-port",1,  0,  'p' },
   {"username",  1,  0,  'u' },
+  {"proto",     1,  0,  't' },
   { NULL,       0,  0,   0 }
 };
 
@@ -58,6 +59,14 @@ static int parse_command_str (const char *cmd)
   }
 
   return CMD_UNKNOWN;
+}
+
+static int transport_proto (const char *proto)
+{
+  if (pj_ansi_strnicmp(proto, "tcp", 3) == 0) {
+    return PJSIP_TRANSPORT_TCP;
+  }
+  return PJSIP_TRANSPORT_UDP;
 }
 
 static void sippak_parse_argv_left (struct sippak_app *app,
@@ -98,6 +107,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.trail_dot    = PJ_FALSE;
   app->cfg.local_port   = 0;
   app->cfg.username     = pj_str("alice");
+  app->cfg.proto        = PJSIP_TRANSPORT_UDP;
 
   return PJ_SUCCESS;
 }
@@ -119,7 +129,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 
   }
 
-  while ((c = pj_getopt_long (argc, argv, "hVvqp:u:", sippak_long_opts, &opt_index)) != -1)
+  while ((c = pj_getopt_long (argc, argv, "hVvqp:u:t:", sippak_long_opts, &opt_index)) != -1)
   {
     switch (c) {
       case 'h':
@@ -155,6 +165,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         username = pj_str (pj_optarg);
         pj_strtrim(&username);
         app->cfg.username = username;
+        break;
+      case 't':
+        app->cfg.proto = transport_proto (pj_optarg);
         break;
       case 'v':
         if (pj_optarg) {

@@ -1,6 +1,6 @@
 #
 # Acceptence test:
-# Run sippak ping command without colors and trailing dot
+# Run sippak ping command with custom port and username
 #
 
 use strict;

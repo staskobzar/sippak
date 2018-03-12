@@ -138,7 +138,12 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   status = pj_sockaddr_in_init(&addr, NULL, app->cfg.local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+  // set transport TCP/UDP
+  if (app->cfg.proto == PJSIP_TRANSPORT_TCP) {
+    status = pjsip_tcp_transport_start( app->endpt, &addr, 1, NULL);
+  } else { // default is UDP
+    status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+  }
   if (status != PJ_SUCCESS) {
     char addr_str[PJSIP_MAX_URL_SIZE];
     PJ_LOG(1, (NAME, "Failed to init local address %s.",
@@ -149,7 +154,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   cnt = sippak_create_contact(app, &addr);
   from = sippak_create_from(app);
 
-  status = pjsip_endpt_acquire_transport(app->endpt, PJSIP_TRANSPORT_UDP, &addr, sizeof(addr), NULL, &tp);
+  status = pjsip_endpt_acquire_transport(app->endpt, app->cfg.proto, &addr, sizeof(addr), NULL, &tp);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_create_request(app->endpt,
