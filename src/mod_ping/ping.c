@@ -53,11 +53,22 @@ static pjsip_module mod_ping =
 /* Create From SIP header */
 static pj_str_t sippak_create_from(struct sippak_app *app)
 {
-  pj_str_t from=app->cfg.dest;
+  pj_str_t from = {0,0};
+  from.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
   pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
                           app->cfg.dest.slen, 0);
+  if (dest_uri == NULL) {
+    PJ_LOG(1, (NAME, "Failed to parse URI %s for From header.", app->cfg.dest));
+    return app->cfg.dest;
+  }
 
-  printf("=====> host = %.*s\n", dest_uri->host.slen, dest_uri->host.ptr);
+  dest_uri->user = app->cfg.username;
+  from.slen = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, dest_uri, from.ptr, PJSIP_MAX_URL_SIZE);
+
+  if (from.slen == -1) {
+    PJ_LOG(1, (NAME, "Failed to print from uri to buffer."));
+    return app->cfg.dest;
+  }
 
   return from;
 }
@@ -67,10 +78,10 @@ static pj_str_t sippak_create_contact(struct sippak_app *app,
                                       pj_sockaddr_in *addr)
 {
   pj_str_t cnt = {0,0};
-  char addr_str[128];
-  char contact[128];
+  char addr_str[PJSIP_MAX_URL_SIZE];
+  char contact[PJSIP_MAX_URL_SIZE];
 
-  pj_sockaddr_print(addr, addr_str, 128, 1);
+  pj_sockaddr_print(addr, addr_str, PJSIP_MAX_URL_SIZE, 1);
   pj_ansi_sprintf(contact, "sip:%.*s@%s",
       (int)app->cfg.username.slen, app->cfg.username.ptr,
       addr_str);
@@ -96,11 +107,16 @@ static void on_tsx_state(pjsip_transaction *tsx, pjsip_event *event)
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 {
   pjsip_msg *msg = rdata->msg_info.msg;
+  pjsip_via_hdr *via = rdata->msg_info.via;
 
   PJ_LOG(3, (NAME, "Response received: %d %.*s",
         msg->line.status.code,
         msg->line.status.reason.slen,
         msg->line.status.reason.ptr));
+  if (via) {
+    PJ_LOG(3, (NAME, "Via rport: %d, received: %.*s", via->rport_param,
+          via->recvd_param.slen, via->recvd_param.ptr));
+  }
 
   sippak_loop_cancel();
 
@@ -124,9 +140,9 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
 
   status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
   if (status != PJ_SUCCESS) {
-    char addr_str[128];
+    char addr_str[PJSIP_MAX_URL_SIZE];
     PJ_LOG(1, (NAME, "Failed to init local address %s.",
-          pj_sockaddr_print(&addr, addr_str, 128, 1)));
+          pj_sockaddr_print(&addr, addr_str, PJSIP_MAX_URL_SIZE, 1)));
     return status;
   }
 
@@ -137,14 +153,14 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_create_request(app->endpt,
-              &pjsip_options_method,        // method OPTIONS
-              &app->cfg.dest, // request URI
-              &from, // from header value
-              &app->cfg.dest, // to header value
-              &cnt,          // Contact header
-              NULL,          // Call-ID
-              -1,            // CSeq
-              NULL,          // body
+              &pjsip_options_method,  // method OPTIONS
+              &app->cfg.dest,         // request URI
+              &from,                  // from header value
+              &app->cfg.dest,         // to header value
+              &cnt,                   // Contact header
+              NULL,                   // Call-ID
+              -1,                     // CSeq
+              NULL,                   // body
               &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 

@@ -50,14 +50,17 @@ system("$sipp $sippargs -sf $scenario");
 $output = `$sippak --username=bob sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Contact: <sip:bob@[^>]+>$';
-ok ($output =~ m/$regex/m, "Username in contact header short opt.");
+ok ($output =~ m/$regex/m, "Username in Contact header short opt.");
+$regex = '^From: <sip:bob@[^>]+>;tag=';
+ok ($output =~ m/$regex/m, "Username in From header short opt.");
 
 # username short param
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak -u john -p 8889 sip:alice\@127.0.0.1:5060`;
 
-print $output;
 $regex = '^Contact: <sip:john@[^:]+:8889>$';
-ok ($output =~ m/$regex/m, "Username in contact header long opt.");
+ok ($output =~ m/$regex/m, "Username in Contact header long opt.");
+$regex = '^From: <sip:john@[^:]+>;tag=';
+ok ($output =~ m/$regex/m, "Username in From header long opt.");
 
 done_testing();

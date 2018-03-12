@@ -31,7 +31,7 @@ if (TEST_TIMEOUT)
     ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 endif(TEST_TIMEOUT)
 
-add_test ( Contact_Source_Port_Host
+add_test ( Source_Port_Username
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_src_port_host.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
