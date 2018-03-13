@@ -179,8 +179,8 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   from = sippak_create_from(app);
   ruri = sippak_create_ruri(app);
 
-  status = pjsip_endpt_acquire_transport(app->endpt, app->cfg.proto, &addr, sizeof(addr), NULL, &tp);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  // status = pjsip_endpt_acquire_transport(app->endpt, app->cfg.proto, &addr, sizeof(addr), NULL, &tp);
+  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_create_request(app->endpt,
               &pjsip_options_method,  // method OPTIONS
