@@ -99,26 +99,16 @@ static pj_str_t sippak_create_from(struct sippak_app *app)
 }
 
 /* Create Contact SIP header */
-static pj_str_t sippak_create_contact(struct sippak_app *app,
-                                      pj_sockaddr_in *addr)
+static pj_str_t sippak_create_contact (struct sippak_app *app,
+                                      pj_str_t local_addr,
+                                      int local_port)
 {
   pj_str_t cnt = {0,0};
-  char addr_str[PJSIP_MAX_URL_SIZE];
   char contact[PJSIP_MAX_URL_SIZE];
-  pj_str_t local_uri = {0,0};
 
-  {
-    pj_sockaddr hostaddr;
-    char hostip[PJ_INET6_ADDRSTRLEN+2];
-    pj_gethostip(pj_AF_INET(), &hostaddr);
-    pj_sockaddr_print(&hostaddr, hostip, sizeof(hostip), 2);
-    printf("Local host IP: %s\n", hostip);
-  }
-
-  pj_sockaddr_print(addr, addr_str, PJSIP_MAX_URL_SIZE, 1);
-  pj_ansi_sprintf(contact, "sip:%.*s@%s",
+  pj_ansi_sprintf(contact, "sip:%.*s@%.*s:%d",
       (int)app->cfg.username.slen, app->cfg.username.ptr,
-      addr_str);
+      (int)local_addr.slen, local_addr.ptr, local_port);
 
   cnt = pj_strdup3(app->pool, contact);
 
@@ -161,22 +151,40 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 pj_status_t sippak_cmd_ping (struct sippak_app *app)
 {
   pj_status_t status;
-  pj_str_t str;
   pj_sockaddr_in addr;
+  pj_str_t local_addr = {0, 0};
+  int local_port = 0;
+
   pjsip_transport *tp = NULL;
+  pjsip_tpfactory *tpfactory = NULL;
+
   pjsip_tx_data *tdata = NULL;
   pjsip_transaction *tsx = NULL;
 
   pj_str_t cnt, from, ruri;
 
-  pj_str_t local_addr;
   status = pj_sockaddr_in_init(&addr, NULL, app->cfg.local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   // set transport TCP/UDP
-  status = (app->cfg.proto == PJSIP_TRANSPORT_TCP)
-    ? pjsip_tcp_transport_start( app->endpt, &addr, 1, NULL)
-    : pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+  if (app->cfg.proto == PJSIP_TRANSPORT_TCP) {
+
+    status = pjsip_tcp_transport_start( app->endpt, &addr, 1, &tpfactory);
+
+    if (status == PJ_SUCCESS) {
+      local_addr = tpfactory->addr_name.host;
+      local_port = tpfactory->addr_name.port;
+    }
+
+  } else {
+
+    status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+
+    if (status == PJ_SUCCESS) {
+      local_addr = tp->local_name.host;
+      local_port = tp->local_name.port;
+    }
+  }
 
   if (status != PJ_SUCCESS) {
     char addr_str[PJSIP_MAX_URL_SIZE];
@@ -185,7 +193,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
     return status;
   }
 
-  cnt = sippak_create_contact(app, &addr);
+  cnt = sippak_create_contact(app, local_addr, local_port);
   from = sippak_create_from(app);
   ruri = sippak_create_ruri(app);
 
