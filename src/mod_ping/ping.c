@@ -50,6 +50,31 @@ static pjsip_module mod_ping =
   &on_tsx_state,              /* on_tsx_state()  */
 };
 
+/* Create Requst-URI */
+static pj_str_t sippak_create_ruri(struct sippak_app *app)
+{
+  pj_str_t ruri = {0,0};
+  ruri.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
+  pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
+                          app->cfg.dest.slen, 0);
+  if (dest_uri == NULL) {
+    PJ_LOG(1, (NAME, "Failed to parse URI %s for Request-URI.", app->cfg.dest));
+    return app->cfg.dest;
+  }
+
+  if (app->cfg.proto == PJSIP_TRANSPORT_TCP) {
+    dest_uri->transport_param = pj_str("tcp");
+  }
+
+  ruri.slen = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, dest_uri, ruri.ptr, PJSIP_MAX_URL_SIZE);
+  if (ruri.slen == -1) {
+    PJ_LOG(1, (NAME, "Failed to print Request-URI to buffer."));
+    return app->cfg.dest;
+  }
+
+  return ruri;
+}
+
 /* Create From SIP header */
 static pj_str_t sippak_create_from(struct sippak_app *app)
 {
@@ -133,17 +158,16 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   pjsip_tx_data *tdata;
   pjsip_transaction *tsx;
 
-  pj_str_t cnt, from;
+  pj_str_t cnt, from, ruri;
 
   status = pj_sockaddr_in_init(&addr, NULL, app->cfg.local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   // set transport TCP/UDP
-  if (app->cfg.proto == PJSIP_TRANSPORT_TCP) {
-    status = pjsip_tcp_transport_start( app->endpt, &addr, 1, NULL);
-  } else { // default is UDP
-    status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
-  }
+  status = (app->cfg.proto == PJSIP_TRANSPORT_TCP)
+    ? pjsip_tcp_transport_start( app->endpt, &addr, 1, NULL)
+    : pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+
   if (status != PJ_SUCCESS) {
     char addr_str[PJSIP_MAX_URL_SIZE];
     PJ_LOG(1, (NAME, "Failed to init local address %s.",
@@ -153,13 +177,14 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
 
   cnt = sippak_create_contact(app, &addr);
   from = sippak_create_from(app);
+  ruri = sippak_create_ruri(app);
 
   status = pjsip_endpt_acquire_transport(app->endpt, app->cfg.proto, &addr, sizeof(addr), NULL, &tp);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_create_request(app->endpt,
               &pjsip_options_method,  // method OPTIONS
-              &app->cfg.dest,         // request URI
+              &ruri,                  // request URI
               &from,                  // from header value
               &app->cfg.dest,         // to header value
               &cnt,                   // Contact header

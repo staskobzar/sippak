@@ -55,6 +55,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Bind local port. Default is random port.");
   puts("    -u, --username=USER");
   puts("                    Username part in Contact and From header URI. Default is 'alice'.");
+  puts("    -t, --proto=PROTO");
+  puts("                    Transport protocol to use. Possible values 'tcp' or 'udp'. Default is 'udp'.");
   puts("");
 }
 

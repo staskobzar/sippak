@@ -34,3 +34,4 @@ ok ($output =~ m/$regex/m, "Basic OPTIONS packet sent via TCP.");
 $regex = '^SIP\/2\.0 200 OK Basic OPTIONS Test$';
 ok ($output =~ m/$regex/m, "Basic OPTIONS Response 200 OK via TCP.");
 
+done_testing();
