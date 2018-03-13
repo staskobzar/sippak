@@ -105,6 +105,15 @@ static pj_str_t sippak_create_contact(struct sippak_app *app,
   pj_str_t cnt = {0,0};
   char addr_str[PJSIP_MAX_URL_SIZE];
   char contact[PJSIP_MAX_URL_SIZE];
+  pj_str_t local_uri = {0,0};
+
+  {
+    pj_sockaddr hostaddr;
+    char hostip[PJ_INET6_ADDRSTRLEN+2];
+    pj_gethostip(pj_AF_INET(), &hostaddr);
+    pj_sockaddr_print(&hostaddr, hostip, sizeof(hostip), 2);
+    printf("Local host IP: %s\n", hostip);
+  }
 
   pj_sockaddr_print(addr, addr_str, PJSIP_MAX_URL_SIZE, 1);
   pj_ansi_sprintf(contact, "sip:%.*s@%s",
@@ -154,12 +163,13 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   pj_status_t status;
   pj_str_t str;
   pj_sockaddr_in addr;
-  pjsip_transport *tp;
-  pjsip_tx_data *tdata;
-  pjsip_transaction *tsx;
+  pjsip_transport *tp = NULL;
+  pjsip_tx_data *tdata = NULL;
+  pjsip_transaction *tsx = NULL;
 
   pj_str_t cnt, from, ruri;
 
+  pj_str_t local_addr;
   status = pj_sockaddr_in_init(&addr, NULL, app->cfg.local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
@@ -178,9 +188,6 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   cnt = sippak_create_contact(app, &addr);
   from = sippak_create_from(app);
   ruri = sippak_create_ruri(app);
-
-  // status = pjsip_endpt_acquire_transport(app->endpt, app->cfg.proto, &addr, sizeof(addr), NULL, &tp);
-  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_create_request(app->endpt,
               &pjsip_options_method,  // method OPTIONS
