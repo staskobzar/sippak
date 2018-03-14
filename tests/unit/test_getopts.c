@@ -361,11 +361,36 @@ static void set_local_host_short (void **state)
   assert_string_equal ("127.0.0.8", app.cfg.local_host.ptr);
 }
 
+static void set_from_name_short (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-F \"Hello World!\"" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("\"Hello World!\"", app.cfg.from_name.ptr);
+}
+
+static void set_from_name_long (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--from-name=\"Gianni Schicchi\"" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("\"Gianni Schicchi\"", app.cfg.from_name.ptr);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(pass_no_arguments_prints_usage),
-    // cmocka_unit_test(pass_invalid_arguments),
     cmocka_unit_test(pass_help_long_opt),
     cmocka_unit_test(pass_help_short_opt),
     cmocka_unit_test(pass_version_long_opt),
@@ -395,6 +420,8 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(set_username_short),
     cmocka_unit_test(set_local_host_short),
     cmocka_unit_test(set_local_host_long),
+    cmocka_unit_test(set_from_name_short),
+    cmocka_unit_test(set_from_name_long),
   };
 
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

@@ -58,18 +58,19 @@ struct sippak_app {
 
   struct {
 
-    enum app_command cmd;
+    enum app_command cmd;         /*<! Command ID. Default CMD_PING */
 
-    int log_level;
-    unsigned log_decor;
-    pj_bool_t trail_dot;
+    int log_level;                /*<! Log level. Default MIN_LOG_LEVEL */
+    unsigned log_decor;           /*<! Log decoration: color, indent, time etc. */
+    pj_bool_t trail_dot;          /*<! Display trailing dot at the end of SIP message line. */
 
-    pj_str_t dest;
-    char *nameservers;
-    pj_uint16_t local_port;
-    pj_str_t local_host;
-    pj_str_t username;
-    pjsip_transport_type_e proto;
+    pj_str_t dest;                /*<! Destination R-URI */
+    char *nameservers;            /*<! Comma separated list of DNS servers. */
+    pj_uint16_t local_port;       /*<! Bind local port. */
+    pj_str_t local_host;          /*<! Bind local IP/host. */
+    pj_str_t username;            /*<! Username in Contact and From header. */
+    pj_str_t from_name;           /*<! Display name in From header. */
+    pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
 
   } cfg;
 

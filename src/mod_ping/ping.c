@@ -95,6 +95,14 @@ static pj_str_t sippak_create_from(struct sippak_app *app)
     return app->cfg.dest;
   }
 
+  if (app->cfg.from_name.ptr) {
+    pjsip_name_addr *name_uri = pjsip_name_addr_create(app->pool);
+    name_uri->uri = (pjsip_uri*) dest_uri;
+    name_uri->display = app->cfg.from_name;
+
+    from.slen = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, name_uri, from.ptr, PJSIP_MAX_URL_SIZE);
+  }
+
   return from;
 }
 
