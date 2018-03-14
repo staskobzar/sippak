@@ -335,6 +335,32 @@ static void set_username_short (void **state)
   assert_string_equal ("bobuser", app.cfg.username.ptr);
 }
 
+static void set_local_host_long (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--local-host=127.0.0.5" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("127.0.0.5", app.cfg.local_host.ptr);
+}
+
+static void set_local_host_short (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-H 127.0.0.8" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("127.0.0.8", app.cfg.local_host.ptr);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -367,6 +393,8 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(set_local_port_short),
     cmocka_unit_test(set_username_long),
     cmocka_unit_test(set_username_short),
+    cmocka_unit_test(set_local_host_short),
+    cmocka_unit_test(set_local_host_long),
   };
 
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

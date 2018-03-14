@@ -163,7 +163,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
 
   pj_str_t cnt, from, ruri;
 
-  status = pj_sockaddr_in_init(&addr, NULL, app->cfg.local_port);
+  status = pj_sockaddr_in_init(&addr, &app->cfg.local_host, app->cfg.local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   // set transport TCP/UDP

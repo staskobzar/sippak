@@ -47,10 +47,13 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"log-level", 0,  0,  OPT_LOG_LEVEL },
   {"log-snd",   0,  0,  OPT_LOG_SND },
   {"local-port",1,  0,  'p' },
+  {"local-host",1,  0,  'H' },
   {"username",  1,  0,  'u' },
   {"proto",     1,  0,  't' },
   { NULL,       0,  0,   0 }
 };
+
+static const char *optstring = "hVvqp:u:t:H:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -106,6 +109,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.log_decor    = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
   app->cfg.trail_dot    = PJ_FALSE;
   app->cfg.local_port   = 0;
+  app->cfg.local_host.ptr = NULL;
+  app->cfg.local_host.slen = 0;
   app->cfg.username     = pj_str("alice");
   app->cfg.proto        = PJSIP_TRANSPORT_UDP;
 
@@ -115,7 +120,7 @@ pj_status_t sippak_init (struct sippak_app *app)
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
   int c = 0, opt_index = 0;
-  pj_str_t username;
+  pj_str_t username, local_host;
   /*
    * Member of getopts.c. Need to reset this to make
    * sure multiple calls from unit tests work fine.
@@ -129,7 +134,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 
   }
 
-  while ((c = pj_getopt_long (argc, argv, "hVvqp:u:t:", sippak_long_opts, &opt_index)) != -1)
+  while ((c = pj_getopt_long (argc, argv, optstring, sippak_long_opts, &opt_index)) != -1)
   {
     switch (c) {
       case 'h':
@@ -160,6 +165,11 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'p':
         app->cfg.local_port = atoi (pj_optarg);
+        break;
+      case 'H':
+        local_host = pj_str (pj_optarg);
+        pj_strtrim(&local_host);
+        app->cfg.local_host = local_host;
         break;
       case 'u':
         username = pj_str (pj_optarg);

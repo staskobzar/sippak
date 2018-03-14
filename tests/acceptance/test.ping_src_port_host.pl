@@ -63,4 +63,18 @@ ok ($output =~ m/$regex/m, "Username in Contact header long opt.");
 $regex = '^From: <sip:john@[^:]+>;tag=';
 ok ($output =~ m/$regex/m, "Username in From header long opt.");
 
+# hostname setup short param
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak -u john -H 127.0.0.8 -p 9988 sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Contact: <sip:john@127.0.0.8:9988>$';
+ok ($output =~ m/$regex/m, "Host in Contact header short opt.");
+
+# hostname setup long param
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak -u john --local-host 127.0.0.18 -p 9977 sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Contact: <sip:john@127.0.0.18:9977>$';
+ok ($output =~ m/$regex/m, "Host in Contact header long opt.");
+
 done_testing();

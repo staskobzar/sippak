@@ -67,6 +67,7 @@ struct sippak_app {
     pj_str_t dest;
     char *nameservers;
     pj_uint16_t local_port;
+    pj_str_t local_host;
     pj_str_t username;
     pjsip_transport_type_e proto;
 
