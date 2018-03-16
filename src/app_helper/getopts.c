@@ -101,6 +101,14 @@ static void sippak_parse_argv_left (struct sippak_app *app,
   }
 }
 
+static pj_str_t pjstr_trimmed(const char *optarg)
+{
+  pj_str_t val = {NULL, 0};
+  val = pj_str (pj_optarg);
+  pj_strtrim(&val);
+  return val;
+}
+
 pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
@@ -123,7 +131,6 @@ pj_status_t sippak_init (struct sippak_app *app)
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
   int c = 0, opt_index = 0;
-  pj_str_t username, local_host, from_name;
   /*
    * Member of getopts.c. Need to reset this to make
    * sure multiple calls from unit tests work fine.
@@ -170,19 +177,13 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         app->cfg.local_port = atoi (pj_optarg);
         break;
       case 'H':
-        local_host = pj_str (pj_optarg);
-        pj_strtrim(&local_host);
-        app->cfg.local_host = local_host;
+        app->cfg.local_host = pjstr_trimmed(pj_optarg);
         break;
       case 'u':
-        username = pj_str (pj_optarg);
-        pj_strtrim(&username);
-        app->cfg.username = username;
+        app->cfg.username = pjstr_trimmed(pj_optarg);
         break;
       case 'F':
-        from_name = pj_str (pj_optarg);
-        pj_strtrim(&from_name);
-        app->cfg.from_name = from_name;
+        app->cfg.from_name = pjstr_trimmed(pj_optarg);
         break;
       case 't':
         app->cfg.proto = transport_proto (pj_optarg);
