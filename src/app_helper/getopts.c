@@ -60,6 +60,8 @@ static int parse_command_str (const char *cmd)
 {
   if (pj_ansi_strnicmp(cmd, "ping", 4) == 0) {
     return CMD_PING;
+  } else if (pj_ansi_strnicmp(cmd, "authcalc", 4) == 0) {
+    return CMD_AUTHCALC;
   }
 
   return CMD_UNKNOWN;
@@ -93,8 +95,12 @@ static void sippak_parse_argv_left (struct sippak_app *app,
   // set command
   app->cfg.cmd = parse_command_str (argv[idx]);
 
-  // set destination
-  app->cfg.dest = pj_str(argv[idx + 1]);
+  if (app->cfg.cmd == CMD_AUTHCALC) {
+    app->cfg.auth_header = pj_str(argv[idx + 1]);
+  } else {
+    // set destination
+    app->cfg.dest = pj_str(argv[idx + 1]);
+  }
 
   if (argc > (idx + 2)) {
     PJ_LOG(3, (PROJECT_NAME, "Extra arguments will be skipped"));

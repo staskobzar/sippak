@@ -31,6 +31,7 @@ function (ADD_CMOCKA_TEST test_name test_src)
   endif (USE_MEMTEST)
 endfunction (ADD_CMOCKA_TEST)
 
+# test CLI arguments
 add_cmocka_test(test_getopts test_getopts.c
   ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c)
 
@@ -40,4 +41,9 @@ add_cmocka_test(test_dns_helper test_dns_helper.c
   ${CMAKE_SOURCE_DIR}/src/dns_helper/dns.c
   )
 target_link_libraries (test_dns_helper resolv)
+
+# test auth calc
+add_cmocka_test(test_auth_calc test_auth_calc.c
+  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c
+  )
 

@@ -15,6 +15,7 @@ test:
 dev-test: build
 	@./build/tests/unit/test_getopts
 	@./build/tests/unit/test_dns_helper
+	@./build/tests/unit/test_auth_calc
 
 ctags:
 	@echo -n 'Generating ctags...'

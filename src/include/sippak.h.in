@@ -48,7 +48,8 @@ enum app_command {
   CMD_UNKNOWN = 0x100,
   CMD_HELP,
   CMD_VERSION,
-  CMD_PING
+  CMD_PING,
+  CMD_AUTHCALC
 
 } app_command;
 
@@ -67,10 +68,13 @@ struct sippak_app {
     pj_str_t dest;                /*<! Destination R-URI */
     char *nameservers;            /*<! Comma separated list of DNS servers. */
     pj_uint16_t local_port;       /*<! Bind local port. */
+
     pj_str_t local_host;          /*<! Bind local IP/host. */
     pj_str_t username;            /*<! Username in Contact and From header. */
     pj_str_t from_name;           /*<! Display name in From header. */
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
+
+    pj_str_t auth_header;         /*<! Auth header for AUTHCALC command. */
 
   } cfg;
 
