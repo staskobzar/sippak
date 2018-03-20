@@ -105,4 +105,11 @@ void version ();
  */
 int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
 
+/**
+ * Calculate MD5 digest from WWW/Proxy-Authenticate headers.
+ *
+ * @return status PJ_SUCCESS on success.
+ */
+pj_status_t sippak_auth_calc (struct sippak_app *app);
+
 #endif

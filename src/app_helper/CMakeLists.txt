@@ -17,5 +17,5 @@
 # You should have received a copy of the GNU General Public License
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
-add_library (app_helper OBJECT getopts.c usage.c)
+add_library (app_helper OBJECT getopts.c usage.c authcalc.c)
 
