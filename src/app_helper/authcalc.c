@@ -30,16 +30,28 @@ pj_status_t sippak_auth_calc (struct sippak_app *app)
 {
   pj_ssize_t found_idx = 0;
   pj_str_t token;
-  pj_str_t *hvalue;
+  pj_str_t hname;
   pj_str_t delim = pj_str(":");
 
   found_idx = pj_strtok (&app->cfg.auth_header, &delim, &token, 0);
 
-  printf("found_idx : %d, %.*s\n", found_idx, token.slen, token.ptr);
+  //pj_strcpy(&hname, &token);
+  //printf("found_idx : %d, %.*s\n", found_idx, hname.slen, hname.ptr);
   found_idx = pj_strtok (&app->cfg.auth_header, &delim, &token, found_idx + token.slen);
   printf("found_idx : %d, %.*s\n", found_idx, token.slen, token.ptr);
 
-  //pjsip_parse_hdr(app->pool, )
+  pj_str_t hdr = pj_str("WWW-Authenticate");
+  char *val = "Digest realm=\"testrealm@host.com\",qop=\"auth,auth-int\",nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\",opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"";
+  int len;
+  pj_str_t dst;
+  pj_strdup_with_null (app->pool, &dst, &token);
+  printf("----> after pool: %.*s\n", dst.slen, dst.ptr);
+  // pjsip_parse_hdr(app->pool, &hdr, val, strlen(val), NULL);
+
+  pjsip_route_hdr *route;
+  const pj_str_t hn = { "Route", 5 };
+  char *uri = "sip:proxy.server;lr";
+  route = pjsip_parse_hdr( app->pool, &hn, uri, strlen(uri) - 1, NULL);
 
   return PJ_SUCCESS;
 }
