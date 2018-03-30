@@ -74,7 +74,8 @@ struct sippak_app {
     pj_str_t from_name;           /*<! Display name in From header. */
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
 
-    pj_str_t auth_header;         /*<! Auth header for AUTHCALC command. */
+    pj_str_t method;              /*<! SIP method. Used in auth calc. */
+    pj_str_t nonce;               /*<! Authenticate nonce. */
 
   } cfg;
 
@@ -107,6 +108,8 @@ int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports
 
 /**
  * Calculate MD5 digest from WWW/Proxy-Authenticate headers.
+ *
+ * @param app      sippak main application structure.
  *
  * @return status PJ_SUCCESS on success.
  */
