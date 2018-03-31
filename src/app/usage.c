@@ -51,7 +51,7 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    --log-level     Print log level: ERROR, INFO etc.");
   puts("    --log-snd       Print log sender file or module name.");
 
-  puts("    -p, --local-port=PORT");
+  puts("    -P, --local-port=PORT");
   puts("                    Bind local port. Default is random port.");
   puts("    -H, --local-host=HOST|IP");
   puts("                    Bind local hostname or IP. Default is first available local inface.");

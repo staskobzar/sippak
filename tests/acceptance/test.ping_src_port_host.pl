@@ -25,7 +25,7 @@ if ($? == -1) {
 
 # run sippak ping basic with source port option
 # short option
-$output = `$sippak -p 8899 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -P 8899 sip:alice\@127.0.0.1:5060`;
 
 # test request
 $regex = '^Contact: \<sip:[^:]+:8899>$';
@@ -56,7 +56,7 @@ ok ($output =~ m/$regex/m, "Username in From header short opt.");
 
 # username short param
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak -u john -p 8889 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -u john -P 8889 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Contact: <sip:john@[^:]+:8889>$';
 ok ($output =~ m/$regex/m, "Username in Contact header long opt.");
@@ -67,7 +67,7 @@ ok ($output =~ m/$regex/m, "Username in From header long opt.");
 # NOTE! On MacOS enable interface before test:
 # sudo ifconfig lo0 alias 127.0.0.8 up
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak -u john -H 127.0.0.8 -p 9988 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -u john -H 127.0.0.8 -P 9988 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Contact: <sip:john@127.0.0.8:9988>$';
 ok ($output =~ m/$regex/m, "Host in Contact header short opt.");
@@ -76,14 +76,14 @@ ok ($output =~ m/$regex/m, "Host in Contact header short opt.");
 # NOTE! On MacOS enable interface before test:
 # sudo ifconfig lo0 alias 127.0.0.18 up
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak -u john --local-host 127.0.0.18 -p 9977 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -u john --local-host 127.0.0.18 -P 9977 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Contact: <sip:john@127.0.0.18:9977>$';
 ok ($output =~ m/$regex/m, "Host in Contact header long opt.");
 
 # from display name long option
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak -u 5554477544 --from-name="Gianni Schicchi" -p 9977 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -u 5554477544 --from-name="Gianni Schicchi" -P 9977 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^From: "Gianni Schicchi" <sip:5554477544@127.0.0.1>';
 ok ($output =~ m/$regex/m, "From header display name long option.");

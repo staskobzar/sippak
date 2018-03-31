@@ -46,7 +46,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"log-time",  0,  0,  OPT_LOG_TIME },
   {"log-level", 0,  0,  OPT_LOG_LEVEL },
   {"log-snd",   0,  0,  OPT_LOG_SND },
-  {"local-port",1,  0,  'p' },
+  {"local-port",1,  0,  'P' },
   {"local-host",1,  0,  'H' },
   {"username",  1,  0,  'u' },
   {"from-name", 1,  0,  'F' },
@@ -54,7 +54,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   { NULL,       0,  0,   0 }
 };
 
-static const char *optstring = "hVvqp:u:t:H:F:";
+static const char *optstring = "hVvqP:u:t:H:F:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -173,7 +173,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_LOG_SND:
         app->cfg.log_decor |= PJ_LOG_HAS_SENDER;
         break;
-      case 'p':
+      case 'P':
         app->cfg.local_port = atoi (pj_optarg);
         break;
       case 'H':

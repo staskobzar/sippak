@@ -301,7 +301,7 @@ static void set_local_port_short (void **state)
   (void) *state;
   pj_status_t status;
   struct sippak_app app;
-  char *argv[] = { "./sippak", "-p 9988" };
+  char *argv[] = { "./sippak", "-P 9988" };
   int argc = sizeof(argv) / sizeof(char*);
   sippak_init(&app);
   status = sippak_getopts (argc, argv, &app);
