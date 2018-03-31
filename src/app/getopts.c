@@ -34,7 +34,6 @@
 #define OPT_LOG_TIME 4 // print time and ms
 #define OPT_LOG_LEVEL 5
 #define OPT_LOG_SND 6
-#define OPT_AUTH_NONCE 7
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
@@ -52,7 +51,6 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"username",  1,  0,  'u' },
   {"from-name", 1,  0,  'F' },
   {"proto",     1,  0,  't' },
-  {"nonce",     1,  0,  OPT_AUTH_NONCE },
   { NULL,       0,  0,   0 }
 };
 
@@ -62,8 +60,6 @@ static int parse_command_str (const char *cmd)
 {
   if (pj_ansi_strnicmp(cmd, "ping", 4) == 0) {
     return CMD_PING;
-  } else if (pj_ansi_strnicmp(cmd, "authcalc", 4) == 0) {
-    return CMD_AUTHCALC;
   }
 
   return CMD_UNKNOWN;
@@ -129,10 +125,6 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.from_name.slen = 0;
   app->cfg.proto        = PJSIP_TRANSPORT_UDP;
 
-  app->cfg.method = pj_str("REGISTER");
-  app->cfg.nonce.ptr = NULL;
-  app->cfg.nonce.slen = 0;
-
   return PJ_SUCCESS;
 }
 
@@ -195,9 +187,6 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 't':
         app->cfg.proto = transport_proto (pj_optarg);
-        break;
-      case OPT_AUTH_NONCE:
-        app->cfg.nonce = pjstr_trimmed(pj_optarg);
         break;
       case 'v':
         if (pj_optarg) {

@@ -74,9 +74,6 @@ struct sippak_app {
     pj_str_t from_name;           /*<! Display name in From header. */
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
 
-    pj_str_t method;              /*<! SIP method. Used in auth calc. */
-    pj_str_t nonce;               /*<! Authenticate nonce. */
-
   } cfg;
 
 };

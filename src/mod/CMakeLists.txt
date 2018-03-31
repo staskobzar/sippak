@@ -17,4 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
-add_library (mod_logger OBJECT logger.c)
+add_library (mod OBJECT
+  logger.c
+  ping.c
+  )

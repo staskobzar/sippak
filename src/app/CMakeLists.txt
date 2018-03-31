@@ -17,4 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
-add_library (mod_ping OBJECT ping.c)
+add_library (app OBJECT
+  getopts.c
+  usage.c
+  dns.c
+  )
+

@@ -43,5 +43,5 @@ set_tests_properties (Long_Opt_Help_Usage PROPERTIES PASS_REGULAR_EXPRESSION
 # usage has all options
 add_test (Usage_Has_All_Opts
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.usage_opts.pl
-  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c ${EXECMD})
+  ${CMAKE_SOURCE_DIR}/src/app/getopts.c ${EXECMD})
 

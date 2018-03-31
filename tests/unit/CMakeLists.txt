@@ -33,18 +33,13 @@ endfunction (ADD_CMOCKA_TEST)
 
 # test CLI arguments
 add_cmocka_test(test_getopts test_getopts.c
-  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c)
+  ${CMAKE_SOURCE_DIR}/src/app/getopts.c)
 
 # use bogus resolv.conf for tests
 add_cmocka_test(test_dns_helper test_dns_helper.c
-  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c
-  ${CMAKE_SOURCE_DIR}/src/dns_helper/dns.c
+  ${CMAKE_SOURCE_DIR}/src/app/getopts.c
+  ${CMAKE_SOURCE_DIR}/src/app/dns.c
   )
 target_link_libraries (test_dns_helper resolv)
 
-# test auth calc
-add_cmocka_test(test_auth_calc test_auth_calc.c
-  ${CMAKE_SOURCE_DIR}/src/app_helper/getopts.c
-  ${CMAKE_SOURCE_DIR}/src/app_helper/authcalc.c
-  )
 
