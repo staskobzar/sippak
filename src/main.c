@@ -70,6 +70,9 @@ int main(int argc, char *argv[])
   status = sippak_mod_logger_register(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  status = sippak_mod_auth_register (&app);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
   status = sippak_set_resolver_ns (&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 

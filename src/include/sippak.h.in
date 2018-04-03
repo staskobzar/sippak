@@ -48,8 +48,7 @@ enum app_command {
   CMD_UNKNOWN = 0x100,
   CMD_HELP,
   CMD_VERSION,
-  CMD_PING,
-  CMD_AUTHCALC
+  CMD_PING
 
 } app_command;
 
@@ -79,6 +78,7 @@ struct sippak_app {
 };
 
 pj_status_t sippak_mod_logger_register(struct sippak_app *app);
+pj_status_t sippak_mod_auth_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
@@ -102,14 +102,5 @@ void version ();
  * @return              Number of found servers or 0.
  */
 int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
-
-/**
- * Calculate MD5 digest from WWW/Proxy-Authenticate headers.
- *
- * @param app      sippak main application structure.
- *
- * @return status PJ_SUCCESS on success.
- */
-pj_status_t sippak_auth_calc (struct sippak_app *app);
 
 #endif

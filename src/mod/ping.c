@@ -38,7 +38,7 @@ static pjsip_module mod_ping =
   NULL, NULL,                 /* prev, next.    */
   { "mod-ping", 9 },          /* Name.    */
   -1,                         /* Id      */
-  PJSIP_MOD_PRIORITY_TSX_LAYER, /* Priority          */
+  PJSIP_MOD_PRIORITY_DIALOG_USAGE - 1, /* Priority          */
   NULL,                       /* load()    */
   NULL,                       /* start()    */
   NULL,                       /* stop()    */
