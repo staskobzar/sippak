@@ -49,12 +49,13 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"local-port",1,  0,  'P' },
   {"local-host",1,  0,  'H' },
   {"username",  1,  0,  'u' },
+  {"password",  1,  0,  'p' },
   {"from-name", 1,  0,  'F' },
   {"proto",     1,  0,  't' },
   { NULL,       0,  0,   0 }
 };
 
-static const char *optstring = "hVvqP:u:t:H:F:";
+static const char *optstring = "hVvqP:u:p:t:H:F:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -121,6 +122,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.local_host.ptr = NULL;
   app->cfg.local_host.slen = 0;
   app->cfg.username     = pj_str("alice");
+  app->cfg.password.ptr = NULL;
+  app->cfg.password.slen= 0;
   app->cfg.from_name.ptr = NULL;
   app->cfg.from_name.slen = 0;
   app->cfg.proto        = PJSIP_TRANSPORT_UDP;
@@ -181,6 +184,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'u':
         app->cfg.username = pjstr_trimmed(pj_optarg);
+        break;
+      case 'p':
+        app->cfg.password = pjstr_trimmed(pj_optarg);
         break;
       case 'F':
         app->cfg.from_name = pjstr_trimmed(pj_optarg);

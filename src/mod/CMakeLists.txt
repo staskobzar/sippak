@@ -20,5 +20,4 @@
 add_library (mod OBJECT
   logger.c
   ping.c
-  auth.c
   )

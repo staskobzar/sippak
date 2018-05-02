@@ -56,7 +56,10 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    -H, --local-host=HOST|IP");
   puts("                    Bind local hostname or IP. Default is first available local inface.");
   puts("    -u, --username=USER");
-  puts("                    Username part in Contact and From header URI. Default is 'alice'.");
+  puts("                    Username part in Authentication as well as in Contact and");
+  puts("                    From header URI. Default is from destination URI.");
+  puts("    -p, --password=PASS");
+  puts("                    Password for authentication.");
   puts("    -F, --from-name=DISPLAY_NAME");
   puts("                    Display name in From header. Default is empty.");
   puts("    -t, --proto=PROTO");

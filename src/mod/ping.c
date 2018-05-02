@@ -30,15 +30,17 @@
 
 #define NAME "mod_ping"
 
+static pjsip_auth_clt_sess auth_sess;
+static int auth_tries = 0;
+
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
-static void on_tsx_state(pjsip_transaction *tsx, pjsip_event *event);
 
 static pjsip_module mod_ping =
 {
   NULL, NULL,                 /* prev, next.    */
   { "mod-ping", 9 },          /* Name.    */
   -1,                         /* Id      */
-  PJSIP_MOD_PRIORITY_DIALOG_USAGE - 1, /* Priority          */
+  PJSIP_MOD_PRIORITY_TRANSPORT_LAYER, /* Priority          */
   NULL,                       /* load()    */
   NULL,                       /* start()    */
   NULL,                       /* stop()    */
@@ -47,7 +49,7 @@ static pjsip_module mod_ping =
   &on_rx_response,            /* on_rx_response()  */
   NULL,                       /* on_tx_request.  */
   NULL,                       /* on_tx_response()  */
-  &on_tsx_state,              /* on_tsx_state()  */
+  NULL,                       /* on_tsx_state()  */
 };
 
 /* Create Requst-URI */
@@ -123,18 +125,6 @@ static pj_str_t sippak_create_contact (struct sippak_app *app,
   return cnt;
 }
 
-/* On transaction state callback */
-static void on_tsx_state(pjsip_transaction *tsx, pjsip_event *event)
-{
-  if( tsx->status_code == 408 && tsx->state == PJSIP_TSX_STATE_TERMINATED ) {
-    PJ_LOG(3, (NAME, "Response received: %d %.*s.",
-          tsx->status_code, tsx->status_text.slen, tsx->status_text.ptr));
-    PJ_LOG(3, (NAME, "Retransmitions count: %d.", tsx->retransmit_count));
-
-    sippak_loop_cancel();
-  }
-}
-
 /* On response module callback */
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 {
@@ -150,9 +140,55 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
           via->recvd_param.slen, via->recvd_param.ptr));
   }
 
+  int code = rdata->msg_info.msg->line.status.code;
+
+  if (code == 401 || code == 407) {
+    return PJ_FALSE; // processed with callback
+  }
+
   sippak_loop_cancel();
 
   return PJ_FALSE; // continue with othe modules
+}
+
+static void send_cb(void *token, pjsip_event *e)
+{
+  pj_status_t status;
+  pjsip_tx_data *tdata;
+  pjsip_transaction *tsx = e->body.tsx_state.tsx;
+  pjsip_rx_data *rdata = e->body.tsx_state.src.rdata;
+  struct sippak_app *app = token;
+  if (tsx->status_code == 401 || tsx->status_code == 407) {
+    auth_tries++;
+    if (auth_tries > 1) {
+      PJ_LOG(1, (NAME, "Authentication failed."));
+      sippak_loop_cancel();
+      return;
+    }
+    pjsip_cred_info	cred[1];
+    cred->realm     = pj_str("*");
+    cred->scheme    = pj_str("digest");
+    cred->username  = app->cfg.username;
+    cred->data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+    cred->data      = app->cfg.password;
+
+    status = pjsip_auth_clt_init (&auth_sess, app->endpt, rdata->tp_info.pool, 0);
+    if (status != PJ_SUCCESS) {
+      PJ_LOG(1, (NAME, "Failed init authentication credentials."));
+      return;
+    }
+
+    pjsip_auth_clt_set_credentials(&auth_sess, 1, cred);
+
+    status = pjsip_auth_clt_reinit_req(&auth_sess, rdata,
+        tsx->last_tx, &tdata);
+    if (status != PJ_SUCCESS) {
+      PJ_LOG(1, (NAME, "Failed to re-init client authentication session."));
+      return;
+    }
+
+    pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
+  }
 }
 
 /* Ping */
@@ -167,7 +203,6 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   pjsip_tpfactory *tpfactory = NULL;
 
   pjsip_tx_data *tdata = NULL;
-  pjsip_transaction *tsx = NULL;
 
   pj_str_t cnt, from, ruri;
 
@@ -220,8 +255,6 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_tsx_create_uac(&mod_ping, tdata, &tsx);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-  return pjsip_tsx_send_msg(tsx, tdata);
+  pjsip_endpt_register_module(app->endpt, &mod_ping);
+  return pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
 }

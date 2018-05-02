@@ -69,7 +69,8 @@ struct sippak_app {
     pj_uint16_t local_port;       /*<! Bind local port. */
 
     pj_str_t local_host;          /*<! Bind local IP/host. */
-    pj_str_t username;            /*<! Username in Contact and From header. */
+    pj_str_t username;            /*<! Username in Contact/From header and for auth. */
+    pj_str_t password;            /*<! Authentication password. */
     pj_str_t from_name;           /*<! Display name in From header. */
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
 
@@ -78,7 +79,6 @@ struct sippak_app {
 };
 
 pj_status_t sippak_mod_logger_register(struct sippak_app *app);
-pj_status_t sippak_mod_auth_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
