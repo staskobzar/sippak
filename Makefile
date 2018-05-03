@@ -1,4 +1,4 @@
-.PHONY: build clean ctags tests
+.PHONY: build build-cov clean ctags tests
 
 BUILD_DIR=build
 all: build
@@ -6,6 +6,20 @@ all: build
 build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake .. && make
+
+build-cov: clean
+	@mkdir ${BUILD_DIR}
+	@cd ${BUILD_DIR} && cmake ..  -DCMAKE_BUILD_TYPE=Coverage \
+		-DCMAKE_C_FLAGS="-Werror -fprofile-arcs -ftest-coverage -g -O0"
+	@cd ${BUILD_DIR} && cmake --build .
+	@cd ${BUILD_DIR} && ctest .
+	@lcov --capture --directory "${BUILD_DIR}/src" --output-file ${BUILD_DIR}/cov_full.info \
+		--gcov-tool gcov
+	@lcov -r ${BUILD_DIR}/cov_full.info '/usr/local/include/pjsip/*' -o ${BUILD_DIR}/cov.info
+	@mkdir ${BUILD_DIR}/coverage
+	@genhtml --output-directory ${BUILD_DIR}/coverage --title "sippak utility" \
+		--legend --show-details ${BUILD_DIR}/cov.info
+	@xdg-open ${BUILD_DIR}/coverage/index.html
 
 test:
 	@cd build && env CTEST_OUTPUT_ON_FAILURE=1 ctest
@@ -23,4 +37,5 @@ ctags:
 	@echo ' done.'
 
 clean:
+	@echo "Clean build directory..."
 	@rm -rf ${BUILD_DIR}
