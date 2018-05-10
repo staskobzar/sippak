@@ -147,6 +147,8 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_endpt_register_module(app->endpt, &mod_ping);
+  status = pjsip_endpt_register_module(app->endpt, &mod_ping);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
   return pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
 }

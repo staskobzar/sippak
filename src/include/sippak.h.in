@@ -74,6 +74,7 @@ struct sippak_app {
     pj_str_t password;            /*<! Authentication password. */
     pj_str_t from_name;           /*<! Display name in From header. */
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
+    unsigned int expires;         /*<! Set Expires header value */
 
   } cfg;
 

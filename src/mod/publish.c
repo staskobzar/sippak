@@ -32,6 +32,7 @@
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static short unsigned auth_tries = 0;
+static int pj_str_toi(pj_str_t val);
 
 static pjsip_module mod_publish =
 {
@@ -110,21 +111,28 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
 
   pjsip_publishc_opt_default(&publish_opt);
 
-  pjsip_publishc_create(app->endpt, &publish_opt, NULL, &publish_cb, &publish_sess);
+  status = pjsip_publishc_create(app->endpt, &publish_opt, NULL, &publish_cb, &publish_sess);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_publishc_init(publish_sess, &event, &target_uri, &from_uri, &target_uri, 3600);
+  status = pjsip_publishc_init(publish_sess, &event, &target_uri, &from_uri, &target_uri, app->cfg.expires);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   sippak_set_cred(app, cred);
 
-  pjsip_publishc_set_credentials(publish_sess, 1, cred);
+  status = pjsip_publishc_set_credentials(publish_sess, 1, cred);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
+  status = pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_tsx_layer_init_module(app->endpt);
+  status = pjsip_tsx_layer_init_module(app->endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pjsip_endpt_register_module(app->endpt, &mod_publish);
+  status = pjsip_endpt_register_module(app->endpt, &mod_publish);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   return pjsip_publishc_send(publish_sess, tdata);
 }

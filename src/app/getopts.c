@@ -52,10 +52,11 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"password",  1,  0,  'p' },
   {"from-name", 1,  0,  'F' },
   {"proto",     1,  0,  't' },
+  {"expires",   1,  0,  'E' },
   { NULL,       0,  0,   0 }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:";
+static const char *optstring = "hVvqP:u:p:t:H:F:E:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -112,6 +113,20 @@ static pj_str_t pjstr_trimmed(const char *optarg)
   return val;
 }
 
+static int is_string_numeric(const char *optarg)
+{
+  int i = 0;
+  pj_str_t val = {NULL, 0};
+  val = pj_str (pj_optarg);
+  pj_strtrim(&val);
+  for (i; i < val.slen; i++) {
+    if (val.ptr[i] < '0' || val.ptr[i] > '9') {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
@@ -129,6 +144,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.from_name.ptr = NULL;
   app->cfg.from_name.slen = 0;
   app->cfg.proto        = PJSIP_TRANSPORT_UDP;
+  app->cfg.expires      = 3600;
 
   return PJ_SUCCESS;
 }
@@ -205,6 +221,18 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'q':
           app->cfg.log_level = 0;
+        break;
+      case 'E':
+          if(!is_string_numeric(pj_optarg)) {
+            PJ_LOG(1, (PROJECT_NAME, "Invalid expires value: %s. Must be numeric.", pj_optarg));
+            exit(PJ_CLI_EINVARG);
+          }
+          app->cfg.expires = atoi(pj_optarg);
+          if (app->cfg.expires < 1) {
+            PJ_LOG(1, (PROJECT_NAME, "Expires header value must be more then 0."));
+            // puts("Expires header value must be more then 0.");
+            exit(PJ_CLI_EINVARG);
+          }
         break;
       default:
         break;

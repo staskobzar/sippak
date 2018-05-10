@@ -64,6 +64,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Display name in From header. Default is empty.");
   puts("    -t, --proto=PROTO");
   puts("                    Transport protocol to use. Possible values 'tcp' or 'udp'. Default is 'udp'.");
+  puts("    -E, --expires=NUMBER");
+  puts("                    Expires header value. Must be number more then 0.");
   puts("");
 }
 
