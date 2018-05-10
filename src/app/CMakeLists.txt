@@ -21,5 +21,6 @@ add_library (app OBJECT
   getopts.c
   usage.c
   dns.c
+  sip_helper.c
   )
 

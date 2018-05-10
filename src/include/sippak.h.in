@@ -48,7 +48,8 @@ enum app_command {
   CMD_UNKNOWN = 0x100,
   CMD_HELP,
   CMD_VERSION,
-  CMD_PING
+  CMD_PING,
+  CMD_PUBLISH
 
 } app_command;
 
@@ -80,13 +81,29 @@ struct sippak_app {
 
 pj_status_t sippak_mod_logger_register(struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
+
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
+pj_status_t sippak_cmd_publish(struct sippak_app *app);
+
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
 pj_status_t sippak_init (struct sippak_app *app);
 void sippak_loop_cancel();
 void usage ();
 void version ();
+
+/* sip helper function */
+pj_str_t sippak_create_from_hdr(struct sippak_app *app);
+pj_str_t sippak_create_ruri(struct sippak_app *app);
+pj_str_t sippak_create_contact_hdr(struct sippak_app *app,
+                                pj_str_t *local_addr,
+                                int local_port);
+
+pj_status_t sippak_transport_init(struct sippak_app *app,
+                                  pj_str_t **local_addr,
+                                  int *local_port);
+
+void sippak_set_cred(struct sippak_app *app, pjsip_cred_info *cred);
 
 /**
  * Get name servers and ports list and store in "ns" and "ports" arrays.

@@ -61,6 +61,8 @@ static int parse_command_str (const char *cmd)
 {
   if (pj_ansi_strnicmp(cmd, "ping", 4) == 0) {
     return CMD_PING;
+  } else if (pj_ansi_strnicmp(cmd, "publish", 7) == 0) {
+    return CMD_PUBLISH;
   }
 
   return CMD_UNKNOWN;

@@ -1,0 +1,122 @@
+/**
+ * sippak -- SIP command line utility.
+ * Copyright (C) 2018, Stas Kobzar <staskobzar@modulis.ca>
+ *
+ * This file is part of sippak.
+ *
+ * sippak is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * sippak is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with sippak.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file publish.c
+ * @brief sippak PUBLISH message send
+ *
+ * @author Stas Kobzar <stas.kobzar@modulis.ca>
+ */
+#include <pjsip-simple/publish.h>
+#include <pjsip-simple/presence.h>
+#include "sippak.h"
+
+#define NAME "mod_publish"
+
+static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
+static pj_status_t on_tx_response (pjsip_tx_data *tdata);
+
+static pjsip_module mod_publish =
+{
+  NULL, NULL,                 /* prev, next.    */
+  { "mod-publish", 11 },      /* Name.    */
+  -1,                         /* Id      */
+  PJSIP_MOD_PRIORITY_DIALOG_USAGE - 1, /* Priority          */
+  NULL,                       /* load()    */
+  NULL,                       /* start()    */
+  NULL,                       /* stop()    */
+  NULL,                       /* unload()    */
+  NULL,                       /* on_rx_request()  */
+  &on_rx_response,            /* on_rx_response()  */
+  NULL,                       /* on_tx_request.  */
+  &on_tx_response,                       /* on_tx_response()  */
+  NULL,                       /* on_tsx_state()  */
+};
+
+/* On response module callback */
+static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
+{
+  puts("============> RX RESPONSE");
+  return PJ_FALSE; // continue with othe modules
+}
+
+static pj_status_t on_tx_response (pjsip_tx_data *tdata)
+{
+  puts("============> TX RESPONSE");
+  return PJ_SUCCESS;
+}
+
+static void publish_cb(struct pjsip_publishc_cbparam *param)
+{
+  puts("====================> publish callback");
+  sippak_loop_cancel();
+}
+
+pj_status_t sippak_cmd_publish (struct sippak_app *app)
+{
+  pj_status_t status;
+  pj_sockaddr_in addr;
+  pjsip_transport *tp = NULL;
+  status = pj_sockaddr_in_init(&addr, &app->cfg.local_host, app->cfg.local_port);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  status = pjsip_udp_transport_start( app->endpt, &addr, NULL, 1, &tp);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  // **************************************************
+  const pj_str_t event = pj_str("presence");
+  const pj_str_t target_uri = pj_str("sip:alice@127.0.0.1:5060");
+  const pj_str_t from_uri = pj_str("sip:alice@127.0.0.1");
+  const pj_str_t to_uri = pj_str("sip:alice@127.0.0.1");
+  pjsip_publishc  *publish_sess;
+  pjsip_publishc_opt publish_opt;
+  pjsip_tx_data *tdata;
+  pj_str_t pidf_tuple_id = pj_str("");
+  pj_str_t entity = pj_str("entity-id");
+
+  pjsip_pres_status pres_status;
+  pj_bzero(&pres_status, sizeof(pres_status));
+  pres_status.info_cnt = 1;
+  pres_status.info[0].basic_open = PJ_TRUE;
+  pres_status.info[0].id = pidf_tuple_id;
+
+  pjsip_publishc_opt_default(&publish_opt);
+
+  publish_sess = NULL;
+
+  pjsip_publishc_create(app->endpt, &publish_opt, NULL, &publish_cb, &publish_sess);
+
+  pjsip_publishc_init(publish_sess, &event, &target_uri, &from_uri, &to_uri, 3600);
+
+    pjsip_cred_info	cred[1];
+    cred->realm     = pj_str("*");
+    cred->scheme    = pj_str("digest");
+    cred->username  = app->cfg.username;
+    cred->data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+    cred->data      = app->cfg.password;
+  pjsip_publishc_set_credentials(publish_sess, 1, cred);
+
+  pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
+
+  pjsip_pres_create_pidf(tdata->pool, &pres_status, &entity, &tdata->msg->body);
+
+  pjsip_tsx_layer_init_module(app->endpt);
+  pjsip_endpt_register_module(app->endpt, &mod_publish);
+
+  return pjsip_publishc_send(publish_sess, tdata);
+}

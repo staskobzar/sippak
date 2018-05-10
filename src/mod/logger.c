@@ -78,26 +78,34 @@ static void print_trail_chr ()
   printf("\n");
 }
 
-static void print_sipmsg_body(pjsip_msg_body *body)
+static void print_sipmsg_body(pjsip_msg *msg)
 {
   char clenh_holder[256] = {0};
-  char len[12] = {0};
+  char print_len[12] = {0};
   pj_str_t clen = { clenh_holder, 0 };
+  char buf[SIPMSG_BODY_LEN];
+  short len = 0;
 
   pj_strcat2(&clen, pjsip_hdr_names[PJSIP_H_CONTENT_LENGTH].name);
   pj_strcat2(&clen, ": ");
 
-  if (body == NULL) {
-    pj_strcat2(&clen, "0");
-  } else {
-    pj_utoa(body->len, len);
-    pj_strcat2(&clen, len);
+  if (msg->body) {
+    len = msg->body->print_body(msg->body, buf, SIPMSG_BODY_LEN);
+    if (len == -1) {
+      PJ_LOG(1, (NAME, "ERROR in logger.c: Message body buffer is too short (%d).",
+            SIPMSG_BODY_LEN));
+      return;
+    }
   }
+
+  pj_utoa(len, print_len);
+  pj_strcat2(&clen, print_len);
 
   print_generic_header(clen.ptr, clen.slen);
 
-  if (body) {
-    PRINT_COLOR(COLOR_BLUE, "\n[SIP MESSAGE BODY]\n");
+  if (len > 0) {
+    msg->body->print_body(msg->body, buf, SIPMSG_BODY_LEN);
+    PRINT_COLOR(COLOR_CYAN, "\n%.*s\n", len, buf);
     term_restore_color();
   }
 }
@@ -212,7 +220,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 
   print_sipmsg_headers (msg);
 
-  print_sipmsg_body (msg->body);
+  print_sipmsg_body (msg);
 
   puts("");
 

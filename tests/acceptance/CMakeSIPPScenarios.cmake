@@ -43,3 +43,11 @@ add_test ( Basic_Ping_Proxy_Auth
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.ping_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( Basic_PUBLISH_method
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.publish_basic.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
+add_test ( Basic_PUBLISH_auth
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.publish_auth.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

@@ -1,6 +1,8 @@
 #ifndef __MOD_LOGGER_LOGGER_H
 #define __MOD_LOGGER_LOGGER_H
 
+#define SIPMSG_BODY_LEN 2048
+
 static void term_set_color(int level);
 static void term_restore_color(void);
 
@@ -25,7 +27,7 @@ static pj_bool_t PRINT_TRAIL_CHR = PJ_FALSE;
 static void print_sipmsg_head (pjsip_msg *msg);
 static void print_sipmsg_headers (const pjsip_msg *msg);
 static void print_generic_header (const char *header, int len);
-static void print_sipmsg_body (pjsip_msg_body *body);
+static void print_sipmsg_body (pjsip_msg *msg);
 static void print_hdr_clid (pjsip_cid_hdr *cid);
 static void print_trail_chr ();
 
