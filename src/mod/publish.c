@@ -128,8 +128,11 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   status = pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  // status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
-  status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  if (app->cfg.pres_use_xpidf) {
+    status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  } else {
+    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_tsx_layer_init_module(app->endpt);

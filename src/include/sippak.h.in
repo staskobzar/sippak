@@ -80,6 +80,7 @@ struct sippak_app {
 
     pj_bool_t pres_status_open;   /*<! Presence status */
     pj_str_t pres_note;           /*<! Presence note message */
+    pj_bool_t pres_use_xpidf;     /*<! Use xpidf type instead of pidf */
   } cfg;
 
 };

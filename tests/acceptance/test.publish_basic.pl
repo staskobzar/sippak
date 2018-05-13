@@ -105,4 +105,10 @@ ok ($output =~ m/$regex/m, "Warning, max length of note is limited to 64 chars."
 $regex = '<note>This memo further defines the Presence Information Data Format a</note>';
 ok ($output =~ m/$regex/m, "Long note message is stripped to 64 chars.");
 
+# test XPIDF presence message
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH --pres-xpidf sip:alice\@127.0.0.1:5060`;
+$regex = '^Content-Type: application/xpidf\+xml$';
+ok ($output =~ m/$regex/m, "Basic PUBLISH content type is XPIDF.");
+
 done_testing();

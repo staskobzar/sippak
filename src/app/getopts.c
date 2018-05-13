@@ -36,30 +36,32 @@ static enum opts_enum_t {
   OPT_LOG_LEVEL,
   OPT_LOG_SND,
   OPT_PRES_STATUS,
-  OPT_PRES_NOTE
+  OPT_PRES_NOTE,
+  OPT_PRES_XPIDF
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
-  {"help",      0,  0,  'h'},
-  {"version",   0,  0,  'V'},
-  {"ns",        1,  0,  OPT_NS },
-  {"verbose",   2,  0,  'v' },
-  {"quiet",     0,  0,  'q' },
-  {"color",     0,  0,  OPT_COLOR },
-  {"trail-dot", 0,  0,  OPT_TRAIL },
-  {"log-time",  0,  0,  OPT_LOG_TIME },
-  {"log-level", 0,  0,  OPT_LOG_LEVEL },
-  {"log-snd",   0,  0,  OPT_LOG_SND },
-  {"local-port",1,  0,  'P' },
-  {"local-host",1,  0,  'H' },
-  {"username",  1,  0,  'u' },
-  {"password",  1,  0,  'p' },
-  {"from-name", 1,  0,  'F' },
-  {"proto",     1,  0,  't' },
-  {"expires",   1,  0,  'E' },
-  {"pres-status",1, 0,  OPT_PRES_STATUS},
-  {"pres-note", 1,  0,  OPT_PRES_NOTE},
-  { NULL,       0,  0,   0 }
+  {"help",        0,  0,  'h'},
+  {"version",     0,  0,  'V'},
+  {"ns",          1,  0,  OPT_NS },
+  {"verbose",     2,  0,  'v' },
+  {"quiet",       0,  0,  'q' },
+  {"color",       0,  0,  OPT_COLOR },
+  {"trail-dot",   0,  0,  OPT_TRAIL },
+  {"log-time",    0,  0,  OPT_LOG_TIME },
+  {"log-level",   0,  0,  OPT_LOG_LEVEL },
+  {"log-snd",     0,  0,  OPT_LOG_SND },
+  {"local-port",  1,  0,  'P' },
+  {"local-host",  1,  0,  'H' },
+  {"username",    1,  0,  'u' },
+  {"password",    1,  0,  'p' },
+  {"from-name",   1,  0,  'F' },
+  {"proto",       1,  0,  't' },
+  {"expires",     1,  0,  'E' },
+  {"pres-status", 1,  0,  OPT_PRES_STATUS},
+  {"pres-note",   1,  0,  OPT_PRES_NOTE},
+  {"pres-xpidf",  0,  0,  OPT_PRES_XPIDF},
+  { NULL,         0,  0,   0 }
 };
 
 static const char *optstring = "hVvqP:u:p:t:H:F:E:";
@@ -180,6 +182,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.pres_status_open = PJ_TRUE;
   app->cfg.pres_note.ptr    = NULL;
   app->cfg.pres_note.slen   = 0;
+  app->cfg.pres_use_xpidf   = PJ_FALSE;
 
   return PJ_SUCCESS;
 }
@@ -273,6 +276,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_PRES_NOTE:
         app->cfg.pres_note = pres_note (pj_optarg);
+        break;
+      case OPT_PRES_XPIDF:
+        app->cfg.pres_use_xpidf = PJ_TRUE;
         break;
       default:
         break;
