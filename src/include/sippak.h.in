@@ -43,6 +43,8 @@
 #define MAX_NS_COUNT 3 // must be less then PJ_DNS_RESOLVER_MAX_NS, 16
 #define MIN_LOG_LEVEL 3 // minimum verbosity level
 
+#define MAX_LEN_PRES_NOTE 64 // max length of presece note message
+
 enum app_command {
 
   CMD_UNKNOWN = 0x100,
@@ -76,6 +78,8 @@ struct sippak_app {
     pjsip_transport_type_e proto; /*<! Transport protocol type: udp, tcp etc. */
     unsigned int expires;         /*<! Set Expires header value */
 
+    pj_bool_t pres_status_open;   /*<! Presence status */
+    pj_str_t pres_note;           /*<! Presence note message */
   } cfg;
 
 };

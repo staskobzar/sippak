@@ -95,19 +95,22 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   pjsip_cred_info cred[1];
 
   const pj_str_t event = pj_str("presence"); // TODO: use cli argument param to set event
-  pj_str_t pidf_tuple_id = pj_str(""); // generate random id
+
+  target_uri = sippak_create_ruri(app); // also as To header URI
+  from_uri = sippak_create_from_hdr(app); // also entity
 
   // set presence status
   pj_bzero(&pres_status, sizeof(pres_status));
   pres_status.info_cnt = 1;
-  pres_status.info[0].basic_open = PJ_TRUE;
-  pres_status.info[0].id = pidf_tuple_id;
+  pres_status.info[0].basic_open = app->cfg.pres_status_open;
+  pres_status.info[0].id = from_uri;
+  pres_status.info[0].rpid.note = app->cfg.pres_note;
+  pres_status.info[0].rpid.activity = app->cfg.pres_status_open
+    ? PJRPID_ACTIVITY_UNKNOWN
+    : PJRPID_ACTIVITY_BUSY;
 
   status = sippak_transport_init(app, &local_addr, &local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-  target_uri = sippak_create_ruri(app); // also as To header URI
-  from_uri = sippak_create_from_hdr(app); // also entity
 
   pjsip_publishc_opt_default(&publish_opt);
 
@@ -125,6 +128,7 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   status = pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  // status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
   status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 

@@ -28,12 +28,16 @@
 #include <pjlib-util.h>
 #include "sippak.h"
 
-#define OPT_NS    1
-#define OPT_COLOR 2
-#define OPT_TRAIL 3 // print trailing dot
-#define OPT_LOG_TIME 4 // print time and ms
-#define OPT_LOG_LEVEL 5
-#define OPT_LOG_SND 6
+static enum opts_enum_t {
+  OPT_NS = 1,
+  OPT_COLOR,
+  OPT_TRAIL, // print trailing dot
+  OPT_LOG_TIME, // print time and ms
+  OPT_LOG_LEVEL,
+  OPT_LOG_SND,
+  OPT_PRES_STATUS,
+  OPT_PRES_NOTE
+} opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
   {"help",      0,  0,  'h'},
@@ -53,6 +57,8 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"from-name", 1,  0,  'F' },
   {"proto",     1,  0,  't' },
   {"expires",   1,  0,  'E' },
+  {"pres-status",1, 0,  OPT_PRES_STATUS},
+  {"pres-note", 1,  0,  OPT_PRES_NOTE},
   { NULL,       0,  0,   0 }
 };
 
@@ -75,6 +81,32 @@ static int transport_proto (const char *proto)
     return PJSIP_TRANSPORT_TCP;
   }
   return PJSIP_TRANSPORT_UDP;
+}
+
+static pj_bool_t pres_status_open (const char *status)
+{
+  if (pj_ansi_strnicmp(status, "closed", 6) == 0) {
+    return PJ_FALSE;
+  } else if (pj_ansi_strnicmp(status, "open", 4) == 0) {
+    return PJ_TRUE;
+  } else {
+    PJ_LOG(2, (PROJECT_NAME, "Unknown presence status '%s'. Will use 'open'.", status));
+    return PJ_TRUE;
+  }
+}
+
+static pj_str_t pres_note (const char *note)
+{
+  pj_str_t val = {NULL, 0};
+  val = pj_str (pj_optarg);
+  pj_strtrim(&val);
+  if (val.slen > MAX_LEN_PRES_NOTE) {
+    val.slen = MAX_LEN_PRES_NOTE;
+    PJ_LOG(2, (PROJECT_NAME,
+          "Note message is too long. Max %d char allowed. Message is stripped.",
+          MAX_LEN_PRES_NOTE));
+  }
+  return val;
 }
 
 static void sippak_parse_argv_left (struct sippak_app *app,
@@ -130,21 +162,24 @@ static int is_string_numeric(const char *optarg)
 pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
-  app->cfg.log_level    = MIN_LOG_LEVEL;
-  app->cfg.cmd          = CMD_PING;
-  app->cfg.nameservers  = NULL;
-  app->cfg.log_decor    = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
-  app->cfg.trail_dot    = PJ_FALSE;
-  app->cfg.local_port   = 0;
-  app->cfg.local_host.ptr = NULL;
-  app->cfg.local_host.slen = 0;
-  app->cfg.username     = pj_str("alice");
-  app->cfg.password.ptr = NULL;
-  app->cfg.password.slen= 0;
-  app->cfg.from_name.ptr = NULL;
-  app->cfg.from_name.slen = 0;
-  app->cfg.proto        = PJSIP_TRANSPORT_UDP;
-  app->cfg.expires      = 3600;
+  app->cfg.log_level        = MIN_LOG_LEVEL;
+  app->cfg.cmd              = CMD_PING;
+  app->cfg.nameservers      = NULL;
+  app->cfg.log_decor        = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_INDENT;
+  app->cfg.trail_dot        = PJ_FALSE;
+  app->cfg.local_port       = 0;
+  app->cfg.local_host.ptr   = NULL;
+  app->cfg.local_host.slen  = 0;
+  app->cfg.username         = pj_str("alice");
+  app->cfg.password.ptr     = NULL;
+  app->cfg.password.slen    = 0;
+  app->cfg.from_name.ptr    = NULL;
+  app->cfg.from_name.slen   = 0;
+  app->cfg.proto            = PJSIP_TRANSPORT_UDP;
+  app->cfg.expires          = 3600;
+  app->cfg.pres_status_open = PJ_TRUE;
+  app->cfg.pres_note.ptr    = NULL;
+  app->cfg.pres_note.slen   = 0;
 
   return PJ_SUCCESS;
 }
@@ -230,9 +265,14 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
           app->cfg.expires = atoi(pj_optarg);
           if (app->cfg.expires < 1) {
             PJ_LOG(1, (PROJECT_NAME, "Expires header value must be more then 0."));
-            // puts("Expires header value must be more then 0.");
             exit(PJ_CLI_EINVARG);
           }
+        break;
+      case OPT_PRES_STATUS:
+        app->cfg.pres_status_open = pres_status_open (pj_optarg);
+        break;
+      case OPT_PRES_NOTE:
+        app->cfg.pres_note = pres_note (pj_optarg);
         break;
       default:
         break;

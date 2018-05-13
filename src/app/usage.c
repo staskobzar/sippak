@@ -66,6 +66,11 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Transport protocol to use. Possible values 'tcp' or 'udp'. Default is 'udp'.");
   puts("    -E, --expires=NUMBER");
   puts("                    Expires header value. Must be number more then 0.");
+  puts("    --pres-status=STATUS");
+  puts("                    Presence status for PUBLISH command. STATUS value be 'open' or 'closed'");
+  puts("                    If this parameter is not defined or invalid, will use 'open' status.");
+  puts("    --pres-note=MESSAGE");
+  puts("                    Presence note message string for PUBLISH command.");
   puts("");
 }
 

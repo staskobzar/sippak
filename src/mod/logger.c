@@ -78,16 +78,42 @@ static void print_trail_chr ()
   printf("\n");
 }
 
+static void print_content_len_hdr (unsigned int len)
+{
+  char hdr_holder[512] = {0};
+  char str_len[12] = {0};
+  pj_str_t str_hdr = { hdr_holder, 0 };
+
+  pj_strcat2(&str_hdr, pjsip_hdr_names[PJSIP_H_CONTENT_LENGTH].name);
+  pj_strcat2(&str_hdr, ": ");
+
+  pj_utoa(len, str_len);
+  pj_strcat2(&str_hdr, str_len);
+
+  print_generic_header(str_hdr.ptr, str_hdr.slen);
+}
+
+static void print_content_type_hdr (const pjsip_msg_body *body)
+{
+  char hdr_holder[512] = {0};
+  pj_str_t str_hdr = { hdr_holder, 0 };
+
+  if (!body->content_type.type.slen || !body->content_type.subtype.slen) {
+    return;
+  }
+  pj_strcat2(&str_hdr, pjsip_hdr_names[PJSIP_H_CONTENT_TYPE].name);
+  pj_strcat2(&str_hdr, ": ");
+  pj_strcat(&str_hdr, &body->content_type.type);
+  pj_strcat2(&str_hdr, "/");
+  pj_strcat(&str_hdr, &body->content_type.subtype);
+
+  print_generic_header(str_hdr.ptr, str_hdr.slen);
+}
+
 static void print_sipmsg_body(pjsip_msg *msg)
 {
-  char clenh_holder[256] = {0};
-  char print_len[12] = {0};
-  pj_str_t clen = { clenh_holder, 0 };
   char buf[SIPMSG_BODY_LEN];
   short len = 0;
-
-  pj_strcat2(&clen, pjsip_hdr_names[PJSIP_H_CONTENT_LENGTH].name);
-  pj_strcat2(&clen, ": ");
 
   if (msg->body) {
     len = msg->body->print_body(msg->body, buf, SIPMSG_BODY_LEN);
@@ -96,17 +122,12 @@ static void print_sipmsg_body(pjsip_msg *msg)
             SIPMSG_BODY_LEN));
       return;
     }
-  }
-
-  pj_utoa(len, print_len);
-  pj_strcat2(&clen, print_len);
-
-  print_generic_header(clen.ptr, clen.slen);
-
-  if (len > 0) {
-    msg->body->print_body(msg->body, buf, SIPMSG_BODY_LEN);
+    print_content_type_hdr (msg->body);
+    print_content_len_hdr (len);
     PRINT_COLOR(COLOR_CYAN, "\n%.*s\n", len, buf);
     term_restore_color();
+  } else {
+    print_content_len_hdr (len);
   }
 }
 
