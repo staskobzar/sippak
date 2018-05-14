@@ -51,3 +51,7 @@ add_test ( Basic_PUBLISH_auth
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.publish_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( Basic_SUBSCRIBE_method
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.subscribe_basic.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

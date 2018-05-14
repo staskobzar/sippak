@@ -21,4 +21,5 @@ add_library (mod OBJECT
   logger.c
   ping.c
   publish.c
+  subscribe.c
   )
