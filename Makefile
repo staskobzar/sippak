@@ -7,6 +7,10 @@ build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake .. && make
 
+build-debug:
+	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
+	@cd ${BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Debug && make
+
 build-cov: clean
 	@mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake ..  -DCMAKE_BUILD_TYPE=Coverage \

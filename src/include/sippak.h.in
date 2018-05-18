@@ -51,7 +51,8 @@ enum app_command {
   CMD_HELP,
   CMD_VERSION,
   CMD_PING,
-  CMD_PUBLISH
+  CMD_PUBLISH,
+  CMD_SUBSCRIBE
 
 } app_command;
 
@@ -90,6 +91,7 @@ pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
 
 pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_cmd_publish(struct sippak_app *app);
+pj_status_t sippak_cmd_subscribe (struct sippak_app *app);
 
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
