@@ -110,7 +110,7 @@ static void print_content_type_hdr (const pjsip_msg_body *body)
   print_generic_header(str_hdr.ptr, str_hdr.slen);
 }
 
-static void print_sipmsg_body(pjsip_msg *msg)
+static void print_sipmsg_body(pjsip_msg *msg, pj_bool_t is_tx)
 {
   char buf[SIPMSG_BODY_LEN];
   short len = 0;
@@ -122,12 +122,17 @@ static void print_sipmsg_body(pjsip_msg *msg)
             SIPMSG_BODY_LEN));
       return;
     }
-    print_content_type_hdr (msg->body);
-    print_content_len_hdr (len);
+    // print content-type and length headers only for incoming messages
+    // outgoing messages have those headers and print as generic headers
+    if (is_tx) {
+      print_content_type_hdr (msg->body);
+      print_content_len_hdr (len);
+    }
     PRINT_COLOR(COLOR_CYAN, "\n%.*s\n", len, buf);
     term_restore_color();
   } else {
-    print_content_len_hdr (len);
+    if (is_tx)
+      print_content_len_hdr (len);
   }
 }
 
@@ -220,6 +225,8 @@ static pj_bool_t logging_on_rx_msg(pjsip_rx_data *rdata)
 
   print_sipmsg_headers (msg);
 
+  print_sipmsg_body (msg, PJ_FALSE);
+
   puts("");
 
   return PJ_FALSE; // continue with othe modules
@@ -241,7 +248,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
 
   print_sipmsg_headers (msg);
 
-  print_sipmsg_body (msg);
+  print_sipmsg_body (msg, PJ_TRUE);
 
   puts("");
 

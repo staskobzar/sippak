@@ -29,7 +29,7 @@ static void print_sipmsg_headers (const pjsip_msg *msg);
 static void print_generic_header (const char *header, int len);
 static void print_content_len_hdr (unsigned int len);
 static void print_content_type_hdr (const pjsip_msg_body *body);
-static void print_sipmsg_body (pjsip_msg *msg);
+static void print_sipmsg_body (pjsip_msg *msg, pj_bool_t is_tx);
 static void print_hdr_clid (pjsip_cid_hdr *cid);
 static void print_trail_chr ();
 

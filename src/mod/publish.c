@@ -24,6 +24,7 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
+#include <pjlib-util.h> // needed for return value like PJ_CLI_EINVARG
 #include <pjsip-simple/publish.h>
 #include <pjsip-simple/presence.h>
 #include "sippak.h"
@@ -54,8 +55,10 @@ static pjsip_module mod_publish =
 /* On response module callback */
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 {
-  auth_tries++;
   pjsip_msg *msg = rdata->msg_info.msg;
+
+  auth_tries++;
+
   if (msg->type != PJSIP_RESPONSE_MSG) {
     return PJ_FALSE;
   }
@@ -95,6 +98,11 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   pjsip_cred_info cred[1];
 
   const pj_str_t event = pj_str("presence"); // TODO: use cli argument param to set event
+
+  if (app->cfg.expires < 1) {
+    PJ_LOG(1, (PROJECT_NAME, "Expires header value must be more then 0."));
+    exit(PJ_CLI_EINVARG);
+  }
 
   target_uri = sippak_create_ruri(app); // also as To header URI
   from_uri = sippak_create_from_hdr(app); // also entity

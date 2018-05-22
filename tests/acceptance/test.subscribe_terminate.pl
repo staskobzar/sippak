@@ -11,7 +11,7 @@ use Test::More;
 
 my $sippak = $ARGV[0];
 my $sipp   = $ARGV[1];
-my $scenario = $ARGV[2] . "/subscribe.basic.xml";
+my $scenario = $ARGV[2] . "/subscribe.terminated.xml";
 my $sippargs = "-timeout 10s -p 5060 -m 1 -bg";
 my $output = "";
 my $regex  = "";
@@ -24,24 +24,16 @@ if ($? == -1) {
 }
 
 # run sippak publish basic
-$output = `$sippak SUBSCRIBE sip:alice\@127.0.0.1:5060`;
+$output = `$sippak SUBSCRIBE -E 0 sip:alice\@127.0.0.1:5060`;
 
 # test request
 $regex = '^SUBSCRIBE sip:alice\@127\.0\.0\.1:5060 SIP\/2\.0$';
 ok ($output =~ m/$regex/m, "Basic SUBSCRIBE packet sent.");
 
-$regex = '^Event: presence$';
-ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Event header.");
+$regex = '^Expires: 0$';
+ok ($output =~ m/$regex/m, "Subscription expires is set to 0.");
 
-# test response
-$regex = '^SIP\/2\.0 200 OK Basic SUBSCRIBE Test$';
-ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Response 200 OK received.");
-
-# expires setup
-system("$sipp $sippargs -sf $scenario");
-$output = `$sippak SUBSCRIBE -E 654 sip:alice\@127.0.0.1:5060`;
-
-$regex = '^Expires: 654$';
-ok ($output =~ m/$regex/m, "Subscription expires header setup.");
+$regex = 'Subscription is terminated';
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE subscription is terminated.");
 
 done_testing();

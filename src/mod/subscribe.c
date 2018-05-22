@@ -33,6 +33,10 @@
 
 #define NAME "mod_subscribe"
 
+static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
+static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event);
+static short unsigned auth_tries = 0;
+
 static pjsip_module mod_subscribe =
 {
   NULL, NULL,                 /* prev, next.    */
@@ -44,34 +48,91 @@ static pjsip_module mod_subscribe =
   NULL,                       /* stop()    */
   NULL,                       /* unload()    */
   NULL,                       /* on_rx_request()  */
-  NULL,                       /* on_rx_response()  */
+  &on_rx_response,                       /* on_rx_response()  */
   NULL,                       /* on_tx_request.  */
   NULL,                       /* on_tx_response()  */
   NULL,                       /* on_tsx_state()  */
 };
 
+/* On response module callback */
+static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
+{
+  pjsip_msg *msg = rdata->msg_info.msg;
+  pjsip_via_hdr *via = rdata->msg_info.via;
+
+  PJ_LOG(3, (NAME, "Response received: %d %.*s",
+        msg->line.status.code,
+        msg->line.status.reason.slen,
+        msg->line.status.reason.ptr));
+  if (via) {
+    PJ_LOG(3, (NAME, "Via rport: %d, received: %.*s", via->rport_param,
+          via->recvd_param.slen, via->recvd_param.ptr));
+  }
+
+  int code = rdata->msg_info.msg->line.status.code;
+
+  if (msg->line.status.code == PJSIP_SC_PROXY_AUTHENTICATION_REQUIRED ||
+      msg->line.status.code == PJSIP_SC_UNAUTHORIZED) {
+    auth_tries++;
+    if (auth_tries > 1) {
+      sippak_loop_cancel();
+      PJ_LOG(1, (NAME, "Authentication failed. Check your username and password"));
+      return PJ_TRUE;
+    }
+    return PJ_FALSE; // processed with callback
+  }
+
+  // sippak_loop_cancel();
+
+  return PJ_FALSE; // continue with othe modules
+}
+
+//
 //
 void on_evsub_state(pjsip_evsub *sub, pjsip_event *event)
-{}
-void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event)
-{}
-void on_rx_refresh(pjsip_evsub *sub, pjsip_rx_data *rdata, int *p_st_code, pj_str_t **p_st_text, pjsip_hdr *res_hdr, pjsip_msg_body **p_body)
-{}
-void on_rx_notify(pjsip_evsub *sub, pjsip_rx_data *rdata, int *p_st_code, pj_str_t **p_st_text, pjsip_hdr *res_hdr, pjsip_msg_body **p_body)
-{}
-void on_client_refresh(pjsip_evsub *sub)
-{}
-void on_server_timeout(pjsip_evsub *sub)
-{}
-pjsip_evsub_user pres_user = {
-  &on_evsub_state,
-  &on_tsx_state,
-  &on_rx_refresh,
-  &on_rx_notify,
-  &on_client_refresh,
-  &on_server_timeout
-};
-//
+{
+  PJ_UNUSED_ARG(event);
+  pjsip_evsub_state state = pjsip_evsub_get_state(sub);
+  // printf("-------> on_evsub_state %d : %s\n", pjsip_evsub_get_state(sub), pjsip_evsub_get_state_name(sub));
+  // Stop when subscription is activated
+  if (state == PJSIP_EVSUB_STATE_ACTIVE) {
+    PJ_LOG(3, (NAME,
+          "[v] Subscription is activated."));
+    sippak_loop_cancel();
+  } else if (state == PJSIP_EVSUB_STATE_TERMINATED) {
+    PJ_LOG(3, (NAME,
+          "[x] Subscription is terminated."));
+    sippak_loop_cancel();
+  }
+}
+
+void on_rx_notify(pjsip_evsub *sub,
+                  pjsip_rx_data *rdata,
+                  int *p_st_code,
+                  pj_str_t **p_st_text,
+                  pjsip_hdr *res_hdr,
+                  pjsip_msg_body **p_body)
+{
+  PJ_UNUSED_ARG(sub);
+  PJ_UNUSED_ARG(rdata);
+  PJ_UNUSED_ARG(p_st_code);
+  PJ_UNUSED_ARG(*p_st_text);
+  PJ_UNUSED_ARG(res_hdr);
+  PJ_UNUSED_ARG(*p_body);
+  // printf("-------> on_rx_notify p_st_text %.*s\n", (*p_st_text)->slen, (*p_st_text)->ptr);
+  // printf("-------> on_rx_notify p_st_code %d\n", *p_st_code);
+}
+
+static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event)
+{
+  PJ_UNUSED_ARG(sub);
+  PJ_UNUSED_ARG(event);
+  if (tsx->status_code == PJSIP_SC_TSX_TIMEOUT) {
+    PJ_LOG(1,
+        (NAME, "Response timeout after %d retransmitions.", tsx->retransmit_count));
+    sippak_loop_cancel();
+  }
+}
 
 pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
 {
@@ -82,7 +143,8 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   pj_str_t cnt, from, ruri;
   pj_str_t *local_addr;
   int local_port;
-
+  pjsip_evsub_user pres_cb;
+  pjsip_cred_info cred[1];
 
   status = sippak_transport_init(app, &local_addr, &local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -94,28 +156,37 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   status = pjsip_ua_init_module(app->endpt, NULL);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  puts("===> pjsip_dlg_create_uac");
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
       &from, &cnt, &ruri, &ruri, &dlg);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  puts("===> pjsip_evsub_init_module");
-  /* Init core SIMPLE module : */
-  pjsip_evsub_init_module(app->endpt);
-  puts("===> pjsip_pres_init_module");
-  pjsip_pres_init_module(app->endpt, &mod_subscribe);
-  puts("===> pjsip_endpt_register_module");
-  pjsip_endpt_register_module(app->endpt, &mod_subscribe);
-  puts("===> pjsip_pres_create_uac");
-  pjsip_pres_create_uac(dlg, &pres_user, 1, &sub);
-  puts("===> pjsip_pres_initiate");
-  pjsip_pres_initiate(sub, -1, &tdata); // expire is here
-
-  puts("===> pjsip_tsx_layer_init_module");
-  pjsip_tsx_layer_init_module(app->endpt);
-  puts("===> pjsip_pres_send_request");
-  status = pjsip_pres_send_request(sub, tdata);
+  sippak_set_cred(app, cred);
+  status = pjsip_auth_clt_set_credentials(&dlg->auth_sess, 1, cred);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  return status;
+  /* Init core SIMPLE module : */
+  status = pjsip_evsub_init_module(app->endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  status = pjsip_pres_init_module(app->endpt, &mod_subscribe);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  status = pjsip_endpt_register_module(app->endpt, &mod_subscribe);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  pj_bzero(&pres_cb, sizeof(pres_cb));
+  pres_cb.on_tsx_state = &on_tsx_state;
+  pres_cb.on_evsub_state = &on_evsub_state;
+  pres_cb.on_rx_notify = &on_rx_notify;
+
+  status = pjsip_pres_create_uac(dlg, &pres_cb, 1, &sub);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  status = pjsip_pres_initiate(sub, app->cfg.expires, &tdata);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  status = pjsip_tsx_layer_init_module(app->endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  return pjsip_pres_send_request(sub, tdata);
 }

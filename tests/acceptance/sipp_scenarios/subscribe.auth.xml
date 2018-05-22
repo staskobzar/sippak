@@ -19,25 +19,57 @@
 <!--                 Sipp default 'uas' scenario.                       -->
 <!--                                                                    -->
 
-<scenario name="UAS SUBSCRIBE basic responder scenario">
+<scenario name="UAS SUBSCRIBE Proxy Auth">
   <recv request="SUBSCRIBE" crlf="true">
+  </recv>
+
+  <!-- Send 407 Authentication with nonce -->
+  <send>
+    <![CDATA[
+      SIP/2.0 407 Proxy Authentication Required
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=9e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Proxy-Authenticate: Digest realm="sip.example.com", nonce="5ad56fab0000000e131d6366e461c4ca77c0f8b1879c66bb"
+      Server: SIP Proxy 2
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!-- SIPP does not support Proxy-Authenticate header and that's -->
+  <!-- why "verifyauth" action  does not work with any SIP method -->
+  <!-- but REGISTER. Here we compare pre-calculated response hash -->
+  <!-- for user "alice" and password "pa55w0rd".                  -->
+  <recv request="SUBSCRIBE" >
     <action>
-      <ereg regexp=".*" search_in="hdr" header="From" assign_to="3"/>
+      <ereg regexp="Digest .*response=\"([[:alnum:]]*)\"" search_in="hdr" header="Proxy-Authorization:" assign_to="junk,resp" />
+      <log message="Header: [$junk]" />
+      <log message="Response found: [$resp]" />
+      <strcmp assign_to="cmpres" variable="resp" value="c24eab5d8145880e67b24c07379f2845" />
+      <test assign_to="authvalid" variable="cmpres" compare="equal" value="0" />
+      <ereg regexp=".*" search_in="hdr" header="From" assign_to="fromhdr"/>
     </action>
   </recv>
 
-  <!-- no retransmissions -->
+  <nop hide="true" test="authvalid" next="goodauth" />
+  <nop hide="true" next="badauth" />
+
+  <label id="goodauth" />
+
   <send>
     <![CDATA[
 
-      SIP/2.0 200 OK Basic SUBSCRIBE Test
+      SIP/2.0 200 OK SUBSCRIBE Auth
       [last_Via:]
       [last_From:]
-      [last_To:];tag=2d87f2a5aac2daedab4d366e4bc2064e.8aa7
+      [last_To:];tag=9e301c61b1bd7c9286619d6d1e9d72df.[pid]
       [last_Call-ID:]
       [last_CSeq:]
-      Expires: 3600
-      Server: Asterisk PBX 123
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Type: application/sdp
       Content-Length: 0
 
     ]]>
@@ -47,10 +79,10 @@
   <send retrans="500">
     <![CDATA[
 
-      NOTIFY sip:bob@127.0.0.1:5060 SIP/2.0
+      NOTIFY sip:alice@127.0.0.1:5060 SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];rport;branch=z9hG4bKPj01
-      From: <sip:alice@127.0.0.1>;tag=2d87f2a5aac2daedab4d366e4bc2064e.8aa7
-      To[$3]
+      From: <sip:alice@127.0.0.1>;tag=9e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      To[$fromhdr]
       Call-ID: [call_id]
       Cseq: 1 NOTIFY
       Contact: sip:presence-server@127.0.0.1:5060
@@ -61,8 +93,8 @@
       Content-Length: 546
 
       <?xml version="1.0" encoding="UTF-8"?>
-      <presence entity="sip:bob@127.0.0.1" xmlns="urn:ietf:params:xml:ns:pidf" xmlns:dm="urn:ietf:params:xml:ns:pidf:data-model" xmlns:rpid="urn:ietf:params:xml:ns:pidf:rpid">
-       <tuple id="sip:bob@127.0.0.1">
+      <presence entity="sip:alice@127.0.0.1" xmlns="urn:ietf:params:xml:ns:pidf" xmlns:dm="urn:ietf:params:xml:ns:pidf:data-model" xmlns:rpid="urn:ietf:params:xml:ns:pidf:rpid">
+       <tuple id="sip:alice@127.0.0.1">
         <status>
          <basic>closed</basic>
         </status>
@@ -80,9 +112,29 @@
     ]]>
   </send>
 
-  <recv response="200" crlf="true">
+  <recv response="200" crlf="true" next="end">
   </recv>
 
+
+  <label id="badauth" />
+
+  <send>
+    <![CDATA[
+      SIP/2.0 407 Proxy Authentication Retry
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=8e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Proxy-Authenticate: Digest realm="sip.example.com", nonce="6ad50c7300000003b395e7c84c14cbc9a4eab1e730fd7115"
+      Server: SIP Proxy 2
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+
+  <label id="end" />
   <!-- definition of the response time repartition table (unit is ms)   -->
   <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
 

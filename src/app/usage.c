@@ -36,6 +36,7 @@ void usage ()
   puts("  Default commans is \"PING\".");
   puts("    PING      Send OPTIONS packet to destination.");
   puts("    PUBLISH   Send PUBLISH events and status.");
+  puts("    SUBSCRIBE Send SUBSCRIBE request.");
   puts("");
   puts("  OPTIONS:");
   puts("    -h, --help      Print this usage message and exit.");

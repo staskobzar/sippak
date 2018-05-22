@@ -268,10 +268,6 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
             exit(PJ_CLI_EINVARG);
           }
           app->cfg.expires = atoi(pj_optarg);
-          if (app->cfg.expires < 1) {
-            PJ_LOG(1, (PROJECT_NAME, "Expires header value must be more then 0."));
-            exit(PJ_CLI_EINVARG);
-          }
         break;
       case OPT_PRES_STATUS:
         app->cfg.pres_status_open = pres_status_open (pj_optarg);

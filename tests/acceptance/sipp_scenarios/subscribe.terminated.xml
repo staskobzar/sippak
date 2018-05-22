@@ -19,7 +19,7 @@
 <!--                 Sipp default 'uas' scenario.                       -->
 <!--                                                                    -->
 
-<scenario name="UAS SUBSCRIBE basic responder scenario">
+<scenario name="UAS SUBSCRIBE terminate subscription scenario">
   <recv request="SUBSCRIBE" crlf="true">
     <action>
       <ereg regexp=".*" search_in="hdr" header="From" assign_to="3"/>
@@ -36,7 +36,7 @@
       [last_To:];tag=2d87f2a5aac2daedab4d366e4bc2064e.8aa7
       [last_Call-ID:]
       [last_CSeq:]
-      Expires: 3600
+      Expires: 0
       Server: Asterisk PBX 123
       Content-Length: 0
 
@@ -56,26 +56,9 @@
       Contact: sip:presence-server@127.0.0.1:5060
       Max-Forwards: 70
       Event: presence
-      Subscription-State: active;expires=321
+      Subscription-State: terminated;reason=timeout
       Content-Type: application/pidf+xml
-      Content-Length: 546
-
-      <?xml version="1.0" encoding="UTF-8"?>
-      <presence entity="sip:bob@127.0.0.1" xmlns="urn:ietf:params:xml:ns:pidf" xmlns:dm="urn:ietf:params:xml:ns:pidf:data-model" xmlns:rpid="urn:ietf:params:xml:ns:pidf:rpid">
-       <tuple id="sip:bob@127.0.0.1">
-        <status>
-         <basic>closed</basic>
-        </status>
-        <timestamp>2018-05-20T10:34:20.518Z</timestamp>
-        <note>Out for lunch</note>
-       </tuple>
-       <dm:person id="pj5c280887-4f06-4f17-88e5-0495d4d481d7">
-        <rpid:activities>
-         <rpid:busy />
-        </rpid:activities>
-        <dm:note>Out for lunch</dm:note>
-       </dm:person>
-      </presence>
+      Content-Length: 0
 
     ]]>
   </send>
