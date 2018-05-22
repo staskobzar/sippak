@@ -37,7 +37,8 @@ static enum opts_enum_t {
   OPT_LOG_SND,
   OPT_PRES_STATUS,
   OPT_PRES_NOTE,
-  OPT_PRES_XPIDF
+  OPT_PRES_XPIDF,
+  OPT_PRES_EVENT
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -61,6 +62,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"pres-status", 1,  0,  OPT_PRES_STATUS},
   {"pres-note",   1,  0,  OPT_PRES_NOTE},
   {"pres-xpidf",  0,  0,  OPT_PRES_XPIDF},
+  {"pres-event",  1,  0,  OPT_PRES_EVENT},
   { NULL,         0,  0,   0 }
 };
 
@@ -111,6 +113,14 @@ static pj_str_t pres_note (const char *note)
           MAX_LEN_PRES_NOTE));
   }
   return val;
+}
+
+static sippak_pres_evtype pres_event (const char *event)
+{
+  if (pj_ansi_strnicmp(event, "mwi", 3) == 0) {
+    return EVTYPE_MWI;
+  }
+  return EVTYPE_PRES;
 }
 
 static void sippak_parse_argv_left (struct sippak_app *app,
@@ -185,6 +195,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.pres_note.ptr    = NULL;
   app->cfg.pres_note.slen   = 0;
   app->cfg.pres_use_xpidf   = PJ_FALSE;
+  app->cfg.pres_ev          = EVTYPE_PRES;
 
   return PJ_SUCCESS;
 }
@@ -277,6 +288,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_PRES_XPIDF:
         app->cfg.pres_use_xpidf = PJ_TRUE;
+        break;
+      case OPT_PRES_EVENT:
+        app->cfg.pres_ev = pres_event (pj_optarg);
         break;
       default:
         break;

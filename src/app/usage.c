@@ -76,6 +76,9 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    --pres-xpidf");
   puts("                    Use XPIDF presence format for PUBLISH command.");
   puts("                    Note: XPIDF implementation is not complete in pjproject.");
+  puts("    --pres-event=EVENT");
+  puts("                    Presence event for subscribe method.");
+  puts("                    EVENT values can be \"presence\" or \"mwi\". Default: presence.");
   puts("");
 }
 

@@ -168,7 +168,11 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   status = pjsip_evsub_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_pres_init_module(app->endpt, &mod_subscribe);
+  if (app->cfg.pres_ev == EVTYPE_MWI) {
+    status = pjsip_mwi_init_module(app->endpt, &mod_subscribe);
+  } else {
+    status = pjsip_pres_init_module(app->endpt, &mod_subscribe);
+  }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_register_module(app->endpt, &mod_subscribe);
@@ -179,14 +183,27 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   pres_cb.on_evsub_state = &on_evsub_state;
   pres_cb.on_rx_notify = &on_rx_notify;
 
-  status = pjsip_pres_create_uac(dlg, &pres_cb, 1, &sub);
+  if (app->cfg.pres_ev == EVTYPE_MWI) {
+    status = pjsip_mwi_create_uac(dlg, &pres_cb, 1, &sub);
+  } else {
+    status = pjsip_pres_create_uac(dlg, &pres_cb, 1, &sub);
+  }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_pres_initiate(sub, app->cfg.expires, &tdata);
+  if (app->cfg.pres_ev == EVTYPE_MWI) {
+    status = pjsip_mwi_initiate(sub, app->cfg.expires, &tdata);
+  } else {
+    status = pjsip_pres_initiate(sub, app->cfg.expires, &tdata);
+  }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  return pjsip_pres_send_request(sub, tdata);
+  if (app->cfg.pres_ev == EVTYPE_MWI) {
+    status = pjsip_mwi_send_request(sub, tdata);
+  } else {
+    status = pjsip_pres_send_request(sub, tdata);
+  }
+  return status;
 }

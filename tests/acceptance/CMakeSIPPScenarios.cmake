@@ -63,3 +63,7 @@ add_test ( SUBSCRIBE_auth_request
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.subscribe_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( SUBSCRIBE_MWI_request
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.subscribe_mwi.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

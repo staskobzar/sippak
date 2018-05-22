@@ -56,6 +56,13 @@ enum app_command {
 
 } app_command;
 
+typedef enum {
+
+  EVTYPE_PRES = 0x200,
+  EVTYPE_MWI
+
+} sippak_pres_evtype;
+
 struct sippak_app {
   pjsip_endpoint *endpt;
   pj_pool_t *pool;
@@ -82,6 +89,8 @@ struct sippak_app {
     pj_bool_t pres_status_open;   /*<! Presence status */
     pj_str_t pres_note;           /*<! Presence note message */
     pj_bool_t pres_use_xpidf;     /*<! Use xpidf type instead of pidf */
+    sippak_pres_evtype pres_ev;   /*<! Presence event type for subscribe. */
+
   } cfg;
 
 };
