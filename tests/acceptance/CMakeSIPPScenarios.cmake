@@ -67,3 +67,7 @@ add_test ( SUBSCRIBE_MWI_request
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.subscribe_mwi.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( NOTIFY_method_send
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.notify_basic.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
