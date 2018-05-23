@@ -33,14 +33,15 @@ ok ($output =~ m/$regex/m, "Basic NOTIFY packet sent.");
 $regex = '^SIP\/2\.0 200 OK Basic NOTIFY Test$';
 ok ($output =~ m/$regex/m, "Basic NOTIFY response displayed.");
 
-$regex = '^Event: presence$';
-ok ($output =~ m/$regex/m, "Default event is 'presence'");
+$regex = '^Event: keep-alive$';
+ok ($output =~ m/$regex/m, "Default event is 'keep-alive'");
 
-$regex = '^<basic>open</basic>$';
-ok ($output =~ m/$regex/m, "Default status is open");
+# presence pidf/xpidf
+#$regex = '^<basic>open</basic>$';
+#ok ($output =~ m/$regex/m, "Default status is open");
 
-$regex = '^Content-Type: application/pidf\+xml$';
-ok ($output =~ m/$regex/m, "Default content type is application/pidf+xml");
+#$regex = '^Content-Type: application/pidf\+xml$';
+#ok ($output =~ m/$regex/m, "Default content type is application/pidf+xml");
 # ------------------------------------------------------------------
 # run sippak ping output with trailing dots
 

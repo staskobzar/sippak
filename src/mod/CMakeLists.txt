@@ -22,4 +22,5 @@ add_library (mod OBJECT
   ping.c
   publish.c
   subscribe.c
+  notify.c
   )

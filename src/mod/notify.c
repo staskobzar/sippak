@@ -20,25 +20,26 @@
 
 /**
  * @file ping.c
- * @brief sippak ping with OPTIONS remote host. Stateless.
+ * @brief sippak send stateless NOTIFY message
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
 #include <pjsip.h>
 #include <pjlib.h>
 #include "sippak.h"
+#include <pjsip-simple/presence.h> // decare notify method
 
-#define NAME "mod_ping"
+#define NAME "mod_notify"
 
 static pjsip_auth_clt_sess auth_sess;
 static int auth_tries = 0;
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 
-static pjsip_module mod_ping =
+static pjsip_module mod_notify =
 {
   NULL, NULL,                 /* prev, next.    */
-  { "mod-ping", 9 },          /* Name.    */
+  { "mod-notify", 10 },       /* Name.    */
   -1,                         /* Id      */
   PJSIP_MOD_PRIORITY_TRANSPORT_LAYER, /* Priority          */
   NULL,                       /* load()    */
@@ -78,6 +79,16 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
   return PJ_FALSE; // continue with othe modules
 }
 
+static void add_event_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
+{
+  pj_str_t hname = pj_str("Event");
+  pj_str_t hvalue = pj_str("keep-alive");
+  pjsip_generic_string_hdr *event_hdr;
+
+  event_hdr = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);
+  pjsip_msg_add_hdr(tdata->msg, (pjsip_hdr*) event_hdr);
+}
+
 static void send_cb(void *token, pjsip_event *e)
 {
   pj_status_t status;
@@ -115,7 +126,7 @@ static void send_cb(void *token, pjsip_event *e)
 }
 
 /* Ping */
-pj_status_t sippak_cmd_ping (struct sippak_app *app)
+pj_status_t sippak_cmd_notify (struct sippak_app *app)
 {
   pj_status_t status;
   pj_str_t *local_addr;
@@ -133,7 +144,7 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
   ruri = sippak_create_ruri(app);
 
   status = pjsip_endpt_create_request(app->endpt,
-              &pjsip_options_method,  // method OPTIONS
+              pjsip_get_notify_method(), // method NOTIFY
               &ruri,                  // request URI
               &from,                  // from header value
               &app->cfg.dest,         // to header value
@@ -144,10 +155,12 @@ pj_status_t sippak_cmd_ping (struct sippak_app *app)
               &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  add_event_hdr(tdata, app);
+
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_endpt_register_module(app->endpt, &mod_ping);
+  status = pjsip_endpt_register_module(app->endpt, &mod_notify);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   return pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
