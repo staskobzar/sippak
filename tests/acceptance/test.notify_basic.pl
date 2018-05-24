@@ -36,6 +36,25 @@ ok ($output =~ m/$regex/m, "Basic NOTIFY response displayed.");
 $regex = '^Event: keep-alive$';
 ok ($output =~ m/$regex/m, "Default event is 'keep-alive'");
 
+# special events
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -E foo sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: foo$';
+ok ($output =~ m/$regex/m, "Arbitrary event header 'foo'.");
+
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify --event=check-sync sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: check-sync$';
+ok ($output =~ m/$regex/m, "Event header 'check-sync'.");
+
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify --event=mwi sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: message-summary$';
+ok ($output =~ m/$regex/m, "Event header 'message-summary' for alias 'mwi'.");
+
 # presence pidf/xpidf
 #$regex = '^<basic>open</basic>$';
 #ok ($output =~ m/$regex/m, "Default status is open");

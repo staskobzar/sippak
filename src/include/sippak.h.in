@@ -59,15 +59,16 @@ enum app_command {
 
 typedef enum {
 
-  EVTYPE_UNKNOWN = 0x200,
+  EVTYPE_UNKNOWN = 0x200, // not set with cli opt
   EVTYPE_PRES,
-  EVTYPE_MWI
+  EVTYPE_MWI,
+  EVTYPE_OTHER
 
 } sippak_evtype_e;
 
 typedef enum {
 
-  CTYPE_UNKNOWN = 0x300,
+  CTYPE_UNKNOWN = 0x300, // not set with cli opt
   CTYPE_PIDF,
   CTYPE_XPIDF,
   CTYPE_MWI,

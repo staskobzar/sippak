@@ -82,7 +82,18 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 static void add_event_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
 {
   pj_str_t hname = pj_str("Event");
-  pj_str_t hvalue = pj_str("keep-alive");
+  pj_str_t hvalue;
+
+  if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
+    hvalue = pj_str("keep-alive");
+  } else if (app->cfg.pres_ev == EVTYPE_PRES) {
+    hvalue = pj_str("presence");
+  } else if (app->cfg.pres_ev == EVTYPE_MWI) {
+    hvalue = pj_str("message-summary");
+  } else {
+    hvalue = app->cfg.event; // EVTYPE_OTHER
+  }
+
   pjsip_generic_string_hdr *event_hdr;
 
   event_hdr = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);

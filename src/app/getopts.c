@@ -173,6 +173,8 @@ static void set_event (struct sippak_app *app, const char *event)
   } else if (pj_strnicmp2(&value, "mwi", 3) == 0 ||
              pj_strnicmp2(&value, "message-summary", 15) == 0) {
     app->cfg.pres_ev = EVTYPE_MWI;
+  } else {
+    app->cfg.pres_ev = EVTYPE_OTHER;
   }
 
   app->cfg.event = value;

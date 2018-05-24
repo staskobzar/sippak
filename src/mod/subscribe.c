@@ -141,7 +141,7 @@ static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *
 
 static sippak_evtype_e set_sub_evtype(struct sippak_app *app)
 {
-  if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
+  if (app->cfg.pres_ev == EVTYPE_OTHER || app->cfg.pres_ev == EVTYPE_UNKNOWN) {
     PJ_LOG(2,
         (NAME, "Presence event \"%.*s\" is not supported. Will use \"presence\".",
          app->cfg.event.slen, app->cfg.event.ptr));
