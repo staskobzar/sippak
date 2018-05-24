@@ -37,9 +37,19 @@ ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Event header.");
 $regex = '^SIP\/2\.0 200 OK Basic SUBSCRIBE Test$';
 ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Response 200 OK received.");
 
+# invalid event setup
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE -E foo sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: presence$';
+ok ($output =~ m/$regex/m, "Subscription event unknown use presence.");
+
+$regex = 'Presence event "foo" is not supported. Will use "presence"';
+ok ($output =~ m/$regex/m, "Subscription event unknown use presence warning.");
+
 # expires setup
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak SUBSCRIBE -E 654 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak SUBSCRIBE -X 654 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Expires: 654$';
 ok ($output =~ m/$regex/m, "Subscription expires header setup.");

@@ -35,8 +35,8 @@ void usage ()
   puts("  COMMAND:");
   puts("  Default commans is \"PING\".");
   puts("    PING      Send OPTIONS packet to destination.");
-  puts("    PUBLISH   Send PUBLISH events and status.");
-  puts("    SUBSCRIBE Send SUBSCRIBE request.");
+  puts("    PUBLISH   Send PUBLISH events and status. Default document is 'pidf' and default event is 'presence'.");
+  puts("    SUBSCRIBE Send SUBSCRIBE request. Default event is 'presence'");
   puts("    NOTIFY    Send NOTIFY request. Default event is 'keep-alive'");
 
   puts("");
@@ -68,19 +68,22 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Display name in From header. Default is empty.");
   puts("    -t, --proto=PROTO");
   puts("                    Transport protocol to use. Possible values 'tcp' or 'udp'. Default is 'udp'.");
-  puts("    -E, --expires=NUMBER");
+  puts("    -X, --expires=NUMBER");
   puts("                    Expires header value. Must be number more then 0.");
   puts("    --pres-status=STATUS");
-  puts("                    Presence status for PUBLISH command. STATUS value be 'open' or 'closed'");
+  puts("                    Presence status for PUBLISH command. STATUS value can be 'open', 'closed' etc.");
   puts("                    If this parameter is not defined or invalid, will use 'open' status.");
   puts("    --pres-note=MESSAGE");
   puts("                    Presence note message string for PUBLISH command.");
   puts("    --pres-xpidf");
   puts("                    Use XPIDF presence format for PUBLISH command.");
   puts("                    Note: XPIDF implementation is not complete in pjproject.");
-  puts("    --pres-event=EVENT");
-  puts("                    Presence event for subscribe method.");
-  puts("                    EVENT values can be \"presence\" or \"mwi\". Default: presence.");
+  puts("    -E, --event=EVENT");
+  puts("                    Presence event header for subscribe, publish or notify methods.");
+  puts("                    EVENT values can be \"presence\", \"message-summary\", \"keep-alive\" etc.");
+  puts("                    For convinence, there is an alias \"mwi\" can be used for \"message-summary\" event.");
+  puts("                    For PUBLISH and SUBSCRIBE method default value is 'presence'.");
+  puts("                    For NOTIFY method default value is 'keep-alive'.");
   puts("");
 }
 

@@ -59,7 +59,8 @@ enum app_command {
 
 typedef enum {
 
-  EVTYPE_PRES = 0x200,
+  EVTYPE_UNKNOWN = 0x200,
+  EVTYPE_PRES,
   EVTYPE_MWI
 
 } sippak_pres_evtype;
@@ -91,6 +92,7 @@ struct sippak_app {
     pj_str_t pres_note;           /*<! Presence note message */
     pj_bool_t pres_use_xpidf;     /*<! Use xpidf type instead of pidf */
     sippak_pres_evtype pres_ev;   /*<! Presence event type for subscribe. */
+    pj_str_t event;               /*<! Event header value. */
 
   } cfg;
 

@@ -24,7 +24,7 @@ if ($? == -1) {
 }
 
 # run sippak publish basic
-$output = `$sippak SUBSCRIBE -E 0 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak SUBSCRIBE -X 0 sip:alice\@127.0.0.1:5060`;
 
 # test request
 $regex = '^SUBSCRIBE sip:alice\@127\.0\.0\.1:5060 SIP\/2\.0$';

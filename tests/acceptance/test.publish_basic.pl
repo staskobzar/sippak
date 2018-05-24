@@ -49,7 +49,7 @@ ok ($output =~ m/$regex/m, "Invalid Expires value set.");
 
 # run sippak publish with expire set value
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak PUBLISH -E 84877 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak PUBLISH -X 84877 sip:alice\@127.0.0.1:5060`;
 # test request
 $regex = '^Expires: 84877$';
 ok ($output =~ m/$regex/m, "Set expire value 84877.");

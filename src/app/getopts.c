@@ -28,6 +28,15 @@
 #include <pjlib-util.h>
 #include "sippak.h"
 
+static int is_string_numeric(const char *optarg);
+static pj_str_t pjstr_trimmed(const char *optarg);
+static void sippak_parse_argv_left (struct sippak_app *app, int argc, char *argv[], int pj_optind);
+static void set_event (struct sippak_app *app, const char *event);
+static pj_str_t pres_note (const char *note);
+static pj_bool_t pres_status_open (const char *status);
+static int transport_proto (const char *proto);
+static int parse_command_str (const char *cmd);
+
 static enum opts_enum_t {
   OPT_NS = 1,
   OPT_COLOR,
@@ -37,8 +46,7 @@ static enum opts_enum_t {
   OPT_LOG_SND,
   OPT_PRES_STATUS,
   OPT_PRES_NOTE,
-  OPT_PRES_XPIDF,
-  OPT_PRES_EVENT
+  OPT_PRES_XPIDF
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -58,15 +66,15 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"password",    1,  0,  'p' },
   {"from-name",   1,  0,  'F' },
   {"proto",       1,  0,  't' },
-  {"expires",     1,  0,  'E' },
+  {"expires",     1,  0,  'X' },
   {"pres-status", 1,  0,  OPT_PRES_STATUS},
   {"pres-note",   1,  0,  OPT_PRES_NOTE},
   {"pres-xpidf",  0,  0,  OPT_PRES_XPIDF},
-  {"pres-event",  1,  0,  OPT_PRES_EVENT},
-  { NULL,         0,  0,   0 }
+  {"event",       1,  0,  'E' },
+  { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:E:";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -117,12 +125,17 @@ static pj_str_t pres_note (const char *note)
   return val;
 }
 
-static sippak_pres_evtype pres_event (const char *event)
+static void set_event (struct sippak_app *app, const char *event)
 {
-  if (pj_ansi_strnicmp(event, "mwi", 3) == 0) {
-    return EVTYPE_MWI;
+  pj_str_t value = pjstr_trimmed(event);
+  if (pj_strnicmp2(&value, "presence", 8) == 0) {
+    app->cfg.pres_ev = EVTYPE_PRES;
+  } else if (pj_strnicmp2(&value, "mwi", 3) == 0 ||
+             pj_strnicmp2(&value, "message-summary", 15) == 0) {
+    app->cfg.pres_ev = EVTYPE_MWI;
   }
-  return EVTYPE_PRES;
+
+  app->cfg.event = value;
 }
 
 static void sippak_parse_argv_left (struct sippak_app *app,
@@ -197,7 +210,9 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.pres_note.ptr    = NULL;
   app->cfg.pres_note.slen   = 0;
   app->cfg.pres_use_xpidf   = PJ_FALSE;
-  app->cfg.pres_ev          = EVTYPE_PRES;
+  app->cfg.pres_ev          = EVTYPE_UNKNOWN;
+  app->cfg.event.slen       = 0;
+  app->cfg.event.ptr        = NULL;
 
   return PJ_SUCCESS;
 }
@@ -275,7 +290,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case 'q':
           app->cfg.log_level = 0;
         break;
-      case 'E':
+      case 'X':
           if(!is_string_numeric(pj_optarg)) {
             PJ_LOG(1, (PROJECT_NAME, "Invalid expires value: %s. Must be numeric.", pj_optarg));
             exit(PJ_CLI_EINVARG);
@@ -291,8 +306,8 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_PRES_XPIDF:
         app->cfg.pres_use_xpidf = PJ_TRUE;
         break;
-      case OPT_PRES_EVENT:
-        app->cfg.pres_ev = pres_event (pj_optarg);
+      case 'E':
+        set_event(app, pj_optarg);
         break;
       default:
         break;

@@ -34,7 +34,12 @@
 #define NAME "mod_subscribe"
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
+static void on_evsub_state(pjsip_evsub *sub, pjsip_event *event);
 static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event);
+static void on_rx_notify(pjsip_evsub *sub, pjsip_rx_data *rdata, int *p_st_code,
+    pj_str_t **p_st_text, pjsip_hdr *res_hdr, pjsip_msg_body **p_body);
+static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event);
+static sippak_pres_evtype set_sub_evtype(struct sippak_app *app);
 static short unsigned auth_tries = 0;
 
 static pjsip_module mod_subscribe =
@@ -89,7 +94,7 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 
 //
 //
-void on_evsub_state(pjsip_evsub *sub, pjsip_event *event)
+static void on_evsub_state(pjsip_evsub *sub, pjsip_event *event)
 {
   PJ_UNUSED_ARG(event);
   pjsip_evsub_state state = pjsip_evsub_get_state(sub);
@@ -106,7 +111,7 @@ void on_evsub_state(pjsip_evsub *sub, pjsip_event *event)
   }
 }
 
-void on_rx_notify(pjsip_evsub *sub,
+static void on_rx_notify(pjsip_evsub *sub,
                   pjsip_rx_data *rdata,
                   int *p_st_code,
                   pj_str_t **p_st_text,
@@ -134,6 +139,17 @@ static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *
   }
 }
 
+static sippak_pres_evtype set_sub_evtype(struct sippak_app *app)
+{
+  if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
+    PJ_LOG(2,
+        (NAME, "Presence event \"%.*s\" is not supported. Will use \"presence\".",
+         app->cfg.event.slen, app->cfg.event.ptr));
+    return EVTYPE_PRES;
+  }
+  return app->cfg.pres_ev;
+}
+
 pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
 {
   pj_status_t status;
@@ -145,6 +161,8 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   int local_port;
   pjsip_evsub_user pres_cb;
   pjsip_cred_info cred[1];
+
+  sippak_pres_evtype evtype = set_sub_evtype(app);
 
   status = sippak_transport_init(app, &local_addr, &local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

@@ -23,15 +23,42 @@ if ($? == -1) {
   exit(1);
 }
 
-# run sippak subscribe basic
-$output = `$sippak SUBSCRIBE --pres-event=mwi sip:alice\@127.0.0.1:5060`;
+# run sippak subscribe basic short opt
+$output = `$sippak SUBSCRIBE -E message-summary sip:alice\@127.0.0.1:5060`;
 
 # test request
 $regex = '^Event: message-summary$';
-ok ($output =~ m/$regex/m, "Basic SUBSCRIBE MWI packet sent.");
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE short opt MWI with event message-summary packet sent.");
 
 # test response
 $regex = '^SIP\/2\.0 200 OK Basic SUB MWI Test$';
-ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Response 200 OK received.");
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Response 200 OK received for message-summary short opt.");
+
+# run sippak subscribe basic short opt alias
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE -E mwi sip:alice\@127.0.0.1:5060`;
+
+# test request
+$regex = '^Event: message-summary$';
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE short opt MWI with event mwi packet sent.");
+
+# test response
+$regex = '^SIP\/2\.0 200 OK Basic SUB MWI Test$';
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE Response 200 OK received on mwi short opt.");
+
+# run sippak subscribe basic long opt
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE --event=mwi sip:alice\@127.0.0.1:5060`;
+
+# test request
+$regex = '^Event: message-summary$';
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE long opt MWI with event mwi packet sent.");
+
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE --event=message-summary sip:alice\@127.0.0.1:5060`;
+
+# test request
+$regex = '^Event: message-summary$';
+ok ($output =~ m/$regex/m, "Basic SUBSCRIBE long opt MWI with event message-summary packet sent.");
 
 done_testing();
