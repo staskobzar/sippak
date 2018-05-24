@@ -63,7 +63,17 @@ typedef enum {
   EVTYPE_PRES,
   EVTYPE_MWI
 
-} sippak_pres_evtype;
+} sippak_evtype_e;
+
+typedef enum {
+
+  CTYPE_UNKNOWN = 0x300,
+  CTYPE_PIDF,
+  CTYPE_XPIDF,
+  CTYPE_MWI,
+  CTYPE_OTHER
+
+} sippak_ctype_e;
 
 struct sippak_app {
   pjsip_endpoint *endpt;
@@ -90,9 +100,10 @@ struct sippak_app {
 
     pj_bool_t pres_status_open;   /*<! Presence status */
     pj_str_t pres_note;           /*<! Presence note message */
-    pj_bool_t pres_use_xpidf;     /*<! Use xpidf type instead of pidf */
-    sippak_pres_evtype pres_ev;   /*<! Presence event type for subscribe. */
+    sippak_evtype_e pres_ev;      /*<! Presence event type for subscribe. */
     pj_str_t event;               /*<! Event header value. */
+    sippak_ctype_e ctype_e;       /*<! Content type enum value. */
+    pjsip_media_type ctype_media; /*<! Content type pjsip struct. */
 
   } cfg;
 

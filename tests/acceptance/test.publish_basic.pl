@@ -107,9 +107,26 @@ ok ($output =~ m/$regex/m, "Long note message is stripped to 64 chars.");
 
 # test XPIDF presence message
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak PUBLISH --pres-xpidf sip:alice\@127.0.0.1:5060`;
+$output = `$sippak PUBLISH --content-type=xpidf sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Content-Type: application/xpidf\+xml$';
 ok ($output =~ m/$regex/m, "Basic PUBLISH content type is XPIDF.");
+
+# test explicit pidf type
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH -C pidf sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Content-Type: application/pidf\+xml$';
+ok ($output =~ m/$regex/m, "Basic PUBLISH content type is PIDF explicit set.");
+
+# test invalid content type
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH -C foo sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Content-Type: application/pidf\+xml$';
+ok ($output =~ m/$regex/m, "Basic PUBLISH content type is PIDF for invalid types.");
+
+$regex = 'Content type "foo" can not be used. Fall back to pidf content type.';
+ok ($output =~ m/$regex/m, "Basic PUBLISH content type is PIDF for invalid types warning.");
 
 done_testing();

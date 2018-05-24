@@ -96,8 +96,13 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   pjsip_tx_data *tdata;
   pjsip_pres_status pres_status;
   pjsip_cred_info cred[1];
+  pj_str_t event;
 
-  const pj_str_t event = pj_str("presence"); // TODO: use cli argument param to set event
+  if (app->cfg.event.slen == 0) {
+    event = pj_str("presence");
+  } else{
+    event = app->cfg.event;
+  }
 
   if (app->cfg.expires < 1) {
     PJ_LOG(1, (PROJECT_NAME, "Expires header value must be more then 0."));
@@ -136,9 +141,14 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   status = pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  if (app->cfg.pres_use_xpidf) {
+  if (app->cfg.ctype_e == CTYPE_XPIDF) {
     status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+  } else if (app->cfg.ctype_e == CTYPE_PIDF) {
+    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
   } else {
+    PJ_LOG(2, (PROJECT_NAME,
+      "Content type \"%.*s\" can not be used. Fall back to pidf content type.",
+      app->cfg.ctype_media.subtype.slen, app->cfg.ctype_media.subtype.ptr));
     status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
   }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

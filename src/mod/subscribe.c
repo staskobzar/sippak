@@ -39,7 +39,7 @@ static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *
 static void on_rx_notify(pjsip_evsub *sub, pjsip_rx_data *rdata, int *p_st_code,
     pj_str_t **p_st_text, pjsip_hdr *res_hdr, pjsip_msg_body **p_body);
 static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event);
-static sippak_pres_evtype set_sub_evtype(struct sippak_app *app);
+static sippak_evtype_e set_sub_evtype(struct sippak_app *app);
 static short unsigned auth_tries = 0;
 
 static pjsip_module mod_subscribe =
@@ -139,7 +139,7 @@ static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *
   }
 }
 
-static sippak_pres_evtype set_sub_evtype(struct sippak_app *app)
+static sippak_evtype_e set_sub_evtype(struct sippak_app *app)
 {
   if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
     PJ_LOG(2,
@@ -162,7 +162,7 @@ pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
   pjsip_evsub_user pres_cb;
   pjsip_cred_info cred[1];
 
-  sippak_pres_evtype evtype = set_sub_evtype(app);
+  sippak_evtype_e evtype = set_sub_evtype(app);
 
   status = sippak_transport_init(app, &local_addr, &local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

@@ -32,6 +32,7 @@ static int is_string_numeric(const char *optarg);
 static pj_str_t pjstr_trimmed(const char *optarg);
 static void sippak_parse_argv_left (struct sippak_app *app, int argc, char *argv[], int pj_optind);
 static void set_event (struct sippak_app *app, const char *event);
+static void set_content_type (struct sippak_app *app, const char *type);
 static pj_str_t pres_note (const char *note);
 static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
@@ -45,8 +46,7 @@ static enum opts_enum_t {
   OPT_LOG_LEVEL,
   OPT_LOG_SND,
   OPT_PRES_STATUS,
-  OPT_PRES_NOTE,
-  OPT_PRES_XPIDF
+  OPT_PRES_NOTE
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -69,12 +69,12 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"expires",     1,  0,  'X' },
   {"pres-status", 1,  0,  OPT_PRES_STATUS},
   {"pres-note",   1,  0,  OPT_PRES_NOTE},
-  {"pres-xpidf",  0,  0,  OPT_PRES_XPIDF},
+  {"content-type",1,  0,  'C'},
   {"event",       1,  0,  'E' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -123,6 +123,46 @@ static pj_str_t pres_note (const char *note)
           MAX_LEN_PRES_NOTE));
   }
   return val;
+}
+
+static void set_content_type (struct sippak_app *app,
+                              const char *type)
+{
+  pj_ssize_t found_idx = 0;
+  pj_str_t token;
+  pj_str_t value = pjstr_trimmed(type);
+  pj_str_t delim = pj_str("/");
+
+  if (pj_strnicmp2(&value, "pidf", 4) == 0) {
+
+    app->cfg.ctype_media.type = pj_str("application");
+    app->cfg.ctype_media.subtype = pj_str("pidf+xml");
+    app->cfg.ctype_e = CTYPE_PIDF;
+
+  } else if (pj_strnicmp2(&value, "xpidf", 5) == 0) {
+
+    app->cfg.ctype_media.type = pj_str("application");
+    app->cfg.ctype_media.subtype = pj_str("xpidf+xml");
+    app->cfg.ctype_e = CTYPE_XPIDF;
+
+  } else if (pj_strnicmp2(&value, "mwi", 3) == 0) {
+
+    app->cfg.ctype_media.type = pj_str("application");
+    app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
+    app->cfg.ctype_e = CTYPE_MWI;
+
+  } else {
+    if (pj_strstr(&value, &delim) == NULL) {
+      app->cfg.ctype_media.type = pj_str("application");
+      app->cfg.ctype_media.subtype = value;
+    } else {
+      found_idx = pj_strtok(&value, &delim, &token, 0);
+      app->cfg.ctype_media.type = token;
+      pj_strtok(&value, &delim, &token, found_idx + token.slen);
+      app->cfg.ctype_media.subtype = token;
+    }
+    app->cfg.ctype_e = CTYPE_OTHER;
+  }
 }
 
 static void set_event (struct sippak_app *app, const char *event)
@@ -176,11 +216,11 @@ static pj_str_t pjstr_trimmed(const char *optarg)
 
 static int is_string_numeric(const char *optarg)
 {
-  int i = 0;
+  int i;
   pj_str_t val = {NULL, 0};
   val = pj_str (pj_optarg);
   pj_strtrim(&val);
-  for (i; i < val.slen; i++) {
+  for (i = 0; i < val.slen; i++) {
     if (val.ptr[i] < '0' || val.ptr[i] > '9') {
       return 0;
     }
@@ -209,7 +249,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.pres_status_open = PJ_TRUE;
   app->cfg.pres_note.ptr    = NULL;
   app->cfg.pres_note.slen   = 0;
-  app->cfg.pres_use_xpidf   = PJ_FALSE;
+  app->cfg.ctype_e          = CTYPE_UNKNOWN;
   app->cfg.pres_ev          = EVTYPE_UNKNOWN;
   app->cfg.event.slen       = 0;
   app->cfg.event.ptr        = NULL;
@@ -303,10 +343,10 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_PRES_NOTE:
         app->cfg.pres_note = pres_note (pj_optarg);
         break;
-      case OPT_PRES_XPIDF:
-        app->cfg.pres_use_xpidf = PJ_TRUE;
+      case 'C': // content type
+        set_content_type(app, pj_optarg);
         break;
-      case 'E':
+      case 'E': // event
         set_event(app, pj_optarg);
         break;
       default:

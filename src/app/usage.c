@@ -75,8 +75,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    If this parameter is not defined or invalid, will use 'open' status.");
   puts("    --pres-note=MESSAGE");
   puts("                    Presence note message string for PUBLISH command.");
-  puts("    --pres-xpidf");
-  puts("                    Use XPIDF presence format for PUBLISH command.");
+  puts("    -C, --content-type=TYPE");
+  puts("                    Publish or notify content type. TYPE values can be pidf, xpidf or mwi.");
   puts("                    Note: XPIDF implementation is not complete in pjproject.");
   puts("    -E, --event=EVENT");
   puts("                    Presence event header for subscribe, publish or notify methods.");

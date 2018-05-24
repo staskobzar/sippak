@@ -3,6 +3,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include <stdlib.h>
+#include <string.h>
 #include "sippak.h"
 
 static void pass_no_arguments_prints_usage (void **state)
@@ -387,6 +389,89 @@ static void set_from_name_long (void **state)
   assert_string_equal ("\"Gianni Schicchi\"", app.cfg.from_name.ptr);
 }
 
+static void set_content_type_xpidf_long (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--content-type=xpidf" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("application", app.cfg.ctype_media.type.ptr);
+  assert_string_equal ("xpidf+xml", app.cfg.ctype_media.subtype.ptr);
+  assert_int_equal (app.cfg.ctype_e, CTYPE_XPIDF);
+}
+
+static void set_content_type_pidf_short (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-C pidf" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("application", app.cfg.ctype_media.type.ptr);
+  assert_string_equal ("pidf+xml", app.cfg.ctype_media.subtype.ptr);
+  assert_int_equal (app.cfg.ctype_e, CTYPE_PIDF);
+}
+
+static void set_content_type_mwi (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-C mwi" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("application", app.cfg.ctype_media.type.ptr);
+  assert_string_equal ("simple-message-summary", app.cfg.ctype_media.subtype.ptr);
+  assert_int_equal (app.cfg.ctype_e, CTYPE_MWI);
+}
+
+static void set_content_type_unknown_with_delim (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-C text/plain" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  char *type = malloc(app.cfg.ctype_media.type.slen + 1);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+
+  strncpy(type, app.cfg.ctype_media.type.ptr, app.cfg.ctype_media.type.slen);
+  type[app.cfg.ctype_media.type.slen] = '\0';
+  assert_string_equal ("text", type);
+
+  assert_string_equal ("plain", app.cfg.ctype_media.subtype.ptr);
+
+  assert_int_equal (app.cfg.ctype_e, CTYPE_OTHER);
+  free(type);
+}
+
+static void set_content_type_unknown_without_delim (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "-C check-sync" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_string_equal ("application", app.cfg.ctype_media.type.ptr);
+  assert_string_equal ("check-sync", app.cfg.ctype_media.subtype.ptr);
+  assert_int_equal (app.cfg.ctype_e, CTYPE_OTHER);
+}
+
 int main(int argc, const char *argv[])
 {
   const struct CMUnitTest tests[] = {
@@ -422,6 +507,12 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(set_local_host_long),
     cmocka_unit_test(set_from_name_short),
     cmocka_unit_test(set_from_name_long),
+
+    cmocka_unit_test(set_content_type_xpidf_long),
+    cmocka_unit_test(set_content_type_pidf_short),
+    cmocka_unit_test(set_content_type_mwi),
+    cmocka_unit_test(set_content_type_unknown_with_delim),
+    cmocka_unit_test(set_content_type_unknown_without_delim),
   };
 
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);
