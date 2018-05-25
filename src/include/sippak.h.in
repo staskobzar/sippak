@@ -106,6 +106,10 @@ struct sippak_app {
     sippak_ctype_e ctype_e;       /*<! Content type enum value. */
     pjsip_media_type ctype_media; /*<! Content type pjsip struct. */
 
+    pj_bool_t is_mwi;             /*<! MWI message summary presence type. */
+    int mwi[4];                   /*<! Message summary body vm lise new/old (urg_new/urg_old). */
+    pj_str_t mwi_acc;             /*<! Message summary account URL. */
+
   } cfg;
 
 };

@@ -55,6 +55,36 @@ $output = `$sippak notify --event=mwi sip:alice\@127.0.0.1:5060`;
 $regex = '^Event: message-summary$';
 ok ($output =~ m/$regex/m, "Event header 'message-summary' for alias 'mwi'.");
 
+# custom content type 
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify --event=foo --content-type=bar sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: foo$';
+ok ($output =~ m/$regex/m, "Custom notify with content type and event 'foo'");
+
+$regex = '^Content-Type: application/bar$';
+ok ($output =~ m/$regex/m, "Custom notify with content type 'bar' and event 'foo'");
+
+# custom compound content type
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify --content-type=foo/bar sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Content-Type: foo/bar$';
+ok ($output =~ m/$regex/m, "Custom notify with compound content type 'foo/bar'");
+
+# message-summary notify
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify --mwi=0 sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Messages-Waiting: no$';
+ok ($output =~ m/$regex/m, "MWI basic no message waiting.");
+
+$regex = '^Message-Account: sip:alice@127.0.0.1:5060$';
+ok ($output =~ m/$regex/m, "MWI basic message account use RURI.");
+
+$regex = '^Voice-Message: 0/0 (0/0)$';
+ok ($output =~ m/$regex/m, "MWI basic voice message is 0/0 (0/0).");
+
 # presence pidf/xpidf
 #$regex = '^<basic>open</basic>$';
 #ok ($output =~ m/$regex/m, "Default status is open");

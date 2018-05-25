@@ -83,6 +83,7 @@ static void add_event_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
 {
   pj_str_t hname = pj_str("Event");
   pj_str_t hvalue;
+  pjsip_generic_string_hdr *event_hdr;
 
   if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
     hvalue = pj_str("keep-alive");
@@ -94,10 +95,31 @@ static void add_event_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
     hvalue = app->cfg.event; // EVTYPE_OTHER
   }
 
-  pjsip_generic_string_hdr *event_hdr;
-
   event_hdr = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);
   pjsip_msg_add_hdr(tdata->msg, (pjsip_hdr*) event_hdr);
+}
+
+static void add_content_type_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
+{
+  pj_str_t hname = pj_str("Content-Type");
+  pj_str_t hvalue;
+  pjsip_generic_string_hdr *hdr;
+  char buf[512];
+  int len = 0;
+
+  if (app->cfg.ctype_e == CTYPE_UNKNOWN) {
+    return;
+  }
+  len = pjsip_media_type_print(buf, 512, &app->cfg.ctype_media);
+  if (len == -1) {
+    PJ_LOG(1, (NAME, "Failed to allocate memory for content-type header value."));
+    return;
+  }
+  hvalue.slen = len;
+  hvalue.ptr = buf;
+
+  hdr = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);
+  pjsip_msg_add_hdr(tdata->msg, (pjsip_hdr*) hdr);
 }
 
 static void send_cb(void *token, pjsip_event *e)
@@ -167,6 +189,8 @@ pj_status_t sippak_cmd_notify (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   add_event_hdr(tdata, app);
+
+  add_content_type_hdr(tdata, app);
 
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

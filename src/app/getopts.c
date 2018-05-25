@@ -37,6 +37,7 @@ static pj_str_t pres_note (const char *note);
 static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
 static int parse_command_str (const char *cmd);
+static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
 
 static enum opts_enum_t {
   OPT_NS = 1,
@@ -69,12 +70,13 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"expires",     1,  0,  'X' },
   {"pres-status", 1,  0,  OPT_PRES_STATUS},
   {"pres-note",   1,  0,  OPT_PRES_NOTE},
-  {"content-type",1,  0,  'C'},
+  {"content-type",1,  0,  'C' },
   {"event",       1,  0,  'E' },
+  {"mwi",         1,  0,  'M' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -163,6 +165,30 @@ static void set_content_type (struct sippak_app *app,
     }
     app->cfg.ctype_e = CTYPE_OTHER;
   }
+}
+
+static void set_mwi_list (struct sippak_app *app, char *mwi_list_str)
+{
+  pj_ssize_t found_idx = 0;
+  int mwi_idx = 0;
+  pj_str_t token;
+  pj_str_t delim = pj_str(",");
+  pj_str_t list = pj_str(mwi_list_str);
+
+  // init array
+  for (int i = 0; i < 4; i++) app->cfg.mwi[i] = 0;
+
+  // parse list
+  for (
+      found_idx = pj_strtok (&list, &delim, &token, 0);
+      found_idx != list.slen && mwi_idx < 4;
+      found_idx = pj_strtok (&list, &delim, &token, found_idx + token.slen)
+      )
+  {
+    app->cfg.mwi[mwi_idx++] = pj_strtol(&token);
+  }
+
+  app->cfg.is_mwi = PJ_TRUE;
 }
 
 static void set_event (struct sippak_app *app, const char *event)
@@ -255,6 +281,9 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.pres_ev          = EVTYPE_UNKNOWN;
   app->cfg.event.slen       = 0;
   app->cfg.event.ptr        = NULL;
+  app->cfg.mwi_acc.slen     = 0;
+  app->cfg.mwi_acc.ptr      = NULL;
+  app->cfg.is_mwi           = PJ_FALSE;
 
   return PJ_SUCCESS;
 }
@@ -350,6 +379,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'E': // event
         set_event(app, pj_optarg);
+        break;
+      case 'M': // event
+        set_mwi_list(app, pj_optarg);
         break;
       default:
         break;

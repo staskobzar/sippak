@@ -84,6 +84,10 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    For convinence, there is an alias \"mwi\" can be used for \"message-summary\" event.");
   puts("                    For PUBLISH and SUBSCRIBE method default value is 'presence'.");
   puts("                    For NOTIFY method default value is 'keep-alive'.");
+  puts("    -M, --mwi=N,N,N,N");
+  puts("                    Voice messages list. Comma separated list of numbers.");
+  puts("                    List of messages new,old,urgent_new,urgent_old.");
+  puts("                    List from 1 to 4 members. Not set members will be initiated with 0.");
   puts("");
 }
 
