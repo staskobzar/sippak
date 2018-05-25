@@ -88,6 +88,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Voice messages list. Comma separated list of numbers.");
   puts("                    List of messages new,old,urgent_new,urgent_old.");
   puts("                    List from 1 to 4 members. Not set members will be initiated with 0.");
+  puts("    --mwi-acc=ACCOUNT");
+  puts("                    Voicemail account for message-summary body. If not set then destination URI used.");
   puts("");
 }
 

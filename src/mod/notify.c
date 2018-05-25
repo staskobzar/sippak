@@ -122,6 +122,31 @@ static void add_content_type_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
   pjsip_msg_add_hdr(tdata->msg, (pjsip_hdr*) hdr);
 }
 
+static void add_body_msg (pjsip_tx_data *tdata, struct sippak_app *app)
+{
+  char buf[SIPMSG_BODY_LEN];
+  pj_str_t body_txt;
+  pjsip_msg_body *body;
+
+  if (app->cfg.is_mwi == PJ_TRUE) {
+    body_txt.slen = pj_ansi_snprintf (buf, SIPMSG_BODY_LEN,
+        "Messages-Waiting: %s\r\n"
+        "Message-Account: %.*s\r\n"
+        "Voice-Message: %d/%d (%d/%d)\r\n",
+        app->cfg.mwi[0] > 0 ? "yes" : "no",
+        (int)app->cfg.mwi_acc.slen, app->cfg.mwi_acc.ptr,
+        app->cfg.mwi[0], app->cfg.mwi[1], app->cfg.mwi[2], app->cfg.mwi[3]
+        );
+    body_txt.ptr = buf;
+    tdata->msg->body = pjsip_msg_body_create(app->pool,
+        &app->cfg.ctype_media.type,
+        &app->cfg.ctype_media.subtype,
+        &body_txt);
+  } else {
+    add_content_type_hdr(tdata, app);
+  }
+}
+
 static void send_cb(void *token, pjsip_event *e)
 {
   pj_status_t status;
@@ -190,7 +215,7 @@ pj_status_t sippak_cmd_notify (struct sippak_app *app)
 
   add_event_hdr(tdata, app);
 
-  add_content_type_hdr(tdata, app);
+  add_body_msg(tdata, app);
 
   status = pjsip_tsx_layer_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

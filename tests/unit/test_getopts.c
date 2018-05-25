@@ -488,7 +488,24 @@ static void set_mwi_list_init_zeros (void **state)
   assert_int_equal (app.cfg.mwi[1], 0); // old
   assert_int_equal (app.cfg.mwi[2], 0); // urgent new
   assert_int_equal (app.cfg.mwi[3], 0); // urgent old
-  // assert_string_equal ("sip:bob@foo.com", app.cfg.mwi_acc.ptr);
+  assert_string_equal ("sip:bob@foo.com", app.cfg.mwi_acc.ptr);
+}
+
+static void set_mwi_list_with_acc (void **state)
+{
+  (void) *state;
+  pj_status_t status;
+  struct sippak_app app;
+  char *argv[] = { "./sippak", "--mwi=3,0,5", "--mwi-acc=sip:*97@example.com", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  sippak_init(&app);
+  status = sippak_getopts (argc, argv, &app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (app.cfg.mwi[0], 3); // new
+  assert_int_equal (app.cfg.mwi[1], 0); // old
+  assert_int_equal (app.cfg.mwi[2], 5); // urgent new
+  assert_int_equal (app.cfg.mwi[3], 0); // urgent old
+  assert_string_equal ("sip:*97@example.com", app.cfg.mwi_acc.ptr);
 }
 
 int main(int argc, const char *argv[])
@@ -534,6 +551,7 @@ int main(int argc, const char *argv[])
     cmocka_unit_test(set_content_type_unknown_without_delim),
 
     cmocka_unit_test(set_mwi_list_init_zeros),
+    cmocka_unit_test(set_mwi_list_with_acc),
   };
 
   return cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

@@ -76,13 +76,26 @@ ok ($output =~ m/$regex/m, "Custom notify with compound content type 'foo/bar'")
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak notify --mwi=0 sip:alice\@127.0.0.1:5060`;
 
-$regex = '^Messages-Waiting: no$';
+$regex = '^Messages-Waiting: no';
 ok ($output =~ m/$regex/m, "MWI basic no message waiting.");
 
-$regex = '^Message-Account: sip:alice@127.0.0.1:5060$';
+$regex = '^Message-Account: sip:alice@127.0.0.1:5060';
 ok ($output =~ m/$regex/m, "MWI basic message account use RURI.");
 
-$regex = '^Voice-Message: 0/0 (0/0)$';
+$regex = '^Voice-Message: 0/0 \(0/0\)';
+ok ($output =~ m/$regex/m, "MWI basic voice message is 0/0 (0/0).");
+
+# message-summary notify with account name
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -M 4,0,1,2 --mwi-acc=sip:VM\@sip.com sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Messages-Waiting: yes';
+ok ($output =~ m/$regex/m, "MWI basic with messages waiting.");
+
+$regex = '^Message-Account: sip:VM@sip.com';
+ok ($output =~ m/$regex/m, "MWI basic message account set mwi-acc.");
+
+$regex = '^Voice-Message: 4/0 \(1/2\)';
 ok ($output =~ m/$regex/m, "MWI basic voice message is 0/0 (0/0).");
 
 # presence pidf/xpidf

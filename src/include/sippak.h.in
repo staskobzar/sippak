@@ -45,6 +45,8 @@
 
 #define MAX_LEN_PRES_NOTE 64 // max length of presece note message
 
+#define SIPMSG_BODY_LEN 2048
+
 enum app_command {
 
   CMD_UNKNOWN = 0x100,

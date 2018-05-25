@@ -1,8 +1,6 @@
 #ifndef __MOD_LOGGER_LOGGER_H
 #define __MOD_LOGGER_LOGGER_H
 
-#define SIPMSG_BODY_LEN 2048
-
 static void term_set_color(int level);
 static void term_restore_color(void);
 

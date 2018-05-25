@@ -38,6 +38,7 @@ static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
 static int parse_command_str (const char *cmd);
 static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
+static void post_parse_setup (struct sippak_app *app);
 
 static enum opts_enum_t {
   OPT_NS = 1,
@@ -47,7 +48,8 @@ static enum opts_enum_t {
   OPT_LOG_LEVEL,
   OPT_LOG_SND,
   OPT_PRES_STATUS,
-  OPT_PRES_NOTE
+  OPT_PRES_NOTE,
+  OPT_MWI_ACC
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -73,6 +75,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"content-type",1,  0,  'C' },
   {"event",       1,  0,  'E' },
   {"mwi",         1,  0,  'M' },
+  {"mwi-acc",     1,  0,  OPT_MWI_ACC },
   { NULL,         0,  0,   0  }
 };
 
@@ -288,6 +291,24 @@ pj_status_t sippak_init (struct sippak_app *app)
   return PJ_SUCCESS;
 }
 
+static void post_parse_setup (struct sippak_app *app)
+{
+  // set log decoration
+  pj_log_set_decor(app->cfg.log_decor);
+
+  if (app->cfg.is_mwi == PJ_TRUE) {
+    // reset event and presence to follow MWI routin
+    app->cfg.pres_ev = EVTYPE_MWI;
+    app->cfg.ctype_media.type = pj_str("application");
+    app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
+    app->cfg.ctype_e = CTYPE_MWI;
+    if (app->cfg.mwi_acc.slen == 0) {
+      // pj_strset3(&app->cfg.mwi_acc, app->cfg.dest.ptr, app->cfg.dest.ptr + app->cfg.dest.slen);
+      app->cfg.mwi_acc = app->cfg.dest;
+    }
+  }
+}
+
 pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
   int c = 0, opt_index = 0;
@@ -383,6 +404,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case 'M': // event
         set_mwi_list(app, pj_optarg);
         break;
+      case OPT_MWI_ACC: // event
+        app->cfg.mwi_acc = pjstr_trimmed(pj_optarg);
+        break;
       default:
         break;
     }
@@ -391,8 +415,8 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
   // get command and destination
   sippak_parse_argv_left (app, argc, argv, pj_optind);
 
-  // set log decoration
-  pj_log_set_decor(app->cfg.log_decor);
+  // finilize the setup
+  post_parse_setup(app);
 
   return PJ_SUCCESS;
 }
