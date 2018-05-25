@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "http://sipp.sourceforge.net/doc/sipp.dtd">
+
+<!-- This program is free software; you can redistribute it and/or      -->
+<!-- modify it under the terms of the GNU General Public License as     -->
+<!-- published by the Free Software Foundation; either version 2 of the -->
+<!-- License, or (at your option) any later version.                    -->
+<!--                                                                    -->
+<!-- This program is distributed in the hope that it will be useful,    -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of     -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      -->
+<!-- GNU General Public License for more details.                       -->
+<!--                                                                    -->
+<!-- You should have received a copy of the GNU General Public License  -->
+<!-- along with this program; if not, write to the                      -->
+<!-- Free Software Foundation, Inc.,                                    -->
+<!-- 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA             -->
+<!--                                                                    -->
+<!--                 Sipp default 'uas' scenario.                       -->
+<!--                                                                    -->
+
+<scenario name="UAS NOTIFY Proxy Auth">
+  <recv request="NOTIFY" crlf="true">
+  </recv>
+
+  <!-- Send 407 Authentication with nonce -->
+  <send>
+    <![CDATA[
+      SIP/2.0 407 Proxy Authentication Required
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=9e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Proxy-Authenticate: Digest realm="sip.example.com", nonce="5ad56fab0000000e131d6366e461c4ca77c0f8b1879c66bb"
+      Server: SIP Proxy 2
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!-- SIPP does not support Proxy-Authenticate header and that's -->
+  <!-- why "verifyauth" action  does not work with any SIP method -->
+  <!-- but REGISTER. Here we compare pre-calculated response hash -->
+  <!-- for user "alice" and password "pa55w0rd".                  -->
+  <recv request="NOTIFY" >
+    <action>
+      <ereg regexp="Digest .*response=\"([[:alnum:]]*)\"" search_in="hdr" header="Proxy-Authorization:" assign_to="junk,resp" />
+      <log message="Header: [$junk]" />
+      <log message="Response found: [$resp]" />
+      <strcmp assign_to="cmpres" variable="resp" value="5caa4d7984920f6da4a7fe9ac90a1bdc" />
+      <test assign_to="authvalid" variable="cmpres" compare="equal" value="0" />
+    </action>
+  </recv>
+
+  <nop hide="true" test="authvalid" next="goodauth" />
+  <nop hide="true" next="badauth" />
+
+  <label id="goodauth" />
+
+  <send next="end">
+    <![CDATA[
+
+      SIP/2.0 200 OK Auth
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=9e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Type: application/sdp
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <label id="badauth" />
+
+  <send>
+    <![CDATA[
+      SIP/2.0 407 Proxy Authentication Retry
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=8e301c61b1bd7c9286619d6d1e9d72df.[pid]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Proxy-Authenticate: Digest realm="sip.example.com", nonce="6ad50c7300000003b395e7c84c14cbc9a4eab1e730fd7115"
+      Server: SIP Proxy 2
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+
+  <label id="end" />
+  <!-- definition of the response time repartition table (unit is ms)   -->
+  <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
+
+  <!-- definition of the call length repartition table (unit is ms)     -->
+  <CallLengthRepartition value="10, 50, 100, 500, 1000, 5000, 10000"/>
+
+</scenario>

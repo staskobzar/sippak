@@ -71,3 +71,7 @@ add_test ( NOTIFY_method_send
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.notify_basic.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( NOTIFY_auth_request
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.notify_auth.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
