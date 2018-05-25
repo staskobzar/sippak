@@ -98,20 +98,44 @@ ok ($output =~ m/$regex/m, "MWI basic message account set mwi-acc.");
 $regex = '^Voice-Message: 4/0 \(1/2\)';
 ok ($output =~ m/$regex/m, "MWI basic voice message is 0/0 (0/0).");
 
-# presence pidf/xpidf
-#$regex = '^<basic>open</basic>$';
-#ok ($output =~ m/$regex/m, "Default status is open");
+# presence pidf basic
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -C pidf sip:alice\@127.0.0.1:5060`;
 
-#$regex = '^Content-Type: application/pidf\+xml$';
-#ok ($output =~ m/$regex/m, "Default content type is application/pidf+xml");
-# ------------------------------------------------------------------
-# run sippak ping output with trailing dots
+$regex = '^Event: presence$';
+ok ($output =~ m/$regex/m, "NOTIFY PIDF event header is presence");
 
-# system("$sipp $sippargs -sf $scenario");
-# $output = `$sippak --trail-dot sip:alice\@127.0.0.1:5060`;
+$regex = '<basic>open</basic>';
+ok ($output =~ m/$regex/m, "NOTIFY default PIDF status is open");
 
-# test request
-# $regex = '^OPTIONS sip:alice\@127\.0\.0\.1:5060 SIP\/2.0\.$';
-# ok ($output =~ m/$regex/m, "Basic OPTIONS with trailing dot output.");
+$regex = '^Content-Type: application/pidf\+xml$';
+ok ($output =~ m/$regex/m, "NOTIFY PIDF content type is application/pidf+xml");
+
+# presence pidf with status closed
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -C pidf --pres-status=closed sip:alice\@127.0.0.1:5060`;
+
+$regex = '<basic>closed</basic>';
+ok ($output =~ m/$regex/m, "NOTIFY PIDF with status set as closed");
+
+# presence pidf with note
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -C pidf --pres-note="Out for lunch" sip:alice\@127.0.0.1:5060`;
+
+$regex = '<basic>open</basic>';
+ok ($output =~ m/$regex/m, "NOTIFY PIDF with note and default status is open");
+
+$regex = '<note>Out for lunch</note>';
+ok ($output =~ m/$regex/m, "NOTIFY PIDF doc note is set");
+
+# presence XPIDF
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -C xpidf sip:alice\@127.0.0.1:5060`;
+
+$regex = '^Event: presence$';
+ok ($output =~ m/$regex/m, "NOTIFY XPIDF event header is presence");
+
+$regex = '^Content-Type: application/xpidf\+xml$';
+ok ($output =~ m/$regex/m, "NOTIFY XPIDF document type");
 
 done_testing();

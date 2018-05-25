@@ -85,6 +85,10 @@ static void add_event_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
   pj_str_t hvalue;
   pjsip_generic_string_hdr *event_hdr;
 
+  if ((app->cfg.ctype_e == CTYPE_PIDF || app->cfg.ctype_e == CTYPE_XPIDF)
+      && app->cfg.pres_ev == EVTYPE_UNKNOWN)
+    app->cfg.pres_ev = EVTYPE_PRES;
+
   if (app->cfg.pres_ev == EVTYPE_UNKNOWN) {
     hvalue = pj_str("keep-alive");
   } else if (app->cfg.pres_ev == EVTYPE_PRES) {
@@ -124,9 +128,22 @@ static void add_content_type_hdr(pjsip_tx_data *tdata, struct sippak_app *app)
 
 static void add_body_msg (pjsip_tx_data *tdata, struct sippak_app *app)
 {
+  pj_status_t status;
   char buf[SIPMSG_BODY_LEN];
   pj_str_t body_txt;
   pjsip_msg_body *body;
+  pjsip_pres_status pres_status;
+
+  // --- pres status for pidf/xpidf
+  // TODO: move to sip_helper.c and use it in publish.c
+  pj_bzero(&pres_status, sizeof(pres_status));
+  pres_status.info_cnt = 1;
+  pres_status.info[0].basic_open = app->cfg.pres_status_open;
+  pres_status.info[0].id = app->cfg.dest;
+  pres_status.info[0].rpid.note = app->cfg.pres_note;
+  pres_status.info[0].rpid.activity = app->cfg.pres_status_open
+    ? PJRPID_ACTIVITY_UNKNOWN
+    : PJRPID_ACTIVITY_BUSY;
 
   if (app->cfg.is_mwi == PJ_TRUE) {
     body_txt.slen = pj_ansi_snprintf (buf, SIPMSG_BODY_LEN,
@@ -142,6 +159,14 @@ static void add_body_msg (pjsip_tx_data *tdata, struct sippak_app *app)
         &app->cfg.ctype_media.type,
         &app->cfg.ctype_media.subtype,
         &body_txt);
+  } else if (app->cfg.ctype_e == CTYPE_PIDF) {
+    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &app->cfg.dest, &tdata->msg->body);
+    if (status != PJ_SUCCESS)
+      PJ_LOG(2, (NAME, "Failed to create PIDF body."));
+  } else if (app->cfg.ctype_e == CTYPE_XPIDF) {
+    status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &app->cfg.dest, &tdata->msg->body);
+    if (status != PJ_SUCCESS)
+      PJ_LOG(2, (NAME, "Failed to create XPIDF body."));
   } else {
     add_content_type_hdr(tdata, app);
   }
