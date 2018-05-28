@@ -42,4 +42,9 @@ add_cmocka_test(test_dns_helper test_dns_helper.c
   )
 target_link_libraries (test_dns_helper resolv)
 
+# test sip helper functions
+add_cmocka_test(test_sip_helper test_sip_helper.c
+  ${CMAKE_SOURCE_DIR}/src/app/getopts.c
+  ${CMAKE_SOURCE_DIR}/src/app/sip_helper.c
+  )
 

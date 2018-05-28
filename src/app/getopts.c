@@ -91,6 +91,8 @@ static int parse_command_str (const char *cmd)
     return CMD_SUBSCRIBE;
   } else if (pj_ansi_strnicmp(cmd, "notify", 6) == 0) {
     return CMD_NOTIFY;
+  } else if (pj_ansi_strnicmp(cmd, "register", 8) == 0) {
+    return CMD_REGISTER;
   }
 
   return CMD_UNKNOWN;

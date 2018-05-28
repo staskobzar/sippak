@@ -55,7 +55,8 @@ enum app_command {
   CMD_PING,
   CMD_PUBLISH,
   CMD_SUBSCRIBE,
-  CMD_NOTIFY
+  CMD_NOTIFY,
+  CMD_REGISTER
 
 } app_command;
 
@@ -123,6 +124,7 @@ pj_status_t sippak_cmd_ping(struct sippak_app *app);
 pj_status_t sippak_cmd_publish(struct sippak_app *app);
 pj_status_t sippak_cmd_subscribe (struct sippak_app *app);
 pj_status_t sippak_cmd_notify (struct sippak_app *app);
+pj_status_t sippak_cmd_register (struct sippak_app *app);
 
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
@@ -134,6 +136,15 @@ void version ();
 /* sip helper function */
 pj_str_t sippak_create_from_hdr(struct sippak_app *app);
 pj_str_t sippak_create_ruri(struct sippak_app *app);
+/**
+ * Register Request-URI respecting rfc3261 section 10.2.
+ * The "userinfo" and "@" components of the
+ * SIP URI MUST NOT be present.
+ *
+ * @param app      sippak main application structure.
+ * @return         pj_str Request RURI
+ */
+pj_str_t sippak_create_reg_ruri(struct sippak_app *app);
 pj_str_t sippak_create_contact_hdr(struct sippak_app *app,
                                 pj_str_t *local_addr,
                                 int local_port);

@@ -85,6 +85,26 @@ pj_str_t sippak_create_ruri(struct sippak_app *app)
   return ruri;
 }
 
+/* Create REGISTER Requst-URI */
+pj_str_t sippak_create_reg_ruri(struct sippak_app *app)
+{
+  pj_str_t reg_ruri = {0,0};
+  reg_ruri.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
+  pj_str_t ruri = sippak_create_ruri(app);
+
+  pjsip_sip_uri *ruri_s = (pjsip_sip_uri*)pjsip_parse_uri(app->pool,
+      ruri.ptr, ruri.slen, 0);
+
+  // remove user part
+  ruri_s->user.slen = 0;
+  ruri_s->user.ptr = NULL;
+
+  reg_ruri.slen = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, ruri_s,
+      reg_ruri.ptr, PJSIP_MAX_URL_SIZE);
+
+  return reg_ruri;
+}
+
 /* Create Contact SIP header */
 pj_str_t sippak_create_contact_hdr (struct sippak_app *app,
                                 pj_str_t *local_addr,

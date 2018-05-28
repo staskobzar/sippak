@@ -23,4 +23,5 @@ add_library (mod OBJECT
   publish.c
   subscribe.c
   notify.c
+  register.c
   )
