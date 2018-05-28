@@ -79,3 +79,7 @@ add_test ( REGISTER_method_send
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.register_no_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( REGISTER_method_auth
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.register_auth.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

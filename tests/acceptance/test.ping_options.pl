@@ -24,7 +24,7 @@ if ($? == -1) {
 }
 
 # run sippak ping basic
-$output = `$sippak sip:alice\@127.0.0.1:5060`;
+$output = `$sippak --ns=127.0.0.1 sip:alice\@127.0.0.1:5060`;
 
 # test request
 $regex = '^OPTIONS sip:alice\@127\.0\.0\.1:5060 SIP\/2.0$';

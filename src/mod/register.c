@@ -31,7 +31,6 @@
 
 static void reg_callback(struct pjsip_regc_cbparam *param);
 static void print_reg_success(struct pjsip_regc_cbparam *regp);
-static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 
 static pjsip_module mod_register =
 {
@@ -44,7 +43,7 @@ static pjsip_module mod_register =
   NULL,                       /* stop()    */
   NULL,                       /* unload()    */
   NULL,                       /* on_rx_request()  */
-  &on_rx_response,            /* on_rx_response()  */
+  NULL,            /* on_rx_response()  */
   NULL,                       /* on_tx_request.  */
   NULL,                       /* on_tx_response()  */
   NULL,                       /* on_tsx_state()  */
@@ -67,15 +66,14 @@ static void reg_callback(struct pjsip_regc_cbparam *regp)
 {
   if (regp->code == PJSIP_SC_OK) {
     print_reg_success(regp);
-    sippak_loop_cancel();
-  } else {
-    printf("====> reg_callback code: %d\n", regp->code);
-  }
-}
 
-static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
-{
-  puts("----> on_rx_response");
+  } else if (regp->code == PJSIP_SC_UNAUTHORIZED) {
+    PJ_LOG(1, (NAME, "Authentication failed. Check your username and password"));
+  } else {
+    PJ_LOG(1, (NAME, "Registration response: %d %.*s", regp->code,
+          regp->reason.slen, regp->reason.ptr));
+  }
+  sippak_loop_cancel();
 }
 
 /* Register */
@@ -86,6 +84,7 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   int local_port;
   pjsip_tx_data *tdata;
   pjsip_regc *regc;
+  pjsip_cred_info cred[1];
 
   pj_str_t srv_url;
   pj_str_t fromto_uri;
@@ -111,6 +110,10 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   contacts[0] = sippak_create_contact_hdr(app, local_addr, local_port);
 
   status = pjsip_regc_init(regc, &srv_url, &fromto_uri, &fromto_uri, 1, contacts, app->cfg.expires);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  sippak_set_cred(app, cred);
+  status = pjsip_regc_set_credentials(regc, 1, cred);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_regc_register(regc, PJ_FALSE, &tdata);
