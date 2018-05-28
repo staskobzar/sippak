@@ -49,7 +49,8 @@ static enum opts_enum_t {
   OPT_LOG_SND,
   OPT_PRES_STATUS,
   OPT_PRES_NOTE,
-  OPT_MWI_ACC
+  OPT_MWI_ACC,
+  OPT_IS_CLIST
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -76,6 +77,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"event",       1,  0,  'E' },
   {"mwi",         1,  0,  'M' },
   {"mwi-acc",     1,  0,  OPT_MWI_ACC },
+  {"clist",       0,  0,  OPT_IS_CLIST },
   { NULL,         0,  0,   0  }
 };
 
@@ -289,6 +291,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.mwi_acc.slen     = 0;
   app->cfg.mwi_acc.ptr      = NULL;
   app->cfg.is_mwi           = PJ_FALSE;
+  app->cfg.is_clist         = PJ_FALSE;
 
   return PJ_SUCCESS;
 }
@@ -408,6 +411,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_MWI_ACC: // event
         app->cfg.mwi_acc = pjstr_trimmed(pj_optarg);
+        break;
+      case OPT_IS_CLIST:
+        app->cfg.is_clist = PJ_TRUE;
         break;
       default:
         break;

@@ -113,6 +113,8 @@ struct sippak_app {
     int mwi[4];                   /*<! Message summary body vm lise new/old (urg_new/urg_old). */
     pj_str_t mwi_acc;             /*<! Message summary account URL. */
 
+    pj_bool_t is_clist;           /*<! Flag for REGISTER method to get contacts list. */
+
   } cfg;
 
 };

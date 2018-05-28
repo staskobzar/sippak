@@ -90,6 +90,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    List from 1 to 4 members. Not set members will be initiated with 0.");
   puts("    --mwi-acc=ACCOUNT");
   puts("                    Voicemail account for message-summary body. If not set then destination URI used.");
+  puts("    --clist");
+  puts("                    Flag for REGISTER method to get list of contacts registerd for AOR.");
   puts("");
 }
 

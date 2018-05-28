@@ -109,7 +109,9 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   fromto_uri = sippak_create_from_hdr(app);
   contacts[0] = sippak_create_contact_hdr(app, local_addr, local_port);
 
-  status = pjsip_regc_init(regc, &srv_url, &fromto_uri, &fromto_uri, 1, contacts, app->cfg.expires);
+  status = pjsip_regc_init(regc, &srv_url, &fromto_uri, &fromto_uri,
+      app->cfg.is_clist == PJ_TRUE ? 0: 1,
+      contacts, app->cfg.expires);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   sippak_set_cred(app, cred);

@@ -34,6 +34,20 @@ $regex = '^SIP\/2\.0 200 OK Register no auth$';
 ok ($output =~ m/$regex/m, "Basic REGISTER register confirmed.");
 
 # rfc3665 request current contact list
-# rfc3665 cancel registration
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak register --clist sip:alice\@127.0.0.1:5060`;
+
+my @lines = split(/\n/, $output);
+my $pack = '';
+foreach (@lines) {
+  if(/^REGISTER/../\.RX/) {
+    $pack .= "$_\n";
+  }
+}
+$regex = '^REGISTER sip:127\.0\.0\.1:5060 SIP\/2.0$';
+ok ($pack =~ m/$regex/m, "REGISTER packet sent for contact list.");
+
+ok ($pack !~ m/Contact: /m, "No Contact header in list request");
+
 
 done_testing();
