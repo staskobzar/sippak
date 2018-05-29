@@ -28,10 +28,14 @@ static int teardown_app(void **state)
 
 static void create_from_header (void **state)
 {
+  pj_status_t status;
   struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "sip:alice@example.com" };
+  int argc = sizeof(argv) / sizeof(char*);
 
-  app->cfg.dest = pj_str("sip:alice@example.com");
+  status = sippak_getopts (argc, argv, app);
 
+  assert_int_equal (status, PJ_SUCCESS);
   pj_str_t from = sippak_create_from_hdr(app);
   assert_string_equal("sip:alice@example.com", from.ptr);
 }
@@ -101,9 +105,14 @@ static void create_ruri_tcp (void **state)
 
 static void create_contact_hdr (void **state)
 {
+  pj_status_t status;
   struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "sip:alice@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
   pj_str_t addr = pj_str("192.168.1.111");
 
+  status = sippak_getopts (argc, argv, app);
+  assert_int_equal (status, PJ_SUCCESS);
   pj_str_t cnt = sippak_create_contact_hdr(app, &addr, 14255);
   assert_string_equal("sip:alice@192.168.1.111:14255", cnt.ptr);
 }

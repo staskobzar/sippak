@@ -266,6 +266,8 @@ static int is_string_numeric(const char *optarg)
 pj_status_t sippak_init (struct sippak_app *app)
 {
   // init main application structure
+  app->cfg.dest.slen        = 0;
+  app->cfg.dest.ptr         = NULL;
   app->cfg.log_level        = MIN_LOG_LEVEL;
   app->cfg.cmd              = CMD_PING;
   app->cfg.nameservers      = NULL;
@@ -274,7 +276,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.local_port       = 0;
   app->cfg.local_host.ptr   = NULL;
   app->cfg.local_host.slen  = 0;
-  app->cfg.username         = pj_str("alice");
+  app->cfg.username.ptr     = NULL;
+  app->cfg.username.slen    = 0;
   app->cfg.password.ptr     = NULL;
   app->cfg.password.slen    = 0;
   app->cfg.from_name.ptr    = NULL;
@@ -308,9 +311,19 @@ static void post_parse_setup (struct sippak_app *app)
     app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
     app->cfg.ctype_e = CTYPE_MWI;
     if (app->cfg.mwi_acc.slen == 0) {
-      // pj_strset3(&app->cfg.mwi_acc, app->cfg.dest.ptr, app->cfg.dest.ptr + app->cfg.dest.slen);
       app->cfg.mwi_acc = app->cfg.dest;
     }
+  }
+
+  if (app->cfg.username.ptr == NULL && app->cfg.dest.ptr != NULL) {
+    pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
+                          app->cfg.dest.slen, 0);
+    if (dest_uri == NULL) {
+      PJ_LOG(1, (PROJECT_NAME, "Failed to parse destination URI: %.*s",
+            app->cfg.dest.slen, app->cfg.dest.ptr));
+      exit(PJ_CLI_EINVARG);
+    }
+    app->cfg.username = dest_uri->user;
   }
 }
 
@@ -421,6 +434,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
   }
 
   // get command and destination
+
   sippak_parse_argv_left (app, argc, argv, pj_optind);
 
   // finilize the setup

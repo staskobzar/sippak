@@ -55,9 +55,6 @@ int main(int argc, char *argv[])
   status = sippak_init(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = sippak_getopts(argc, argv, &app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
   pj_log_set_level(app.cfg.log_level);
 
   pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
@@ -66,6 +63,9 @@ int main(int argc, char *argv[])
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   app.pool = pjsip_endpt_create_pool(app.endpt, PROJECT_NAME, POOL_INIT, POOL_INCR);
+
+  status = sippak_getopts(argc, argv, &app);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = sippak_mod_logger_register(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
