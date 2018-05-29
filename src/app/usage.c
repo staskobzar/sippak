@@ -38,6 +38,7 @@ void usage ()
   puts("    PUBLISH   Send PUBLISH events and status. Default document is 'pidf' and default event is 'presence'.");
   puts("    SUBSCRIBE Send SUBSCRIBE request. Default event is 'presence'");
   puts("    NOTIFY    Send NOTIFY request. Default event is 'keep-alive'");
+  puts("    REGISTER  AOR contacts register, unregister or list.");
 
   puts("");
   puts("  OPTIONS:");
