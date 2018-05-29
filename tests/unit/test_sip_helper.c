@@ -127,6 +127,21 @@ static void create_contact_hdr_user (void **state)
   assert_string_equal("sip:jonny@192.168.18.11:1255", cnt.ptr);
 }
 
+static void create_contact_hdr_cli_arg (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "--contact=sip:foo@10.123.123.22:14511", "sip:alice@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  pj_str_t addr = pj_str("192.168.18.11");
+
+  status = sippak_getopts (argc, argv, app);
+  app->cfg.username = pj_str("jonny");
+  assert_int_equal (status, PJ_SUCCESS);
+  pj_str_t cnt = sippak_create_contact_hdr(app, &addr, 1255);
+  assert_string_equal("sip:foo@10.123.123.22:14511", cnt.ptr);
+}
+
 int main(int argc, const char *argv[])
 {
   pj_status_t status;
@@ -155,6 +170,7 @@ int main(int argc, const char *argv[])
 
     cmocka_unit_test_setup_teardown(create_contact_hdr, setup_app, teardown_app),
     cmocka_unit_test_setup_teardown(create_contact_hdr_user, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(create_contact_hdr_cli_arg, setup_app, teardown_app),
   };
   status = cmocka_run_group_tests_name("SIP packet helper", tests, NULL, NULL);
 

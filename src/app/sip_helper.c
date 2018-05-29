@@ -113,6 +113,10 @@ pj_str_t sippak_create_contact_hdr (struct sippak_app *app,
   pj_str_t cnt = {0,0};
   char contact[PJSIP_MAX_URL_SIZE];
 
+  if (app->cfg.contact.slen > 0) {
+    return app->cfg.contact;
+  }
+
   pj_ansi_sprintf(contact, "sip:%.*s@%.*s:%d",
       (int)app->cfg.username.slen, app->cfg.username.ptr,
       (int)local_addr->slen, local_addr->ptr, local_port);

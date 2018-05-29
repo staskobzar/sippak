@@ -51,14 +51,26 @@ static pjsip_module mod_register =
 
 static void print_reg_success(struct pjsip_regc_cbparam *regp)
 {
-  PJ_LOG(3, (NAME, "Successfully registered. Response received: %d %.*s",
-        regp->code, regp->reason.slen, regp->reason.ptr));
-  PJ_LOG(3, (NAME, "Registered contacts: %d", regp->contact_cnt));
+  struct sippak_app *app = regp->token;
+  if (app->cfg.cancel_all_reg == PJ_TRUE) {
+    PJ_LOG(3, (NAME, "Cancel all registrations. Response received: %d %.*s",
+          regp->code, regp->reason.slen, regp->reason.ptr));
+  } else if (app->cfg.cancel_reg == PJ_TRUE) {
+    PJ_LOG(3, (NAME, "Unregister contact. Response received: %d %.*s",
+          regp->code, regp->reason.slen, regp->reason.ptr));
+  } else if (app->cfg.is_clist == PJ_TRUE) {
+    PJ_LOG(3, (NAME, "Request for current contacts. Response received: %d %.*s",
+          regp->code, regp->reason.slen, regp->reason.ptr));
+  } else {
+    PJ_LOG(3, (NAME, "Successfully registered. Response received: %d %.*s",
+          regp->code, regp->reason.slen, regp->reason.ptr));
+  }
+  PJ_LOG(3, (NAME, "Contacts list (%d):", regp->contact_cnt));
   for(int i = 0; i < regp->contact_cnt; i++) {
     char buf[PJSIP_MAX_URL_SIZE] = {0};
     pjsip_contact_hdr *hdr = regp->contact[i];
     hdr->vptr->print_on(hdr, buf, PJSIP_MAX_URL_SIZE);
-    PJ_LOG(3, (NAME, "\t%s", buf));
+    PJ_LOG(3, (NAME, "\t%d - %s", i + 1, buf));
   }
 }
 
@@ -99,7 +111,7 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_regc_create(app->endpt,
-      NULL, // void *token: A data to be associated with the client registration struct.
+      app, // void *token: A data to be associated with the client registration struct.
       &reg_callback, // Pointer to callback function to receive registration status
       &regc);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -120,6 +132,8 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
 
   if (app->cfg.cancel_all_reg == PJ_TRUE) {
     status = pjsip_regc_unregister_all(regc, &tdata);
+  } else if (app->cfg.cancel_reg == PJ_TRUE) {
+    status = pjsip_regc_unregister(regc, &tdata);
   } else {
     status = pjsip_regc_register(regc, PJ_FALSE, &tdata);
   }

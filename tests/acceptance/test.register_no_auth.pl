@@ -33,6 +33,16 @@ ok ($output =~ m/$regex/m, "Basic REGISTER packet sent.");
 $regex = '^SIP\/2\.0 200 OK Register no auth$';
 ok ($output =~ m/$regex/m, "Basic REGISTER register confirmed.");
 
+# contact header set
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak register --contact=sip:john\@192.168.12.14:8798 sip:alice\@127.0.0.1:5060`;
+
+$regex = '^REGISTER sip:127\.0\.0\.1:5060 SIP\/2.0$';
+ok ($output =~ m/$regex/m, "REGISTER with contact packet sent.");
+
+$regex = '^Contact: <sip:john@192.168.12.14:8798>';
+ok ($output =~ m/$regex/m, "REGISTER with contact has valid value.");
+
 # rfc3665 request current contact list
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak register --clist sip:alice\@127.0.0.1:5060`;
@@ -61,5 +71,18 @@ ok ($output =~ m/$regex/m, "Cancel all registartions contact header is asterisk.
 
 $regex = '^Expires: 0$';
 ok ($output =~ m/$regex/m, "Cancel all registartions expires header is zero.");
+
+# cancel particular contact
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak register -c sip:john\@10.12.123.102:5060 --cancel sip:alice\@127.0.0.1:5060`;
+
+$regex = '^REGISTER sip:127\.0\.0\.1:5060 SIP\/2.0$';
+ok ($output =~ m/$regex/m, "REGISTER with contact registration cancel packet is sent.");
+
+$regex = '^Contact: <sip:john@10.12.123.102:5060>';
+ok ($output =~ m/$regex/m, "REGISTER with contact cancellation has valid value.");
+
+$regex = '^Expires: 0$';
+ok ($output =~ m/$regex/m, "Cancel contact registartions expires header is zero.");
 
 done_testing();

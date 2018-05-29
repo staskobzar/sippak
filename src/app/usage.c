@@ -64,6 +64,9 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    From header URI. Default is from destination URI.");
   puts("    -p, --password=PASS");
   puts("                    Password for authentication.");
+  puts("    -c, --contact=CONTACT");
+  puts("                    Custom contact header value. Must be valid SIP URI. For example: sip:alice@10.10.10.1:123");
+  puts("                    If not set, contact header is generated automatically.");
   puts("    -F, --from-name=DISPLAY_NAME");
   puts("                    Display name in From header. Default is empty.");
   puts("    -t, --proto=PROTO");
@@ -94,6 +97,9 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Flag for REGISTER method to get list of contacts registered for AOR.");
   puts("    --cancel-all");
   puts("                    Flag for REGISTER method to cancel all registrations for AOR.");
+  puts("    --cancel");
+  puts("                    Flag for REGISTER method to cancel contact registration for AOR.");
+  puts("                    Contact field can be set with --contact option or will be generated.");
   puts("");
 }
 

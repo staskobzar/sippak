@@ -51,7 +51,8 @@ static enum opts_enum_t {
   OPT_PRES_NOTE,
   OPT_MWI_ACC,
   OPT_IS_CLIST,
-  OPT_CANCEL_ALL
+  OPT_CANCEL_ALL,
+  OPT_CANCEL_REG
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -80,10 +81,12 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"mwi-acc",     1,  0,  OPT_MWI_ACC },
   {"clist",       0,  0,  OPT_IS_CLIST },
   {"cancel-all",  0,  0,  OPT_CANCEL_ALL },
+  {"cancel",      0,  0,  OPT_CANCEL_REG },
+  {"contact",     1,  0,  'c' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -298,6 +301,9 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.is_mwi           = PJ_FALSE;
   app->cfg.is_clist         = PJ_FALSE;
   app->cfg.cancel_all_reg   = PJ_FALSE;
+  app->cfg.cancel_reg       = PJ_FALSE;
+  app->cfg.contact.slen     = 0;
+  app->cfg.contact.ptr      = NULL;
 
   return PJ_SUCCESS;
 }
@@ -433,6 +439,12 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_CANCEL_ALL:
         app->cfg.cancel_all_reg = PJ_TRUE;
+        break;
+      case OPT_CANCEL_REG:
+        app->cfg.cancel_reg = PJ_TRUE;
+        break;
+      case 'c': // custom contact header
+        app->cfg.contact = pjstr_trimmed(pj_optarg);
         break;
       default:
         break;
