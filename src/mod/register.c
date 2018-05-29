@@ -53,12 +53,12 @@ static void print_reg_success(struct pjsip_regc_cbparam *regp)
 {
   PJ_LOG(3, (NAME, "Successfully registered. Response received: %d %.*s",
         regp->code, regp->reason.slen, regp->reason.ptr));
-  PJ_LOG(3, (NAME, "Registration will expire in %d sec.", regp->expiration));
+  PJ_LOG(3, (NAME, "Registered contacts: %d", regp->contact_cnt));
   for(int i = 0; i < regp->contact_cnt; i++) {
-    char buf[PJSIP_MAX_URL_SIZE];
+    char buf[PJSIP_MAX_URL_SIZE] = {0};
     pjsip_contact_hdr *hdr = regp->contact[i];
     hdr->vptr->print_on(hdr, buf, PJSIP_MAX_URL_SIZE);
-    PJ_LOG(3, (NAME, "%s", buf));
+    PJ_LOG(3, (NAME, "\t%s", buf));
   }
 }
 
@@ -86,8 +86,7 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   pjsip_regc *regc;
   pjsip_cred_info cred[1];
 
-  pj_str_t srv_url;
-  pj_str_t fromto_uri;
+  pj_str_t srv_url, from_uri, to_uri;
   pj_str_t contacts[1];
 
   status = sippak_transport_init(app, &local_addr, &local_port);
@@ -106,11 +105,12 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   srv_url = sippak_create_reg_ruri(app);
-  fromto_uri = sippak_create_from_hdr(app);
+  to_uri = sippak_create_ruri(app);
+  from_uri = sippak_create_from_hdr(app);
   contacts[0] = sippak_create_contact_hdr(app, local_addr, local_port);
 
-  status = pjsip_regc_init(regc, &srv_url, &fromto_uri, &fromto_uri,
-      app->cfg.is_clist == PJ_TRUE ? 0: 1,
+  status = pjsip_regc_init(regc, &srv_url, &from_uri, &to_uri,
+      app->cfg.is_clist == PJ_TRUE ? 0: 1, // no contact header, means return contacts list
       contacts, app->cfg.expires);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
