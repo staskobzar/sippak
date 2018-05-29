@@ -49,5 +49,17 @@ ok ($pack =~ m/$regex/m, "REGISTER packet sent for contact list.");
 
 ok ($pack !~ m/Contact: /m, "No Contact header in list request");
 
+# rfc3665 cancel all registrations
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak register --cancel-all sip:alice\@127.0.0.1:5060`;
+
+$regex = '^REGISTER sip:127\.0\.0\.1:5060 SIP\/2.0$';
+ok ($output =~ m/$regex/m, "REGISTER cancel all packet sent.");
+
+$regex = '^Contact: \*$';
+ok ($output =~ m/$regex/m, "Cancel all registartions contact header is asterisk.");
+
+$regex = '^Expires: 0$';
+ok ($output =~ m/$regex/m, "Cancel all registartions expires header is zero.");
 
 done_testing();

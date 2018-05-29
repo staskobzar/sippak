@@ -118,7 +118,11 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
   status = pjsip_regc_set_credentials(regc, 1, cred);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  status = pjsip_regc_register(regc, PJ_FALSE, &tdata);
+  if (app->cfg.cancel_all_reg == PJ_TRUE) {
+    status = pjsip_regc_unregister_all(regc, &tdata);
+  } else {
+    status = pjsip_regc_register(regc, PJ_FALSE, &tdata);
+  }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   return pjsip_regc_send(regc, tdata);

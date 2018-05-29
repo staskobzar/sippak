@@ -114,6 +114,7 @@ struct sippak_app {
     pj_str_t mwi_acc;             /*<! Message summary account URL. */
 
     pj_bool_t is_clist;           /*<! Flag for REGISTER method to get contacts list. */
+    pj_bool_t cancel_all_reg;     /*<! Flag for REGISTER method to cancel all registrations. */
 
   } cfg;
 
