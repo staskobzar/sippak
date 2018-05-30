@@ -101,6 +101,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    --cancel");
   puts("                    Flag for REGISTER method to cancel contact registration for AOR.");
   puts("                    Contact field can be set with --contact option or will be generated.");
+  puts("    --to=SIP_URI");
+  puts("                    Parameter for REFER command to setup Refer-To header value.");
   puts("");
 }
 

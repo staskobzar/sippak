@@ -52,7 +52,8 @@ static enum opts_enum_t {
   OPT_MWI_ACC,
   OPT_IS_CLIST,
   OPT_CANCEL_ALL,
-  OPT_CANCEL_REG
+  OPT_CANCEL_REG,
+  OPT_REFER_TO
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -83,6 +84,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"cancel-all",  0,  0,  OPT_CANCEL_ALL },
   {"cancel",      0,  0,  OPT_CANCEL_REG },
   {"contact",     1,  0,  'c' },
+  {"to",          1,  0,  OPT_REFER_TO },
   { NULL,         0,  0,   0  }
 };
 
@@ -100,6 +102,8 @@ static int parse_command_str (const char *cmd)
     return CMD_NOTIFY;
   } else if (pj_ansi_strnicmp(cmd, "register", 8) == 0) {
     return CMD_REGISTER;
+  } else if (pj_ansi_strnicmp(cmd, "refer", 5) == 0) {
+    return CMD_REFER;
   }
 
   return CMD_UNKNOWN;
@@ -304,6 +308,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.cancel_reg       = PJ_FALSE;
   app->cfg.contact.slen     = 0;
   app->cfg.contact.ptr      = NULL;
+  app->cfg.refer_to.slen     = 0;
+  app->cfg.refer_to.ptr      = NULL;
 
   return PJ_SUCCESS;
 }
@@ -313,8 +319,15 @@ static void post_parse_setup (struct sippak_app *app)
   // set log decoration
   pj_log_set_decor(app->cfg.log_decor);
 
+  // command REFER requires refer-to parameter
+  if (app->cfg.cmd == CMD_REFER && app->cfg.refer_to.ptr == NULL) {
+    PJ_LOG(1, (PROJECT_NAME,
+          "Failed. Requires parameter \"--to\" to initiate REFER request."));
+    exit(PJ_CLI_EINVARG);
+  }
+
+  // reset event and presence to follow MWI routin
   if (app->cfg.is_mwi == PJ_TRUE) {
-    // reset event and presence to follow MWI routin
     app->cfg.pres_ev = EVTYPE_MWI;
     app->cfg.ctype_media.type = pj_str("application");
     app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
@@ -324,6 +337,7 @@ static void post_parse_setup (struct sippak_app *app)
     }
   }
 
+  // default username is user part of destination URI
   if (app->cfg.username.ptr == NULL && app->cfg.dest.ptr != NULL) {
     pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
                           app->cfg.dest.slen, 0);
@@ -445,6 +459,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'c': // custom contact header
         app->cfg.contact = pjstr_trimmed(pj_optarg);
+        break;
+      case OPT_REFER_TO:
+        app->cfg.refer_to = pjstr_trimmed(pj_optarg);
         break;
       default:
         break;

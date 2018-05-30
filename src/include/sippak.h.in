@@ -56,7 +56,8 @@ enum app_command {
   CMD_PUBLISH,
   CMD_SUBSCRIBE,
   CMD_NOTIFY,
-  CMD_REGISTER
+  CMD_REGISTER,
+  CMD_REFER
 
 } app_command;
 
@@ -118,6 +119,9 @@ struct sippak_app {
     pj_bool_t cancel_reg;         /*<! Flag for REGISTER method to cancel registration for contact. */
 
     pj_str_t contact;             /*<! Custom contact header. */
+
+    pj_str_t refer_to;            /*<! Refer-To header value for REFER command. */
+
   } cfg;
 
 };
@@ -130,6 +134,7 @@ pj_status_t sippak_cmd_publish(struct sippak_app *app);
 pj_status_t sippak_cmd_subscribe (struct sippak_app *app);
 pj_status_t sippak_cmd_notify (struct sippak_app *app);
 pj_status_t sippak_cmd_register (struct sippak_app *app);
+pj_status_t sippak_cmd_refer (struct sippak_app *app);
 
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
