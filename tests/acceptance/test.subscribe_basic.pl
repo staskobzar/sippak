@@ -46,7 +46,6 @@ ok ($output =~ m/$regex/m, "Subscription event unknown use presence.");
 
 $regex = 'Presence event "foo" is not supported. Will use "presence"';
 ok ($output =~ m/$regex/m, "Subscription event unknown use presence warning.");
-print $output;
 
 # expires setup
 system("$sipp $sippargs -sf $scenario");

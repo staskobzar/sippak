@@ -39,6 +39,8 @@ void usage ()
   puts("    SUBSCRIBE Send SUBSCRIBE request. Default event is 'presence'");
   puts("    NOTIFY    Send NOTIFY request. Default event is 'keep-alive'");
   puts("    REGISTER  AOR contacts register, unregister or list.");
+  puts("    REFER     Send REFER method outside dialog. Implements click-to-dial scenario as in RFC5359 #2.18.");
+  puts("              This command requires parameter --to for Refer-To header.");
 
   puts("");
   puts("  OPTIONS:");
