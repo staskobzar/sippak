@@ -87,3 +87,7 @@ add_test ( REFER_method_send
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.refer_basic.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( REFER_method_auth
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.refer_auth.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

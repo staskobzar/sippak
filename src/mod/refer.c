@@ -29,6 +29,9 @@
 
 #define NAME "mod_refer"
 
+static pjsip_auth_clt_sess auth_sess;
+static int auth_tries = 0;
+
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static void send_cb(void *token, pjsip_event *e);
 static void add_referto_hdr(pjsip_tx_data *tdata, struct sippak_app *app);
@@ -95,7 +98,38 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 
 static void send_cb(void *token, pjsip_event *e)
 {
-  puts("==============> send_cb");
+  pj_status_t status;
+  pjsip_tx_data *tdata;
+  pjsip_cred_info	cred[1];
+  pjsip_transaction *tsx = e->body.tsx_state.tsx;
+  pjsip_rx_data *rdata = e->body.tsx_state.src.rdata;
+  struct sippak_app *app = token;
+  if (tsx->status_code == 401 || tsx->status_code == 407) {
+    auth_tries++;
+    if (auth_tries > 1) {
+      PJ_LOG(1, (NAME, "Authentication failed. Check your username and password"));
+      sippak_loop_cancel();
+      return;
+    }
+    sippak_set_cred(app, cred);
+
+    status = pjsip_auth_clt_init (&auth_sess, app->endpt, rdata->tp_info.pool, 0);
+    if (status != PJ_SUCCESS) {
+      PJ_LOG(1, (NAME, "Failed init authentication credentials."));
+      return;
+    }
+
+    pjsip_auth_clt_set_credentials(&auth_sess, 1, cred);
+
+    status = pjsip_auth_clt_reinit_req(&auth_sess, rdata,
+        tsx->last_tx, &tdata);
+    if (status != PJ_SUCCESS) {
+      PJ_LOG(1, (NAME, "Failed to re-init client authentication session."));
+      return;
+    }
+
+    pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
+  }
 }
 
 /* Refer */
