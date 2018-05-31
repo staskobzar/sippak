@@ -38,9 +38,10 @@ void usage ()
   puts("    PUBLISH   Send PUBLISH events and status. Default document is 'pidf' and default event is 'presence'.");
   puts("    SUBSCRIBE Send SUBSCRIBE request. Default event is 'presence'");
   puts("    NOTIFY    Send NOTIFY request. Default event is 'keep-alive'");
-  puts("    REGISTER  AOR contacts register, unregister or list.");
+  puts("    REGISTER  AOR contacts list, register or unregister.");
   puts("    REFER     Send REFER method outside dialog. Implements click-to-dial scenario as in RFC5359 #2.18.");
   puts("              This command requires parameter --to for Refer-To header.");
+  puts("    MESSAGE   Send MESSAGE method with text. SIP instant messaging.");
 
   puts("");
   puts("  OPTIONS:");
@@ -105,6 +106,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Contact field can be set with --contact option or will be generated.");
   puts("    --to=SIP_URI");
   puts("                    Parameter for REFER command to setup Refer-To header value.");
+  puts("    --body=TEXT");
+  puts("                    Parameter for MESSAGE command to setup message body text.");
   puts("");
 }
 

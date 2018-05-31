@@ -25,4 +25,5 @@ add_library (mod OBJECT
   notify.c
   register.c
   refer.c
+  message.c
   )

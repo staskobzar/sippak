@@ -53,7 +53,8 @@ static enum opts_enum_t {
   OPT_IS_CLIST,
   OPT_CANCEL_ALL,
   OPT_CANCEL_REG,
-  OPT_REFER_TO
+  OPT_REFER_TO,
+  OPT_BODY
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -85,6 +86,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"cancel",      0,  0,  OPT_CANCEL_REG },
   {"contact",     1,  0,  'c' },
   {"to",          1,  0,  OPT_REFER_TO },
+  {"body",        1,  0,  OPT_BODY },
   { NULL,         0,  0,   0  }
 };
 
@@ -104,6 +106,8 @@ static int parse_command_str (const char *cmd)
     return CMD_REGISTER;
   } else if (pj_ansi_strnicmp(cmd, "refer", 5) == 0) {
     return CMD_REFER;
+  } else if (pj_ansi_strnicmp(cmd, "message", 7) == 0) {
+    return CMD_MESSAGE;
   }
 
   return CMD_UNKNOWN;
@@ -310,6 +314,8 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.contact.ptr      = NULL;
   app->cfg.refer_to.slen     = 0;
   app->cfg.refer_to.ptr      = NULL;
+  app->cfg.body.slen     = 0;
+  app->cfg.body.ptr      = NULL;
 
   return PJ_SUCCESS;
 }
@@ -323,6 +329,13 @@ static void post_parse_setup (struct sippak_app *app)
   if (app->cfg.cmd == CMD_REFER && app->cfg.refer_to.ptr == NULL) {
     PJ_LOG(1, (PROJECT_NAME,
           "Failed. Requires parameter \"--to\" to initiate REFER request."));
+    exit(PJ_CLI_EINVARG);
+  }
+
+  // command MESSAGE requires body parameter
+  if (app->cfg.cmd == CMD_MESSAGE && app->cfg.body.ptr == NULL) {
+    PJ_LOG(1, (PROJECT_NAME,
+          "Failed. Requires parameter \"--body\" to initiate MESSAGE."));
     exit(PJ_CLI_EINVARG);
   }
 
@@ -462,6 +475,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_REFER_TO:
         app->cfg.refer_to = pjstr_trimmed(pj_optarg);
+        break;
+      case OPT_BODY:
+        app->cfg.body = pjstr_trimmed(pj_optarg);
         break;
       default:
         break;

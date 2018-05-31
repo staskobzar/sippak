@@ -108,6 +108,10 @@ int main(int argc, char *argv[])
       status = sippak_cmd_refer(&app);
       PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
       break;
+    case CMD_MESSAGE:
+      status = sippak_cmd_message(&app);
+      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      break;
 
     // fail
     case CMD_UNKNOWN:

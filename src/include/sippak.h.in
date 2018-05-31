@@ -47,6 +47,8 @@
 
 #define SIPMSG_BODY_LEN 2048
 
+#define MSG_BODY_LEN 128
+
 enum app_command {
 
   CMD_UNKNOWN = 0x100,
@@ -57,7 +59,8 @@ enum app_command {
   CMD_SUBSCRIBE,
   CMD_NOTIFY,
   CMD_REGISTER,
-  CMD_REFER
+  CMD_REFER,
+  CMD_MESSAGE
 
 } app_command;
 
@@ -122,19 +125,22 @@ struct sippak_app {
 
     pj_str_t refer_to;            /*<! Refer-To header value for REFER command. */
 
+    pj_str_t body;                /*<! MESSAGE body text. */
+
   } cfg;
 
 };
 
-pj_status_t sippak_mod_logger_register(struct sippak_app *app);
-pj_status_t sippak_set_resolver_ns(struct sippak_app *app);
+pj_status_t sippak_mod_logger_register (struct sippak_app *app);
+pj_status_t sippak_set_resolver_ns (struct sippak_app *app);
 
-pj_status_t sippak_cmd_ping(struct sippak_app *app);
+pj_status_t sippak_cmd_ping (struct sippak_app *app);
 pj_status_t sippak_cmd_publish(struct sippak_app *app);
 pj_status_t sippak_cmd_subscribe (struct sippak_app *app);
 pj_status_t sippak_cmd_notify (struct sippak_app *app);
 pj_status_t sippak_cmd_register (struct sippak_app *app);
 pj_status_t sippak_cmd_refer (struct sippak_app *app);
+pj_status_t sippak_cmd_message (struct sippak_app *app);
 
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
