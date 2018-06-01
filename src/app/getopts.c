@@ -108,6 +108,8 @@ static int parse_command_str (const char *cmd)
     return CMD_REFER;
   } else if (pj_ansi_strnicmp(cmd, "message", 7) == 0) {
     return CMD_MESSAGE;
+  } else if (pj_ansi_strnicmp(cmd, "invite", 6) == 0) {
+    return CMD_INVITE;
   }
 
   return CMD_UNKNOWN;

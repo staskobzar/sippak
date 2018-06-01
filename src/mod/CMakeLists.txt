@@ -26,4 +26,5 @@ add_library (mod OBJECT
   register.c
   refer.c
   message.c
+  invite.c
   )

@@ -60,7 +60,8 @@ enum app_command {
   CMD_NOTIFY,
   CMD_REGISTER,
   CMD_REFER,
-  CMD_MESSAGE
+  CMD_MESSAGE,
+  CMD_INVITE
 
 } app_command;
 
@@ -141,6 +142,7 @@ pj_status_t sippak_cmd_notify (struct sippak_app *app);
 pj_status_t sippak_cmd_register (struct sippak_app *app);
 pj_status_t sippak_cmd_refer (struct sippak_app *app);
 pj_status_t sippak_cmd_message (struct sippak_app *app);
+pj_status_t sippak_cmd_invite (struct sippak_app *app);
 
 pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
