@@ -324,8 +324,9 @@ pj_status_t sippak_init (struct sippak_app *app)
 
 static void post_parse_setup (struct sippak_app *app)
 {
-  // set log decoration
+  // set log decoration and level
   pj_log_set_decor(app->cfg.log_decor);
+  pj_log_set_level(app->cfg.log_level);
 
   // command REFER requires refer-to parameter
   if (app->cfg.cmd == CMD_REFER && app->cfg.refer_to.ptr == NULL) {

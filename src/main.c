@@ -55,8 +55,6 @@ int main(int argc, char *argv[])
   status = sippak_init(&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  pj_log_set_level(app.cfg.log_level);
-
   pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
 
   status = pjsip_endpt_create(&cp.factory, PROJECT_NAME, &app.endpt);

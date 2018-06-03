@@ -30,11 +30,13 @@
 #define NAME "mod_invite"
 
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
+static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e);
+static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e);
 
 static pjsip_module mod_invite =
 {
   NULL, NULL,                 /* prev, next.    */
-  { "mod-invite", 10 },       /* Name.    */
+  { "mod-sippak-inv", 14 },           /* Name. Name mod-invite is reserved by pjsip   */
   -1,                         /* Id      */
   PJSIP_MOD_PRIORITY_TSX_LAYER, /* Priority          */
   NULL,                       /* load()    */
@@ -54,6 +56,22 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
   return PJ_FALSE; // continue with othe modules
 }
 
+static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e)
+{
+  PJ_UNUSED_ARG(e);
+  if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
+    PJ_LOG(3, (NAME, "Call completed."));
+    sippak_loop_cancel();
+  }
+  // printf("=======> call_on_state_changed. STATE: %s\n", pjsip_inv_state_name(inv->state));
+}
+
+static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
+{
+  PJ_UNUSED_ARG(e);
+  PJ_UNUSED_ARG(inv);
+}
+
 /* Ping */
 pj_status_t sippak_cmd_invite (struct sippak_app *app)
 {
@@ -63,8 +81,8 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
   pj_str_t *local_addr;
   int local_port;
   pj_str_t cnt, from, ruri;
-
   pjsip_inv_session *inv;
+  pjsip_inv_callback inv_cb;
 
   status = sippak_transport_init(app, &local_addr, &local_port);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -79,10 +97,25 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
   status = pjsip_100rel_init_module(app->endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  /* invite usage module */
+  pj_bzero(&inv_cb, sizeof(inv_cb));
+  inv_cb.on_state_changed = &call_on_state_changed;
+  inv_cb.on_new_session = &call_on_forked;
+  status = pjsip_inv_usage_init(app->endpt, &inv_cb);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
   status = pjsip_endpt_register_module(app->endpt, &mod_invite);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* BEGIN: Media */
+  /*
+  static pjmedia_sock_info sock_info[MAX_MEDIA_CNT];
+  status = pjmedia_endpt_create_sdp( app->endpt,
+      app->pool,
+      MAX_MEDIA_CNT, // # of streams
+      sock_info,  // rtp sock
+      // local sdp
+  */
   /* END: Media */
 
   cnt  = sippak_create_contact_hdr(app, local_addr, local_port);
