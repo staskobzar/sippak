@@ -99,7 +99,11 @@ add_test ( MESSAGE_method_auth
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.message_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
-add_test ( INVITE_method
+add_test ( INVITE_method_send
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.invite_basic.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+
+add_test ( INVITE_method_auth
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.invite_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
