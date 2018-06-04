@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
+  app.cp = &cp;
 
   status = pjsip_endpt_create(&cp.factory, PROJECT_NAME, &app.endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);

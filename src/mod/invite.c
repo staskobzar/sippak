@@ -24,6 +24,8 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
+#include <pjmedia.h>
+#include <pjmedia-codec.h>
 #include <pjsip_ua.h>
 #include "sippak.h"
 
@@ -59,11 +61,20 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
 static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e)
 {
   PJ_UNUSED_ARG(e);
+  pj_status_t status;
+  pjsip_tx_data *tdata;
+
+  printf("=======> call_on_state_changed. STATE: %s\n", pjsip_inv_state_name(inv->state));
+
   if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
     PJ_LOG(3, (NAME, "Call completed."));
     sippak_loop_cancel();
+  } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
+    PJ_LOG(3, (NAME, "Call confirmed. Now terminating with BYE."));
+    status = pjsip_inv_end_session(inv, PJSIP_SC_OK, NULL, &tdata);
+    if (status==PJ_SUCCESS && tdata)
+      pjsip_inv_send_msg(inv, tdata);
   }
-  // printf("=======> call_on_state_changed. STATE: %s\n", pjsip_inv_state_name(inv->state));
 }
 
 static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
@@ -108,14 +119,46 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* BEGIN: Media */
-  /*
-  static pjmedia_sock_info sock_info[MAX_MEDIA_CNT];
-  status = pjmedia_endpt_create_sdp( app->endpt,
+  pjmedia_sock_info sock_info;
+  pjmedia_transport *med_transport;
+  pjmedia_endpt *med_endpt;
+  pjmedia_transport_info med_tpinfo;
+  pjmedia_sdp_session *sdp_sess;
+
+  status = pjmedia_endpt_create(&app->cp->factory, NULL, 1, &med_endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+#if defined(PJMEDIA_HAS_G711_CODEC) && PJMEDIA_HAS_G711_CODEC!=0
+  puts("======> init codec g711");
+  pjmedia_codec_g711_init(med_endpt);
+#elif defined(DPJMEDIA_HAS_SPEEX_CODEC) && DPJMEDIA_HAS_SPEEX_CODEC!=0
+  puts("======> init codec speex");
+  pjmedia_codec_speex_init_default(med_endpt);
+#elif defined(DPJMEDIA_HAS_ILBC_CODEC) && DPJMEDIA_HAS_ILBC_CODEC!=0
+  puts("======> init codec ilbc");
+  pjmedia_codec_ilbc_init(med_endpt);
+#elif defined(DPJMEDIA_HAS_GSM_CODEC) && DPJMEDIA_HAS_GSM_CODEC!=0
+  puts("======> init codec gsm");
+  pjmedia_codec_gsm_init(med_endpt);
+#elif defined(DPJMEDIA_HAS_G722_CODEC) && DPJMEDIA_HAS_G722_CODEC!=0
+  puts("======> init codec g722");
+  pjmedia_codec_g722_init(med_endpt);
+#endif
+
+  status = pjmedia_transport_udp_create(med_endpt,
+      NAME,     // transport name
+      10000,    // rtp port
+      0,        // options
+      &med_transport);
+  pjmedia_transport_info_init(&med_tpinfo);
+  pjmedia_transport_get_info(med_transport, &med_tpinfo);
+
+  pj_memcpy(&sock_info, &med_tpinfo.sock_info, sizeof(pjmedia_sock_info));
+
+  status = pjmedia_endpt_create_sdp( med_endpt,
       app->pool,
-      MAX_MEDIA_CNT, // # of streams
-      sock_info,  // rtp sock
-      // local sdp
-  */
+      1, // # of streams
+      &sock_info,  // rtp sock
+      &sdp_sess); // local sdp
   /* END: Media */
 
   cnt  = sippak_create_contact_hdr(app, local_addr, local_port);
@@ -127,7 +170,7 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* invite session */
-  status = pjsip_inv_create_uac( dlg, NULL, 0, &inv);
+  status = pjsip_inv_create_uac( dlg, sdp_sess, 0, &inv);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* create invite request */

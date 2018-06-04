@@ -87,6 +87,7 @@ typedef enum {
 struct sippak_app {
   pjsip_endpoint *endpt;
   pj_pool_t *pool;
+  pj_caching_pool *cp;
 
   struct {
 
