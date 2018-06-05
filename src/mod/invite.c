@@ -96,6 +96,7 @@ static pj_bool_t set_media_sdp(struct sippak_app *app,
   status = pjmedia_endpt_create(&app->cp->factory, NULL, 1, &med_endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+/*
 #if defined(PJMEDIA_HAS_G711_CODEC) && PJMEDIA_HAS_G711_CODEC!=0
   status = pjmedia_codec_g711_init(med_endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -116,7 +117,12 @@ static pj_bool_t set_media_sdp(struct sippak_app *app,
   status = pjmedia_codec_g722_init(med_endpt);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 #endif
-
+*/
+  /* ----------- */
+  pjmedia_audio_codec_config codec_cfg;
+  pjmedia_audio_codec_config_default(&codec_cfg);
+  pjmedia_codec_register_audio_codecs(med_endpt, &codec_cfg);
+  /* ----------- */
   status = pjmedia_transport_udp_create(med_endpt,
       NAME,     // transport name
       10000,    // rtp port

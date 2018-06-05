@@ -48,3 +48,8 @@ add_cmocka_test(test_sip_helper test_sip_helper.c
   ${CMAKE_SOURCE_DIR}/src/app/sip_helper.c
   )
 
+# test media helper functions
+add_cmocka_test(test_media_helper test_media_helper.c
+  ${CMAKE_SOURCE_DIR}/src/app/media_helper.c
+  )
+

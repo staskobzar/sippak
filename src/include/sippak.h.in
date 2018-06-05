@@ -49,6 +49,23 @@
 
 #define MSG_BODY_LEN 128
 
+#define NUM_CODECS_AVAIL 12
+
+typedef enum {
+  SIPPAK_CODEC_SPEEX  = 1 << 0,
+  SIPPAK_CODEC_ILBC   = 1 << 1,
+  SIPPAK_CODEC_GSM    = 1 << 2,
+  SIPPAK_CODEC_G711   = 1 << 3,
+  SIPPAK_CODEC_G722   = 1 << 4,
+  SIPPAK_CODEC_IPP    = 1 << 5, // Intel IPP
+  SIPPAK_CODEC_G7221  = 1 << 6, // g722.1
+  SIPPAK_CODEC_L16    = 1 << 7,
+  SIPPAK_CODEC_OCAMR  = 1 << 8,
+  SIPPAK_CODEC_SILK   = 1 << 9,
+  SIPPAK_CODEC_OPUS   = 1 << 10,
+  SIPPAK_CODEC_BCG729 = 1 << 11
+} codec_e;
+
 enum app_command {
 
   CMD_UNKNOWN = 0x100,
@@ -131,6 +148,11 @@ struct sippak_app {
 
     pj_str_t body;                /*<! MESSAGE body text. */
 
+    struct {
+      unsigned cnt;               /*<! Number of codecs to use. If set to NUM_CODECS_AVAIL, then will use all available. */
+      codec_e codec[NUM_CODECS_AVAIL]; /*<! Array of ordered codecs to use. */
+    } media;
+
   } cfg;
 
 };
@@ -190,5 +212,25 @@ void sippak_set_cred(struct sippak_app *app, pjsip_cred_info *cred);
  * @return              Number of found servers or 0.
  */
 int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
+
+/**
+ * Detect if pjsip built supports given codec.
+ *
+ * @param codec   Codec id
+ *
+ * @return    PJ_TRUE if supported.
+ */
+pj_bool_t sippak_support_codec (codec_e codec);
+
+/**
+ * Parse codecs comma separated string and set config array.
+ *
+ * @param codecs    String of comma separated codecs.
+ * @param app       Sippak application structure.
+ *
+ * @return          PJ_SUCCESS status on success or PJ_EINVAL if
+ *                  codec invalid or not supported.
+ */
+pj_status_t sippak_set_media_codecs_cfg (const char *codecs, struct sippak_app *app);
 
 #endif
