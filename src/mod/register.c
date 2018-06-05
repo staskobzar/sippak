@@ -55,7 +55,7 @@ static void print_reg_success(struct pjsip_regc_cbparam *regp)
   if (app->cfg.cancel_all_reg == PJ_TRUE) {
     PJ_LOG(3, (NAME, "Cancel all registrations. Response received: %d %.*s",
           regp->code, regp->reason.slen, regp->reason.ptr));
-  } else if (app->cfg.cancel_reg == PJ_TRUE) {
+  } else if (app->cfg.cancel == PJ_TRUE) {
     PJ_LOG(3, (NAME, "Unregister contact. Response received: %d %.*s",
           regp->code, regp->reason.slen, regp->reason.ptr));
   } else if (app->cfg.is_clist == PJ_TRUE) {
@@ -132,7 +132,7 @@ pj_status_t sippak_cmd_register (struct sippak_app *app)
 
   if (app->cfg.cancel_all_reg == PJ_TRUE) {
     status = pjsip_regc_unregister_all(regc, &tdata);
-  } else if (app->cfg.cancel_reg == PJ_TRUE) {
+  } else if (app->cfg.cancel == PJ_TRUE) {
     status = pjsip_regc_unregister(regc, &tdata);
   } else {
     status = pjsip_regc_register(regc, PJ_FALSE, &tdata);

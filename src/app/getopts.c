@@ -51,8 +51,8 @@ static enum opts_enum_t {
   OPT_PRES_NOTE,
   OPT_MWI_ACC,
   OPT_IS_CLIST,
-  OPT_CANCEL_ALL,
-  OPT_CANCEL_REG,
+  OPT_CANCEL_ALL_REG,
+  OPT_CANCEL,
   OPT_REFER_TO,
   OPT_BODY
 } opt_enum;
@@ -82,8 +82,8 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"mwi",         1,  0,  'M' },
   {"mwi-acc",     1,  0,  OPT_MWI_ACC },
   {"clist",       0,  0,  OPT_IS_CLIST },
-  {"cancel-all",  0,  0,  OPT_CANCEL_ALL },
-  {"cancel",      0,  0,  OPT_CANCEL_REG },
+  {"cancel-all",  0,  0,  OPT_CANCEL_ALL_REG },
+  {"cancel",      0,  0,  OPT_CANCEL},
   {"contact",     1,  0,  'c' },
   {"to",          1,  0,  OPT_REFER_TO },
   {"body",        1,  0,  OPT_BODY },
@@ -311,13 +311,13 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.is_mwi           = PJ_FALSE;
   app->cfg.is_clist         = PJ_FALSE;
   app->cfg.cancel_all_reg   = PJ_FALSE;
-  app->cfg.cancel_reg       = PJ_FALSE;
+  app->cfg.cancel           = PJ_FALSE;
   app->cfg.contact.slen     = 0;
   app->cfg.contact.ptr      = NULL;
-  app->cfg.refer_to.slen     = 0;
-  app->cfg.refer_to.ptr      = NULL;
-  app->cfg.body.slen     = 0;
-  app->cfg.body.ptr      = NULL;
+  app->cfg.refer_to.slen    = 0;
+  app->cfg.refer_to.ptr     = NULL;
+  app->cfg.body.slen        = 0;
+  app->cfg.body.ptr         = NULL;
 
   return PJ_SUCCESS;
 }
@@ -467,11 +467,11 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case OPT_IS_CLIST:
         app->cfg.is_clist = PJ_TRUE;
         break;
-      case OPT_CANCEL_ALL:
+      case OPT_CANCEL_ALL_REG:
         app->cfg.cancel_all_reg = PJ_TRUE;
         break;
-      case OPT_CANCEL_REG:
-        app->cfg.cancel_reg = PJ_TRUE;
+      case OPT_CANCEL:
+        app->cfg.cancel = PJ_TRUE;
         break;
       case 'c': // custom contact header
         app->cfg.contact = pjstr_trimmed(pj_optarg);

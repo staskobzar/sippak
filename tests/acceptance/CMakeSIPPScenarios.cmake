@@ -107,3 +107,7 @@ add_test ( INVITE_method_auth
   perl ${CMAKE_CURRENT_SOURCE_DIR}/test.invite_auth.pl
   ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
 
+add_test ( INVITE_method_cancel
+  perl ${CMAKE_CURRENT_SOURCE_DIR}/test.invite_cancel.pl
+  ${EXECMD} ${SIPP} ${SIPP_SCENARIO_PATH})
+

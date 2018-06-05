@@ -42,6 +42,7 @@ void usage ()
   puts("    REFER     Send REFER method outside dialog. Implements click-to-dial scenario as in RFC5359 #2.18.");
   puts("              This command requires parameter --to for Refer-To header.");
   puts("    MESSAGE   Send MESSAGE method with text. SIP instant messaging.");
+  puts("    INVITE    Initiates and handles INVITE session. After session is confirmed (200) sends BYE.");
 
   puts("");
   puts("  OPTIONS:");
@@ -102,8 +103,10 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    --cancel-all");
   puts("                    Flag for REGISTER method to cancel all registrations for AOR.");
   puts("    --cancel");
-  puts("                    Flag for REGISTER method to cancel contact registration for AOR.");
+  puts("                    Cancel registarations for REGISTER or session for INVITE.");
+  puts("                    When used with REGISTER method then cancels contact registration for AOR.");
   puts("                    Contact field can be set with --contact option or will be generated.");
+  puts("                    When used with INVITE will cancel session in early state.");
   puts("    --to=SIP_URI");
   puts("                    Parameter for REFER command to setup Refer-To header value.");
   puts("    --body=TEXT");
