@@ -19,7 +19,7 @@ build-cov: clean
 	@cd ${BUILD_DIR} && ctest .
 	@lcov --capture --directory "${BUILD_DIR}/src" --output-file ${BUILD_DIR}/cov_full.info \
 		--gcov-tool gcov
-	@lcov -r ${BUILD_DIR}/cov_full.info '/usr/local/include/pjsip/*' -o ${BUILD_DIR}/cov.info
+	@lcov -r ${BUILD_DIR}/cov_full.info '/usr/local/include/pj*' -o ${BUILD_DIR}/cov.info
 	@mkdir ${BUILD_DIR}/coverage
 	@genhtml --output-directory ${BUILD_DIR}/coverage --title "sippak utility" \
 		--legend --show-details ${BUILD_DIR}/cov.info
