@@ -46,20 +46,20 @@ $regex = '^SIP\/2.0 200 OK bye$';
 ok ($output =~ m/$regex/m, "BYE method is confirmed.");
 
 # default codecs are ulaw and alaw
-$regex = '^a=rtpmap:0 PCMU\/8000$';
+$regex = '^a=rtpmap:0 PCMU\/8000';
 ok ($output =~ m/$regex/m, "Default codec mu-law code used.");
 
-$regex = '^a=rtpmap:8 PCMA\/8000$';
+$regex = '^a=rtpmap:8 PCMA\/8000';
 ok ($output =~ m/$regex/m, "Default codec a-law code used.");
 
-$regex = '^m=audio \d+ RTP\/AVP 0 8$';
+$regex = '^m=audio \d+ RTP\/AVP 0 8';
 ok ($output =~ m/$regex/m, "Default codec order is 0, 8 (pcmu,pcma).");
 
 # test when codec not supported
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak INVITE --codec=foo sip:alice\@127.0.0.1:5060`;
 
-$regex = '^Codec "foo" is not supported.$';
+$regex = 'Codec "foo" is not supported.$';
 ok ($output =~ m/$regex/m, "Fails when codec does not exist.");
 
 # speex codec set
@@ -78,16 +78,42 @@ ok ($output =~ m/$regex/m, "Speex codec narrowband is set.");
 $regex = '^a=rtpmap:0 PCMU\/8000$';
 ok ($output !~ m/$regex/m, "When only speex is set, no mu-law is set.");
 
-$regex = '^m=audio \d+ RTP\/AVP 99 98 97$';
+$regex = '^m=audio \d+ RTP\/AVP 99 98 97';
 ok ($output =~ m/$regex/m, "Default codec order is 0, 8 (pcmu,pcma).");
 
-# TODO: test default RTP port is 4000
-# TODO: test set RTP port
-# TODO: test when invalid port set (foo, 0, < 1, > 2^16)
-# TODO: test codec ilbc set with default mode 30
-# TODO: test GSM codec set
-# TODO: test g722 set
-# TODO: test set all available (key word all)
-# TODO: test multiple codecs order
+$regex = '^m=audio 4000 RTP\/AVP 99 98 97';
+ok ($output =~ m/$regex/m, "Default port is 4000.");
+
+# test set RTP port
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak INVITE --rtp-port=10008 sip:alice\@127.0.0.1:5060`;
+
+$regex = '^m=audio 10008 RTP\/AVP ';
+ok ($output =~ m/$regex/m, "Set RTP port to 10008.");
+
+# test when invalid port set (foo, 0, < 1, > 2^16)
+$output = `$sippak INVITE --rtp-port=foo sip:alice\@127.0.0.1:5060`;
+
+$regex = 'Invalid port: foo';
+ok ($output =~ m/$regex/m, "Test invalid port.");
+
+$output = `$sippak INVITE --rtp-port=156456 sip:alice\@127.0.0.1:5060`;
+
+$regex = 'Invalid port: 156456. Expected value must be between 1 and 65535';
+ok ($output =~ m/$regex/m, "Test invalid port value is too big.");
+
+# test set all available (key word all)
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak INVITE --codec=all sip:alice\@127.0.0.1:5060`;
+
+$regex = 'm=audio 4000 RTP\/AVP 99 98 97 104 3 0 8 9 11 10 96';
+ok ($output =~ m/$regex/m, "Use all codecs in SDP.");
+
+# test multiple codecs order
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak INVITE --codec=ilbc,g711,gsm sip:alice\@127.0.0.1:5060`;
+
+$regex = 'm=audio 4000 RTP/AVP 104 0 8 3 96';
+ok ($output =~ m/$regex/m, "Use ordered list of codecs in SDP.");
 
 done_testing();

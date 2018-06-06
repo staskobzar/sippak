@@ -36,6 +36,7 @@ static void set_content_type (struct sippak_app *app, const char *type);
 static pj_str_t pres_note (const char *note);
 static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
+static int set_port_value (const char *port);
 static int parse_command_str (const char *cmd);
 static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
 static void post_parse_setup (struct sippak_app *app);
@@ -54,7 +55,9 @@ static enum opts_enum_t {
   OPT_CANCEL_ALL_REG,
   OPT_CANCEL,
   OPT_REFER_TO,
-  OPT_BODY
+  OPT_BODY,
+  OPT_CODEC,
+  OPT_RTP_PORT
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -87,6 +90,8 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"contact",     1,  0,  'c' },
   {"to",          1,  0,  OPT_REFER_TO },
   {"body",        1,  0,  OPT_BODY },
+  {"codec",       1,  0,  OPT_CODEC },
+  {"rtp-port",    1,  0,  OPT_RTP_PORT },
   { NULL,         0,  0,   0  }
 };
 
@@ -121,6 +126,22 @@ static int transport_proto (const char *proto)
     return PJSIP_TRANSPORT_TCP;
   }
   return PJSIP_TRANSPORT_UDP;
+}
+
+static int set_port_value (const char *port_str) {
+  int port = 0;
+  if(! is_string_numeric(port_str)) {
+    PJ_LOG(1, (PROJECT_NAME, "Invalid port: %s.", port_str));
+    exit(PJ_CLI_EINVARG);
+  }
+  port = atoi(port_str);
+  if (port < 1 || port > ((2 << 15) - 1)) {
+    PJ_LOG(1, (PROJECT_NAME, "Invalid port: %s. Expected value must be between 1 and %d.",
+          port_str, (2 << 15) - 1));
+    exit(PJ_CLI_EINVARG);
+  }
+
+  return port;
 }
 
 static pj_bool_t pres_status_open (const char *status)
@@ -319,6 +340,11 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.body.slen        = 0;
   app->cfg.body.ptr         = NULL;
 
+  // default codec is g711
+  app->cfg.media.cnt        = 1;
+  app->cfg.media.codec[0]   = SIPPAK_CODEC_G711;
+  app->cfg.media.rtp_port   = SIPPAK_DEFAULT_RTP_PORT;
+
   return PJ_SUCCESS;
 }
 
@@ -412,7 +438,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         app->cfg.log_decor |= PJ_LOG_HAS_SENDER;
         break;
       case 'P':
-        app->cfg.local_port = atoi (pj_optarg);
+        app->cfg.local_port = set_port_value (pj_optarg);
         break;
       case 'H':
         app->cfg.local_host = pjstr_trimmed(pj_optarg);
@@ -481,6 +507,13 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_BODY:
         app->cfg.body = pjstr_trimmed(pj_optarg);
+        break;
+      case OPT_CODEC:
+        if (sippak_set_media_codecs_cfg(pj_optarg, app) != PJ_SUCCESS)
+          return PJ_CLI_EINVARG;
+        break;
+      case OPT_RTP_PORT:
+        app->cfg.media.rtp_port = set_port_value(pj_optarg);
         break;
       default:
         break;

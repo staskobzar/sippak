@@ -35,7 +35,6 @@ ok ($output =~ m/$regex/m, "Proxy auth response 407");
 
 $regex = '^SIP\/2.0 407 Proxy Authentication Failed$';
 ok ($output =~ m/$regex/m, "Proxy auth failed response 407");
-print $output;
 
 # test auth success
 system("$sipp $sippargs -sf $scenario");
@@ -55,7 +54,5 @@ ok ($output =~ m/$regex/m, "Session is terminated with BYE.");
 
 $regex = '^SIP\/2.0 200 OK bye$';
 ok ($output =~ m/$regex/m, "BYE method is confirmed.");
-
-print $output;
 
 done_testing();

@@ -111,6 +111,15 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Parameter for REFER command to setup Refer-To header value.");
   puts("    --body=TEXT");
   puts("                    Parameter for MESSAGE command to setup message body text.");
+  puts("    --codec=LIST");
+  puts("                    Set codec or codecs to use during INVITE session. Value can be");
+  puts("                    a single codec name or comma-separated list of codecs. By default");
+  puts("                    sippak will use codec g711. Codec names are case-insensitive.");
+  puts("                    Following codec names can be used:");
+  puts("                    speex,ilbc,gsm,g711,g722,ipp,l16,amr,silk,opus,bcg729,all");
+  puts("                    When set to \"all\" will try to setup all available codecs for media.");
+  puts("    --rtp-port=PORT");
+  puts("                    Port to use for media streams and negotiate with SDP.");
   puts("");
 }
 

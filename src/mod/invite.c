@@ -36,7 +36,6 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e);
 static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e);
 static void call_tsx_state_changed(pjsip_inv_session *inv, pjsip_transaction *tsx, pjsip_event *e);
-static pj_bool_t set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **sdp);
 
 static pj_bool_t early_cancel;
 static pjsip_inv_session *inv;
@@ -81,69 +80,6 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata)
     sippak_loop_cancel();
   }
   return PJ_FALSE; // continue with othe modules
-}
-
-static pj_bool_t set_media_sdp(struct sippak_app *app,
-                               pjmedia_sdp_session **sdp)
-{
-  pj_status_t status;
-  pjmedia_sock_info sock_info;
-  pjmedia_transport *med_transport;
-  pjmedia_endpt *med_endpt;
-  pjmedia_transport_info med_tpinfo;
-  pjmedia_sdp_session *sdp_sess;
-
-  status = pjmedia_endpt_create(&app->cp->factory, NULL, 1, &med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-/*
-#if defined(PJMEDIA_HAS_G711_CODEC) && PJMEDIA_HAS_G711_CODEC!=0
-  status = pjmedia_codec_g711_init(med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-#endif
-#if defined(PJMEDIA_HAS_SPEEX_CODEC) && PJMEDIA_HAS_SPEEX_CODEC!=0
-  status = pjmedia_codec_speex_init_default(med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-#endif
-#if defined(PJMEDIA_HAS_ILBC_CODEC) && PJMEDIA_HAS_ILBC_CODEC!=0
-  status = pjmedia_codec_ilbc_init(med_endpt, 20);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-#endif
-#if defined(PJMEDIA_HAS_GSM_CODEC) && PJMEDIA_HAS_GSM_CODEC!=0
-  status = pjmedia_codec_gsm_init(med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-#endif
-#if defined(PJMEDIA_HAS_G722_CODEC) && PJMEDIA_HAS_G722_CODEC!=0
-  status = pjmedia_codec_g722_init(med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-#endif
-*/
-  /* ----------- */
-  pjmedia_audio_codec_config codec_cfg;
-  pjmedia_audio_codec_config_default(&codec_cfg);
-  pjmedia_codec_register_audio_codecs(med_endpt, &codec_cfg);
-  /* ----------- */
-  status = pjmedia_transport_udp_create(med_endpt,
-      NAME,     // transport name
-      10000,    // rtp port
-      0,        // options
-      &med_transport);
-  pjmedia_transport_info_init(&med_tpinfo);
-  pjmedia_transport_get_info(med_transport, &med_tpinfo);
-
-  pj_memcpy(&sock_info, &med_tpinfo.sock_info, sizeof(pjmedia_sock_info));
-
-  status = pjmedia_endpt_create_sdp( med_endpt,
-      app->pool,
-      1, // # of streams
-      &sock_info,  // rtp sock
-      &sdp_sess); // local sdp
-
-  // session name (subject)
-  sdp_sess->name = pj_str("sippak");
-
-  *sdp = sdp_sess;
-  return status;
 }
 
 static void call_tsx_state_changed(pjsip_inv_session *inv, pjsip_transaction *tsx, pjsip_event *e)
@@ -245,7 +181,7 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* SDP */
-  status = set_media_sdp(app, &sdp_sess);
+  status = sippak_set_media_sdp (app, &sdp_sess);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* invite session */
