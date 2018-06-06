@@ -24,6 +24,8 @@
  */
 #include <pjsip.h>
 #include <pjlib.h>
+#include <pjmedia.h>
+#include <pjmedia-codec.h>
 
 #ifndef __SIPPAK_H
 #define __SIPPAK_H
@@ -63,7 +65,8 @@ typedef enum {
   SIPPAK_CODEC_OCAMR  = 1 << 8,
   SIPPAK_CODEC_SILK   = 1 << 9,
   SIPPAK_CODEC_OPUS   = 1 << 10,
-  SIPPAK_CODEC_BCG729 = 1 << 11
+  SIPPAK_CODEC_BCG729 = 1 << 11,
+  SIPPAK_CODEC_ALL    = 1 << 12
 } codec_e;
 
 enum app_command {
@@ -231,6 +234,16 @@ pj_bool_t sippak_support_codec (codec_e codec);
  * @return          PJ_SUCCESS status on success or PJ_EINVAL if
  *                  codec invalid or not supported.
  */
-pj_status_t sippak_set_media_codecs_cfg (const char *codecs, struct sippak_app *app);
+pj_status_t sippak_set_media_codecs_cfg (char *codecs, struct sippak_app *app);
+
+/**
+ * Set media SDP with configured codecs.
+ *
+ * @param app       Sippak application.
+ * @param sdp       pjmedia sdp struct to set.
+ *
+ * @return          PJ_SUCCESS on success
+ */
+pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **sdp);
 
 #endif

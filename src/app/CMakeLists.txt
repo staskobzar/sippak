@@ -22,5 +22,6 @@ add_library (app OBJECT
   usage.c
   dns.c
   sip_helper.c
+  media_helper.c
   )
 

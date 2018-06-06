@@ -49,6 +49,18 @@ add_cmocka_test(test_sip_helper test_sip_helper.c
   )
 
 # test media helper functions
+add_definitions(-DPJMEDIA_HAS_SPEEX_CODEC
+  -DPJMEDIA_HAS_ILBC_CODEC
+  -DPJMEDIA_HAS_GSM_CODEC
+  -DPJMEDIA_HAS_G711_CODEC
+  -DPJMEDIA_HAS_G722_CODEC
+  -DPJMEDIA_HAS_INTEL_IPP
+  -DPJMEDIA_HAS_L16_CODEC
+  -DPJMEDIA_HAS_OPENCORE_AMRNB_CODEC
+  -DPJMEDIA_HAS_SILK_CODEC
+  -DPJMEDIA_HAS_OPUS_CODEC
+  -DPJMEDIA_HAS_BCG729
+  )
 add_cmocka_test(test_media_helper test_media_helper.c
   ${CMAKE_SOURCE_DIR}/src/app/media_helper.c
   )

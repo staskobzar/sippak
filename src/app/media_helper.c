@@ -24,11 +24,64 @@
  *
  * @author Stas Kobzar <stas.kobzar@modulis.ca>
  */
-#include <pjmedia.h>
-#include <pjmedia-codec.h>
+#include <pjlib-util.h>
 #include "sippak.h"
 
 #define NAME "media_helper"
+static codec_e codec_str_parse(pj_str_t *codec);
+static pj_bool_t is_codec_set(codec_e *codecs, int cnt, codec_e codec);
+static pj_status_t set_media_codecs(pjmedia_endpt *med_endpt, struct sippak_app *app);
+
+static codec_e codec_str_parse(pj_str_t *codec)
+{
+  if (pj_strnicmp2(codec, "speex", 5) == 0) {
+    return SIPPAK_CODEC_SPEEX;
+  } else if(pj_strnicmp2(codec, "ilbc", 4) == 0) {
+    return SIPPAK_CODEC_ILBC;
+  } else if(pj_strnicmp2(codec, "gsm", 3) == 0) {
+    return SIPPAK_CODEC_GSM;
+  } else if(pj_strnicmp2(codec, "g711", 4) == 0) {
+    return SIPPAK_CODEC_G711;
+  } else if(pj_strnicmp2(codec, "g722", 4) == 0) {
+    return SIPPAK_CODEC_G722;
+  } else if(pj_strnicmp2(codec, "ipp", 3) == 0) {
+    return SIPPAK_CODEC_IPP;
+  } else if(pj_strnicmp2(codec, "g722.1", 6) == 0) {
+    return SIPPAK_CODEC_G7221;
+  } else if(pj_strnicmp2(codec, "l16", 3) == 0) {
+    return SIPPAK_CODEC_L16;
+  } else if(pj_strnicmp2(codec, "amr", 3) == 0) {
+    return SIPPAK_CODEC_OCAMR;
+  } else if(pj_strnicmp2(codec, "silk", 4) == 0) {
+    return SIPPAK_CODEC_SILK;
+  } else if(pj_strnicmp2(codec, "opus", 4) == 0) {
+    return SIPPAK_CODEC_OPUS;
+  } else if(pj_strnicmp2(codec, "bcg729", 6) == 0) {
+    return SIPPAK_CODEC_BCG729;
+  } else if(pj_strnicmp2(codec, "all", 3) == 0) {
+    return SIPPAK_CODEC_ALL;
+  } else {
+    return 0;
+  }
+}
+
+static pj_bool_t is_codec_set(codec_e *codecs, int cnt, codec_e codec)
+{
+  for(int i = 0; i < cnt; i++) {
+    if (codecs[i] == codec) {
+      return PJ_TRUE;
+    }
+  }
+  return PJ_FALSE;
+}
+
+static pj_status_t set_media_codecs(pjmedia_endpt *med_endpt,
+                                    struct sippak_app *app)
+{
+  for(int i = 0; i < app->cfg.media.cnt; i++) {
+
+  }
+}
 
 pj_bool_t sippak_support_codec (codec_e codec)
 {
@@ -73,14 +126,90 @@ pj_bool_t sippak_support_codec (codec_e codec)
   return (supported & codec) == codec ? PJ_TRUE : PJ_FALSE;
 }
 
-pj_status_t sippak_set_media_codecs_cfg (const char *codecs,
+pj_status_t sippak_set_media_codecs_cfg (char *codecs_str,
                                          struct sippak_app *app)
 {
   pj_status_t status;
-  app->cfg.media.cnt = 3;
-  app->cfg.media.codec[0] = SIPPAK_CODEC_SILK;
-  app->cfg.media.codec[1] = SIPPAK_CODEC_G711;
-  app->cfg.media.codec[2] = SIPPAK_CODEC_SPEEX;
+  pj_ssize_t found_idx = 0;
+  pj_str_t token;
+  pj_str_t delim = pj_str(",");
+  pj_str_t codecs = pj_str(codecs_str);
+  codec_e codec;
+  int i = 0;
 
-  return PJ_SUCCESS; // PJ_CLI_EINVARG
+  for (
+      found_idx = pj_strtok (&codecs, &delim, &token, 0);
+      found_idx != codecs.slen;
+      found_idx = pj_strtok (&codecs, &delim, &token, found_idx + token.slen)
+      )
+  {
+    codec = codec_str_parse(&token);
+    if (codec == SIPPAK_CODEC_ALL) {
+      app->cfg.media.cnt = NUM_CODECS_AVAIL;
+      return PJ_SUCCESS;
+    }
+    if (codec == 0 || sippak_support_codec(codec) == PJ_FALSE) {
+      PJ_LOG(1, (NAME, "Codec \"%.*s\" is not supported.", token.slen, token.ptr));
+      return PJ_CLI_EINVARG;
+    }
+    if (is_codec_set(app->cfg.media.codec, i, codec)) {
+      PJ_LOG(2, (NAME, "Codec \"%.*s\" is already set.", token.slen, token.ptr));
+      continue;
+    }
+    app->cfg.media.codec[i++] = codec;
+  }
+
+  app->cfg.media.cnt = i;
+
+  return PJ_SUCCESS;
+}
+
+pj_status_t sippak_set_media_sdp (struct sippak_app *app,
+                                pjmedia_sdp_session **sdp)
+{
+  pj_status_t status;
+  pjmedia_sock_info sock_info;
+  pjmedia_transport *med_transport;
+  pjmedia_endpt *med_endpt;
+  pjmedia_transport_info med_tpinfo;
+  pjmedia_sdp_session *sdp_sess;
+
+  status = pjmedia_endpt_create(&app->cp->factory, NULL, 1, &med_endpt);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  if (app->cfg.media.cnt == NUM_CODECS_AVAIL) {
+    pjmedia_audio_codec_config codec_cfg;
+    pjmedia_audio_codec_config_default(&codec_cfg);
+    status = pjmedia_codec_register_audio_codecs(med_endpt, &codec_cfg);
+  } else {
+    status = set_media_codecs(med_endpt, app);
+  }
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  status = pjmedia_transport_udp_create(med_endpt,
+      NAME,     // transport name
+      10000,    // rtp port
+      0,        // options
+      &med_transport);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  pjmedia_transport_info_init(&med_tpinfo);
+
+  status = pjmedia_transport_get_info(med_transport, &med_tpinfo);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  pj_memcpy(&sock_info, &med_tpinfo.sock_info, sizeof(pjmedia_sock_info));
+
+  status = pjmedia_endpt_create_sdp( med_endpt,
+      app->pool,
+      1, // # of streams
+      &sock_info,  // rtp sock
+      &sdp_sess); // local sdp
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  // session name (subject)
+  sdp_sess->name = pj_str("sippak");
+
+  *sdp = sdp_sess;
+  return status;
 }
