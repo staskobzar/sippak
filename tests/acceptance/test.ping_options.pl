@@ -58,4 +58,11 @@ ok ($output =~ m/$regex/m, "Basic OPTIONS Request with colored output.");
 $regex = '^(\x1b\[[0-9;]+m){2}SIP/2.0 (\x1b\[[0-9;]+m)+200';
 ok ($output =~ m/$regex/m, "Basic OPTIONS Response with colored output.");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak --user-agent="SIP UA 1.x.x" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP UA 1.x.x$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();

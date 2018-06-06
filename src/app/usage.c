@@ -120,6 +120,8 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    When set to \"all\" will try to setup all available codecs for media.");
   puts("    --rtp-port=PORT");
   puts("                    Port to use for media streams and negotiate with SDP.");
+  puts("    -A, --user-agent=STRING");
+  puts("                    Set User-Agent SIP header value.");
   puts("");
 }
 

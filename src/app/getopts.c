@@ -92,10 +92,11 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"body",        1,  0,  OPT_BODY },
   {"codec",       1,  0,  OPT_CODEC },
   {"rtp-port",    1,  0,  OPT_RTP_PORT },
+  {"user-agent",  1,  0,  'A' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:A";
 
 static int parse_command_str (const char *cmd)
 {
@@ -345,6 +346,9 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.media.codec[0]   = SIPPAK_CODEC_G711;
   app->cfg.media.rtp_port   = SIPPAK_DEFAULT_RTP_PORT;
 
+  app->cfg.user_agent.slen  = 0;
+  app->cfg.user_agent.ptr   = NULL;
+
   return PJ_SUCCESS;
 }
 
@@ -514,6 +518,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case OPT_RTP_PORT:
         app->cfg.media.rtp_port = set_port_value(pj_optarg);
+        break;
+      case 'A': // User-Agent header
+        app->cfg.user_agent = pjstr_trimmed(pj_optarg);
         break;
       default:
         break;

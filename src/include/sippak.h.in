@@ -159,6 +159,8 @@ struct sippak_app {
       pj_uint16_t rtp_port;       /*<! Bind local RTP port. */
     } media;
 
+    pj_str_t user_agent;          /*<! User agent header value. */
+
   } cfg;
 
 };
@@ -248,5 +250,14 @@ pj_status_t sippak_set_media_codecs_cfg (char *codecs, struct sippak_app *app);
  * @return          PJ_SUCCESS on success
  */
 pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **sdp);
+
+/**
+ * Add SIP headers set by cli options. User-Agent and custom headers.
+ *
+ * @param tdata     Transaction data structure.
+ * @param app       Sippak application.
+ * @return          PJ_SUCCESS.
+ */
+pj_status_t sippak_add_sip_headers(pjsip_tx_data *tdata, struct sippak_app *app);
 
 #endif

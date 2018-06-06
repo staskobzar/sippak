@@ -177,3 +177,17 @@ void sippak_set_cred(struct sippak_app *app,
   cred->data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
   cred->data      = app->cfg.password;
 }
+
+pj_status_t sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
+{
+  pj_status_t status;
+
+  pjsip_hdr *hdr;
+  pj_str_t hname = pj_str("User-Agent");
+  hdr = (pjsip_hdr*) pjsip_generic_string_hdr_create(tdata->pool,
+      &hname, &app->cfg.user_agent);
+
+  pjsip_msg_add_hdr(tdata->msg, hdr);
+
+  return PJ_SUCCESS;
+}
