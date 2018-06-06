@@ -55,13 +55,6 @@ ok ($output =~ m/$regex/m, "Default codec a-law code used.");
 $regex = '^m=audio \d+ RTP\/AVP 0 8';
 ok ($output =~ m/$regex/m, "Default codec order is 0, 8 (pcmu,pcma).");
 
-# test when codec not supported
-system("$sipp $sippargs -sf $scenario");
-$output = `$sippak INVITE --codec=foo sip:alice\@127.0.0.1:5060`;
-
-$regex = 'Codec "foo" is not supported.$';
-ok ($output =~ m/$regex/m, "Fails when codec does not exist.");
-
 # speex codec set
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak INVITE --codec=speex sip:alice\@127.0.0.1:5060`;
@@ -102,11 +95,17 @@ $output = `$sippak INVITE --rtp-port=156456 sip:alice\@127.0.0.1:5060`;
 $regex = 'Invalid port: 156456. Expected value must be between 1 and 65535';
 ok ($output =~ m/$regex/m, "Test invalid port value is too big.");
 
+# test when codec not supported
+$output = `$sippak INVITE --codec=foo sip:alice\@127.0.0.1:5060`;
+
+$regex = 'Codec "foo" is not supported.$';
+ok ($output =~ m/$regex/m, "Fails when codec does not exist.");
+
 # test set all available (key word all)
 system("$sipp $sippargs -sf $scenario");
 $output = `$sippak INVITE --codec=all sip:alice\@127.0.0.1:5060`;
 
-$regex = 'm=audio 4000 RTP\/AVP 99 98 97 104 3 0 8 9 11 10 96';
+$regex = 'm=audio 4000 RTP\/AVP 99 98 97 104 3 0 [0-9 ]+ 96';
 ok ($output =~ m/$regex/m, "Use all codecs in SDP.");
 
 # test multiple codecs order
@@ -115,5 +114,12 @@ $output = `$sippak INVITE --codec=ilbc,g711,gsm sip:alice\@127.0.0.1:5060`;
 
 $regex = 'm=audio 4000 RTP/AVP 104 0 8 3 96';
 ok ($output =~ m/$regex/m, "Use ordered list of codecs in SDP.");
+
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak invite -A "SIP bar" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP bar$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
 done_testing();

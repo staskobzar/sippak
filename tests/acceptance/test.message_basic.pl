@@ -64,4 +64,11 @@ ok ($output =~ m/$regex/m, "Basic MESSAGE with too long body warning.");
 $regex = '^Instant Messaging refers to the transfer of messages between users in near realtime. These messages are usually, but not require$';
 ok ($output =~ m/$regex/m, "Basic MESSAGE with too long body is trimmed.");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak message --body="Hello World" --user-agent="sippak" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: sippak$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();

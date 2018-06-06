@@ -129,4 +129,11 @@ ok ($output =~ m/$regex/m, "Basic PUBLISH content type is PIDF for invalid types
 $regex = 'Content type "foo" can not be used. Fall back to pidf content type.';
 ok ($output =~ m/$regex/m, "Basic PUBLISH content type is PIDF for invalid types warning.");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH --user-agent="SIP Publisher" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP Publisher$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();

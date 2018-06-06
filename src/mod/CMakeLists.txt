@@ -19,6 +19,7 @@
 #
 add_library (mod OBJECT
   logger.c
+  sip_mangler.c
   ping.c
   publish.c
   subscribe.c

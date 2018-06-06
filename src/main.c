@@ -72,6 +72,9 @@ int main(int argc, char *argv[])
   status = sippak_set_resolver_ns (&app);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+  status = sippak_mod_sip_mangler_register (&app);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
   // run
   switch (app.cfg.cmd)
   {

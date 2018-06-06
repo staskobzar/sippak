@@ -178,16 +178,19 @@ void sippak_set_cred(struct sippak_app *app,
   cred->data      = app->cfg.password;
 }
 
-pj_status_t sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
+void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
 {
   pj_status_t status;
 
+  pj_str_t ua_hname = pj_str("User-Agent");
   pjsip_hdr *hdr;
-  pj_str_t hname = pj_str("User-Agent");
-  hdr = (pjsip_hdr*) pjsip_generic_string_hdr_create(tdata->pool,
-      &hname, &app->cfg.user_agent);
 
-  pjsip_msg_add_hdr(tdata->msg, hdr);
+  if(pjsip_msg_find_hdr_by_name(tdata->msg, &ua_hname, NULL) == NULL
+      && app->cfg.user_agent.slen > 0) {
+    hdr = (pjsip_hdr*) pjsip_generic_string_hdr_create(tdata->pool,
+        &ua_hname, &app->cfg.user_agent);
 
-  return PJ_SUCCESS;
+    pjsip_msg_add_hdr(tdata->msg, hdr);
+  }
+
 }

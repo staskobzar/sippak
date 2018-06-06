@@ -34,4 +34,11 @@ ok ($output =~ m/$regex/m, "Basic OPTIONS packet sent via TCP.");
 $regex = '^SIP\/2\.0 200 OK Basic OPTIONS Test$';
 ok ($output =~ m/$regex/m, "Basic OPTIONS Response 200 OK via TCP.");
 
+# user agent
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak --proto=tcp -A foobar sip:alice\@127.0.0.1:5061`;
+
+$regex = '^User-Agent: foobar$';
+ok ($output =~ m/$regex/m, "User agent header set.");
+
 done_testing();

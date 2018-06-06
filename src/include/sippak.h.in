@@ -165,6 +165,7 @@ struct sippak_app {
 
 };
 
+pj_status_t sippak_mod_sip_mangler_register (struct sippak_app *app);
 pj_status_t sippak_mod_logger_register (struct sippak_app *app);
 pj_status_t sippak_set_resolver_ns (struct sippak_app *app);
 
@@ -256,8 +257,8 @@ pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **s
  *
  * @param tdata     Transaction data structure.
  * @param app       Sippak application.
- * @return          PJ_SUCCESS.
+ * @return          void
  */
-pj_status_t sippak_add_sip_headers(pjsip_tx_data *tdata, struct sippak_app *app);
+void sippak_add_sip_headers(pjsip_tx_data *tdata, struct sippak_app *app);
 
 #endif

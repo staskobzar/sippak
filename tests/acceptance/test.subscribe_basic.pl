@@ -54,4 +54,11 @@ $output = `$sippak SUBSCRIBE -X 654 sip:alice\@127.0.0.1:5060`;
 $regex = '^Expires: 654$';
 ok ($output =~ m/$regex/m, "Subscription expires header setup.");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE --user-agent="SIP SUB 1.1" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP SUB 1.1$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();

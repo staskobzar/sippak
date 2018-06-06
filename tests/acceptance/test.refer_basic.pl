@@ -42,4 +42,11 @@ ok ($output =~ m/$regex/m, "Basic REFER has valid Refer-To header.");
 $regex = '^Refer-Sub: false$';
 ok ($output =~ m/$regex/m, "Basic REFER header Refer-Sub must be false.");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak refer  --user-agent="SIP foo" --to=sip:bob\@bar.fr sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP foo$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();

@@ -96,7 +96,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:A";
+static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:A:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -513,8 +513,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         app->cfg.body = pjstr_trimmed(pj_optarg);
         break;
       case OPT_CODEC:
-        if (sippak_set_media_codecs_cfg(pj_optarg, app) != PJ_SUCCESS)
-          return PJ_CLI_EINVARG;
+        if (sippak_set_media_codecs_cfg(pj_optarg, app) != PJ_SUCCESS) {
+          exit(PJ_CLI_EINVARG);
+        }
         break;
       case OPT_RTP_PORT:
         app->cfg.media.rtp_port = set_port_value(pj_optarg);

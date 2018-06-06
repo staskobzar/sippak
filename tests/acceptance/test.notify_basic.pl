@@ -138,4 +138,11 @@ ok ($output =~ m/$regex/m, "NOTIFY XPIDF event header is presence");
 $regex = '^Content-Type: application/xpidf\+xml$';
 ok ($output =~ m/$regex/m, "NOTIFY XPIDF document type");
 
+# Header User-Agent add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak notify -A "SIP UA 1.x.x" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^User-Agent: SIP UA 1.x.x$';
+ok ($output =~ m/$regex/m, "Add User-Agent header.");
+
 done_testing();
