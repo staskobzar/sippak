@@ -92,4 +92,11 @@ $output = `$sippak register -A "sippak UA 1.0" sip:alice\@127.0.0.1:5060`;
 $regex = '^User-Agent: sippak UA 1.0$';
 ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
+# Custom headers add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak REGISTER --header="X-PID: 1235:55" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^X-PID: 1235.55$';
+ok ($output =~ m/$regex/m, "Add custom header.");
+
 done_testing();

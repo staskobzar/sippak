@@ -193,4 +193,13 @@ void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
     pjsip_msg_add_hdr(tdata->msg, hdr);
   }
 
+  if (app->cfg.hdrs.cnt > 0) {
+    for(int i = 0; i < app->cfg.hdrs.cnt; i++) {
+      pjsip_hdr *hdr_add = (pjsip_hdr *)app->cfg.hdrs.h[i];
+      hdr = pjsip_msg_find_hdr_by_name(tdata->msg, &hdr_add->name, NULL);
+      if(hdr == NULL) {
+        pjsip_msg_add_hdr(tdata->msg, hdr_add);
+      } 
+    }
+  }
 }

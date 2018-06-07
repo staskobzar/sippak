@@ -37,7 +37,7 @@ static pj_str_t pres_note (const char *note);
 static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
 static int set_port_value (const char *port);
-static void add_custom_header (char *header, struct sippak_app *app);
+static pj_status_t add_custom_header (char *header, struct sippak_app *app);
 static int parse_command_str (const char *cmd);
 static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
 static void post_parse_setup (struct sippak_app *app);
@@ -147,12 +147,38 @@ static int set_port_value (const char *port_str) {
   return port;
 }
 
-static void add_custom_header (char *header, struct sippak_app *app)
+static pj_status_t add_custom_header (char *in_header, struct sippak_app *app)
 {
-  pj_str_t n = pj_str("Subject");
-  pj_str_t v = pj_str("Ping Pong");
-  app->cfg.hdrs.h[0] = pjsip_generic_string_hdr_create(app->pool, &n, &v);
+  pj_ssize_t found_idx = 0;
+  pj_str_t hname;
+  pj_str_t hvalue;
+  pj_str_t token;
+  pj_str_t header = pj_str(in_header);
+
+  if (app->cfg.hdrs.cnt > MAX_CUSTOM_HEADERS) {
+    PJ_LOG(2, (PROJECT_NAME, "Only %d max custom headers allowed. Skip header: %s",
+          MAX_CUSTOM_HEADERS, in_header));
+    return PJ_SUCCESS;
+  }
+
+  found_idx = pj_strtok2 (&header, ":", &token, 0);
+
+  if (pj_ansi_strlen(in_header) == token.slen) {
+    PJ_LOG(1, (PROJECT_NAME, "Invalid header: %s", in_header));
+    return PJ_EINVAL;
+  }
+
+  pj_strdup(app->pool, &hname, &token);
+  pj_strtrim(&hname);
+
+  // all then left to header value
+  hvalue = pj_str(in_header + token.slen + 1);
+  pj_strtrim(&hvalue);
+
+  app->cfg.hdrs.h[app->cfg.hdrs.cnt] = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);
   app->cfg.hdrs.cnt++;
+
+  return PJ_SUCCESS;
 }
 
 static pj_bool_t pres_status_open (const char *status)
@@ -360,7 +386,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.user_agent.ptr   = NULL;
 
   // custom headers
-  app->cfg.hdrs.cnt        = 0;
+  app->cfg.hdrs.cnt         = 0;
 
   return PJ_SUCCESS;
 }
@@ -537,7 +563,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         app->cfg.user_agent = pjstr_trimmed(pj_optarg);
         break;
       case 'H': // Add custom header
-        add_custom_header (pj_optarg, app);
+        if(add_custom_header (pj_optarg, app) != PJ_SUCCESS) {
+          return PJ_CLI_EINVARG;
+        }
         break;
       default:
         break;

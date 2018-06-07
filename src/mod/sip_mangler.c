@@ -51,6 +51,8 @@ static pjsip_module mod_sip_mangler =
 static pj_status_t on_tx_request(pjsip_tx_data *tdata)
 {
   sippak_add_sip_headers (tdata, local_app);
+
+  return PJ_SUCCESS;
 }
 
 /* Ping */

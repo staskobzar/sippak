@@ -136,4 +136,11 @@ $output = `$sippak PUBLISH --user-agent="SIP Publisher" sip:alice\@127.0.0.1:506
 $regex = '^User-Agent: SIP Publisher$';
 ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
+# Custom headers add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH -H SIP-Hdr:Publisher sip:alice\@127.0.0.1:5060`;
+
+$regex = '^SIP-Hdr: Publisher$';
+ok ($output =~ m/$regex/m, "Add custom header.");
+
 done_testing();

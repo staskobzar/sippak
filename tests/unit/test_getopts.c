@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <pjlib-util.h>
 #include "sippak.h"
 
 pjsip_endpoint *endpt;
@@ -502,7 +503,7 @@ static void set_custom_header (void **state)
 {
   pj_status_t status;
   struct sippak_app *app = *state;
-  char *argv[] = { "./sippak", "--header=\"Subject: Ping Pong\"", "sip:bob@foo.com" };
+  char *argv[] = { "./sippak", "--header=Subject: Ping Pong", "sip:bob@foo.com" };
   int argc = sizeof(argv) / sizeof(char*);
 
   status = sippak_getopts (argc, argv, app);
@@ -510,6 +511,51 @@ static void set_custom_header (void **state)
   assert_int_equal (1, app->cfg.hdrs.cnt);
   assert_string_equal ("Subject", app->cfg.hdrs.h[0]->name.ptr);
   assert_string_equal ("Ping Pong", app->cfg.hdrs.h[0]->hvalue.ptr);
+}
+
+static void set_invalid_custom_header (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "-H Subject Ping Pong", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+  assert_int_equal (status, PJ_CLI_EINVARG);
+  assert_int_equal (0, app->cfg.hdrs.cnt);
+}
+
+static void set_multiple_custom_headers (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak",
+    "-H Subject: Ping Pong",
+    "--header=X-Foo:bar",
+    "--header=P-user: <sip:bob@foo.com>;x-fer: false",
+    "-H Timeout:3600",
+    "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+  int i = 0;
+
+  status = sippak_getopts (argc, argv, app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (4, app->cfg.hdrs.cnt);
+
+  assert_string_equal ("Subject", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("Ping Pong", app->cfg.hdrs.h[i]->hvalue.ptr);
+
+  i++;
+  assert_string_equal ("X-Foo", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("bar", app->cfg.hdrs.h[i]->hvalue.ptr);
+
+  i++;
+  assert_string_equal ("P-user", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("<sip:bob@foo.com>;x-fer: false", app->cfg.hdrs.h[i]->hvalue.ptr);
+
+  i++;
+  assert_string_equal ("Timeout", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("3600", app->cfg.hdrs.h[i]->hvalue.ptr);
 }
 
 int main(int argc, const char *argv[])
@@ -572,6 +618,8 @@ int main(int argc, const char *argv[])
     cmocka_unit_test_setup_teardown(set_mwi_list_with_acc, setup_app, teardown_app),
 
     cmocka_unit_test_setup_teardown(set_custom_header, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(set_invalid_custom_header, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(set_multiple_custom_headers, setup_app, teardown_app),
   };
 
   status = cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

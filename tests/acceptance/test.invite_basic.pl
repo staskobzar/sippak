@@ -122,4 +122,11 @@ $output = `$sippak invite -A "SIP bar" sip:alice\@127.0.0.1:5060`;
 $regex = '^User-Agent: SIP bar$';
 ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
+# Custom headers add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak invite -H "X-Custom: Foo Bar" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^X-Custom: Foo Bar$';
+ok ($output =~ m/$regex/m, "Add custom header.");
+
 done_testing();

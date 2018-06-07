@@ -61,4 +61,11 @@ $output = `$sippak SUBSCRIBE --user-agent="SIP SUB 1.1" sip:alice\@127.0.0.1:506
 $regex = '^User-Agent: SIP SUB 1.1$';
 ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
+# Custom headers add
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak SUBSCRIBE --header="X-SIP-foo: Subscriber" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^X-SIP-foo: Subscriber$';
+ok ($output =~ m/$regex/m, "Add custom header.");
+
 done_testing();
