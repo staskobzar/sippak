@@ -55,6 +55,8 @@
 
 #define SIPPAK_DEFAULT_RTP_PORT 4000
 
+#define MAX_CUSTOM_HEADERS 12
+
 typedef enum {
   SIPPAK_CODEC_SPEEX  = 1 << 0,
   SIPPAK_CODEC_ILBC   = 1 << 1,
@@ -160,6 +162,11 @@ struct sippak_app {
     } media;
 
     pj_str_t user_agent;          /*<! User agent header value. */
+
+    struct {
+      unsigned cnt;
+      pjsip_generic_string_hdr *h[MAX_CUSTOM_HEADERS];
+    } hdrs;
 
   } cfg;
 

@@ -65,4 +65,11 @@ $output = `$sippak --user-agent="SIP UA 1.x.x" sip:alice\@127.0.0.1:5060`;
 $regex = '^User-Agent: SIP UA 1.x.x$';
 ok ($output =~ m/$regex/m, "Add User-Agent header.");
 
+# custom header
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak --header="X-Foo: Bar header" sip:alice\@127.0.0.1:5060`;
+
+$regex = '^X-Foo: Bar header$';
+ok ($output =~ m/$regex/m, "Add custom header.");
+
 done_testing();

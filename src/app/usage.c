@@ -62,7 +62,7 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
 
   puts("    -P, --local-port=PORT");
   puts("                    Bind local port. Default is random port.");
-  puts("    -H, --local-host=HOST|IP");
+  puts("    -l, --local-host=HOST|IP");
   puts("                    Bind local hostname or IP. Default is first available local inface.");
   puts("    -u, --username=USER");
   puts("                    Username part in Authentication as well as in Contact and");
@@ -122,6 +122,10 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Port to use for media streams and negotiate with SDP.");
   puts("    -A, --user-agent=STRING");
   puts("                    Set User-Agent SIP header value.");
+  puts("    -H, --header=HEADER");
+  puts("                    Add custom header to request. Multiple custom headers (up to 12) can be added.");
+  puts("                    Parameter value must contain header name and value separated by colon.");
+  puts("                    --header=\"X-Foo: bar\", -H X-Foo:bar, -H \"X-Assert: sip:123@sip.com\"");
   puts("");
 }
 

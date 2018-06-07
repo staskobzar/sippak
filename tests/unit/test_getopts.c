@@ -353,7 +353,7 @@ static void set_local_host_short (void **state)
 {
   pj_status_t status;
   struct sippak_app *app = *state;
-  char *argv[] = { "./sippak", "-H 127.0.0.8" };
+  char *argv[] = { "./sippak", "-l 127.0.0.8" };
   int argc = sizeof(argv) / sizeof(char*);
 
   status = sippak_getopts (argc, argv, app);
@@ -498,6 +498,20 @@ static void set_mwi_list_with_acc (void **state)
   assert_string_equal ("sip:*97@example.com", app->cfg.mwi_acc.ptr);
 }
 
+static void set_custom_header (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "--header=\"Subject: Ping Pong\"", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+  assert_int_equal (status, PJ_SUCCESS);
+  assert_int_equal (1, app->cfg.hdrs.cnt);
+  assert_string_equal ("Subject", app->cfg.hdrs.h[0]->name.ptr);
+  assert_string_equal ("Ping Pong", app->cfg.hdrs.h[0]->hvalue.ptr);
+}
+
 int main(int argc, const char *argv[])
 {
   pj_status_t status;
@@ -556,6 +570,8 @@ int main(int argc, const char *argv[])
 
     cmocka_unit_test_setup_teardown(set_mwi_list_init_zeros, setup_app, teardown_app),
     cmocka_unit_test_setup_teardown(set_mwi_list_with_acc, setup_app, teardown_app),
+
+    cmocka_unit_test_setup_teardown(set_custom_header, setup_app, teardown_app),
   };
 
   status = cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

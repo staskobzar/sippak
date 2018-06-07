@@ -37,6 +37,7 @@ static pj_str_t pres_note (const char *note);
 static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
 static int set_port_value (const char *port);
+static void add_custom_header (char *header, struct sippak_app *app);
 static int parse_command_str (const char *cmd);
 static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
 static void post_parse_setup (struct sippak_app *app);
@@ -72,7 +73,7 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"log-level",   0,  0,  OPT_LOG_LEVEL },
   {"log-snd",     0,  0,  OPT_LOG_SND },
   {"local-port",  1,  0,  'P' },
-  {"local-host",  1,  0,  'H' },
+  {"local-host",  1,  0,  'l' },
   {"username",    1,  0,  'u' },
   {"password",    1,  0,  'p' },
   {"from-name",   1,  0,  'F' },
@@ -93,10 +94,11 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"codec",       1,  0,  OPT_CODEC },
   {"rtp-port",    1,  0,  OPT_RTP_PORT },
   {"user-agent",  1,  0,  'A' },
+  {"header",      1,  0,  'H' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:H:F:X:E:C:M:c:A:";
+static const char *optstring = "hVvqP:u:p:t:l:F:X:E:C:M:c:A:H:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -143,6 +145,14 @@ static int set_port_value (const char *port_str) {
   }
 
   return port;
+}
+
+static void add_custom_header (char *header, struct sippak_app *app)
+{
+  pj_str_t n = pj_str("Subject");
+  pj_str_t v = pj_str("Ping Pong");
+  app->cfg.hdrs.h[0] = pjsip_generic_string_hdr_create(app->pool, &n, &v);
+  app->cfg.hdrs.cnt++;
 }
 
 static pj_bool_t pres_status_open (const char *status)
@@ -349,6 +359,9 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.user_agent.slen  = 0;
   app->cfg.user_agent.ptr   = NULL;
 
+  // custom headers
+  app->cfg.hdrs.cnt        = 0;
+
   return PJ_SUCCESS;
 }
 
@@ -444,7 +457,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
       case 'P':
         app->cfg.local_port = set_port_value (pj_optarg);
         break;
-      case 'H':
+      case 'l':
         app->cfg.local_host = pjstr_trimmed(pj_optarg);
         break;
       case 'u':
@@ -522,6 +535,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         break;
       case 'A': // User-Agent header
         app->cfg.user_agent = pjstr_trimmed(pj_optarg);
+        break;
+      case 'H': // Add custom header
+        add_custom_header (pj_optarg, app);
         break;
       default:
         break;

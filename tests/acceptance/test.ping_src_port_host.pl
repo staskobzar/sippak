@@ -67,7 +67,7 @@ ok ($output =~ m/$regex/m, "Username in From header long opt.");
 # NOTE! On MacOS enable interface before test:
 # sudo ifconfig lo0 alias 127.0.0.8 up
 system("$sipp $sippargs -sf $scenario");
-$output = `$sippak -u john -H 127.0.0.8 -P 9988 sip:alice\@127.0.0.1:5060`;
+$output = `$sippak -u john -l 127.0.0.8 -P 9988 sip:alice\@127.0.0.1:5060`;
 
 $regex = '^Contact: <sip:john@127.0.0.8:9988>$';
 ok ($output =~ m/$regex/m, "Host in Contact header short opt.");
