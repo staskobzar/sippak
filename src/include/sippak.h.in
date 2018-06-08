@@ -168,6 +168,8 @@ struct sippak_app {
       pjsip_generic_string_hdr *h[MAX_CUSTOM_HEADERS];
     } hdrs;
 
+    pj_str_t proxy;               /* Outbound proxy */
+
   } cfg;
 
 };
@@ -266,6 +268,6 @@ pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **s
  * @param app       Sippak application.
  * @return          void
  */
-void sippak_add_sip_headers(pjsip_tx_data *tdata, struct sippak_app *app);
+void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app);
 
 #endif

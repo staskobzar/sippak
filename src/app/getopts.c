@@ -58,7 +58,7 @@ static enum opts_enum_t {
   OPT_REFER_TO,
   OPT_BODY,
   OPT_CODEC,
-  OPT_RTP_PORT
+  OPT_RTP_PORT,
 } opt_enum;
 
 struct pj_getopt_option sippak_long_opts[] = {
@@ -95,10 +95,11 @@ struct pj_getopt_option sippak_long_opts[] = {
   {"rtp-port",    1,  0,  OPT_RTP_PORT },
   {"user-agent",  1,  0,  'A' },
   {"header",      1,  0,  'H' },
+  {"proxy",       1,  0,  'R' },
   { NULL,         0,  0,   0  }
 };
 
-static const char *optstring = "hVvqP:u:p:t:l:F:X:E:C:M:c:A:H:";
+static const char *optstring = "hVvqP:u:p:t:l:F:X:E:C:M:c:A:H:R:";
 
 static int parse_command_str (const char *cmd)
 {
@@ -388,6 +389,10 @@ pj_status_t sippak_init (struct sippak_app *app)
   // custom headers
   app->cfg.hdrs.cnt         = 0;
 
+  // proxy
+  app->cfg.proxy.slen       = 0;
+  app->cfg.proxy.ptr        = NULL;
+
   return PJ_SUCCESS;
 }
 
@@ -566,6 +571,9 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         if(add_custom_header (pj_optarg, app) != PJ_SUCCESS) {
           return PJ_CLI_EINVARG;
         }
+        break;
+      case 'R': // Proxy and route headers
+        app->cfg.proxy = pjstr_trimmed(pj_optarg);
         break;
       default:
         break;

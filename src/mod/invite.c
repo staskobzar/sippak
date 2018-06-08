@@ -36,6 +36,7 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e);
 static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e);
 static void call_tsx_state_changed(pjsip_inv_session *inv, pjsip_transaction *tsx, pjsip_event *e);
+static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app);
 
 static pj_bool_t early_cancel;
 static pjsip_inv_session *inv;
@@ -128,6 +129,44 @@ static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
   PJ_UNUSED_ARG(inv);
 }
 
+static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
+{
+  /*
+  pjsip_route_hdr route_set;
+  pjsip_route_hdr *route;
+  const pj_str_t hname = { "Route", 5 };
+
+  if (app->cfg.proxy.ptr == NULL) {
+    return;
+  }
+
+  pj_strcat2(&app->cfg.proxy, ";lr");
+  pj_list_init(&route_set);
+
+  route = pjsip_parse_hdr( dlg->pool, &hname,
+      app->cfg.proxy.ptr, app->cfg.proxy.slen,
+      NULL);
+
+  if (route == NULL) {
+    return;
+  }
+
+  pj_list_push_back(&route_set, route);
+  pjsip_dlg_set_route_set(dlg, &route_set);
+  */
+  pjsip_route_hdr route_set;
+  pjsip_route_hdr *route;
+  const pj_str_t hname = { "Route", 5 };
+  pj_str_t uri = pj_str("sip:199.182.134.91:8060;lr");
+  printf("========> route: %s\n", app->cfg.proxy.ptr);
+  pj_list_init(&route_set);
+  route = pjsip_parse_hdr( dlg->pool, &hname,
+      uri.ptr, uri.slen, NULL);
+  if(route == NULL) return;
+  pj_list_push_back(&route_set, route);
+  pjsip_dlg_set_route_set(dlg, &route_set);
+}
+
 /* Ping */
 pj_status_t sippak_cmd_invite (struct sippak_app *app)
 {
@@ -182,15 +221,18 @@ pj_status_t sippak_cmd_invite (struct sippak_app *app)
 
   /* SDP */
   status = sippak_set_media_sdp (app, &sdp_sess);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* invite session */
   status = pjsip_inv_create_uac( dlg, sdp_sess, 0, &inv);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+  /* outbound proxy */
+  set_dlg_outbound_proxy(dlg, app);
 
   /* create invite request */
   status = pjsip_inv_invite(inv, &tdata);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* send invite */
   return pjsip_inv_send_msg(inv, tdata);

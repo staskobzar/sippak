@@ -180,8 +180,6 @@ void sippak_set_cred(struct sippak_app *app,
 
 void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
 {
-  pj_status_t status;
-
   pj_str_t ua_hname = pj_str("User-Agent");
   pjsip_hdr *hdr;
 
@@ -199,7 +197,7 @@ void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
       hdr = pjsip_msg_find_hdr_by_name(tdata->msg, &hdr_add->name, NULL);
       if(hdr == NULL) {
         pjsip_msg_add_hdr(tdata->msg, hdr_add);
-      } 
+      }
     }
   }
 }
