@@ -57,6 +57,8 @@
 
 #define MAX_CUSTOM_HEADERS 12
 
+#define MAX_PROXY_HEADERS 12
+
 typedef enum {
   SIPPAK_CODEC_SPEEX  = 1 << 0,
   SIPPAK_CODEC_ILBC   = 1 << 1,
@@ -168,7 +170,10 @@ struct sippak_app {
       pjsip_generic_string_hdr *h[MAX_CUSTOM_HEADERS];
     } hdrs;
 
-    pj_str_t proxy;               /* Outbound proxy */
+    struct {
+      unsigned cnt;
+      char *p[MAX_PROXY_HEADERS];
+    } proxy;                      /* Outbound proxy */
 
   } cfg;
 

@@ -509,8 +509,14 @@ static void set_custom_header (void **state)
   status = sippak_getopts (argc, argv, app);
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (1, app->cfg.hdrs.cnt);
-  assert_string_equal ("Subject", app->cfg.hdrs.h[0]->name.ptr);
-  assert_string_equal ("Ping Pong", app->cfg.hdrs.h[0]->hvalue.ptr);
+
+  char *hname = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[0]->name.slen);
+  pj_memcpy(hname, app->cfg.hdrs.h[0]->name.ptr, app->cfg.hdrs.h[0]->name.slen);
+  char *hval = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[0]->hvalue.slen);
+  pj_memcpy(hval, app->cfg.hdrs.h[0]->hvalue.ptr, app->cfg.hdrs.h[0]->hvalue.slen);
+
+  assert_string_equal ("Subject", hname);
+  assert_string_equal ("Ping Pong", hval);
 }
 
 static void set_invalid_custom_header (void **state)
@@ -542,20 +548,94 @@ static void set_multiple_custom_headers (void **state)
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (4, app->cfg.hdrs.cnt);
 
-  assert_string_equal ("Subject", app->cfg.hdrs.h[i]->name.ptr);
-  assert_string_equal ("Ping Pong", app->cfg.hdrs.h[i]->hvalue.ptr);
+  char *hname = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
+  pj_memcpy(hname, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
+  char *hval = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
+  pj_memcpy(hval, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
+  assert_string_equal ("Subject", hname);
+  assert_string_equal ("Ping Pong", hval);
 
   i++;
-  assert_string_equal ("X-Foo", app->cfg.hdrs.h[i]->name.ptr);
-  assert_string_equal ("bar", app->cfg.hdrs.h[i]->hvalue.ptr);
+  char *hname1 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
+  pj_memcpy(hname1, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
+  char *hval1 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
+  pj_memcpy(hval1, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
+  assert_string_equal ("X-Foo", hname1);
+  assert_string_equal ("bar", hval1);
 
   i++;
-  assert_string_equal ("P-user", app->cfg.hdrs.h[i]->name.ptr);
-  assert_string_equal ("<sip:bob@foo.com>;x-fer: false", app->cfg.hdrs.h[i]->hvalue.ptr);
+  char *hname2 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
+  pj_memcpy(hname2, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
+  char *hval2 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
+  pj_memcpy(hval2, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
+  assert_string_equal ("P-user", hname2);
+  assert_string_equal ("<sip:bob@foo.com>;x-fer: false", hval2);
 
   i++;
-  assert_string_equal ("Timeout", app->cfg.hdrs.h[i]->name.ptr);
-  assert_string_equal ("3600", app->cfg.hdrs.h[i]->hvalue.ptr);
+  char *hname3 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
+  pj_memcpy(hname3, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
+  char *hval3 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
+  pj_memcpy(hval3, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
+  assert_string_equal ("Timeout", hname3);
+  assert_string_equal ("3600", hval3);
+}
+
+static void set_single_proxy_without_lr (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "-R sip:10.10.12.100:8585", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+
+  assert_int_equal (1, app->cfg.proxy.cnt);
+  assert_string_equal ("sip:10.10.12.100:8585;lr", app->cfg.proxy.p[0]);
+}
+
+static void set_single_proxy_with_lr (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "--proxy=sip:10.10.12.1:9080;lr", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+
+  assert_int_equal (1, app->cfg.proxy.cnt);
+  assert_string_equal ("sip:10.10.12.1:9080;lr", app->cfg.proxy.p[0]);
+}
+
+static void set_multiple_proxies (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak",
+    "--proxy=sip:10.10.12.1:5060",
+    "-R sip:105.5.5.200:5060",
+    "-R sips:205.199.50.200",
+    "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+
+  int i = 0;
+  assert_int_equal (3, app->cfg.proxy.cnt);
+  assert_string_equal ("sip:10.10.12.1:5060;lr", app->cfg.proxy.p[i++]);
+  assert_string_equal ("sip:105.5.5.200:5060", app->cfg.proxy.p[i++]);
+  assert_string_equal ("sips:205.199.50.200", app->cfg.proxy.p[i++]);
+}
+
+static void set_single_proxy_fails (void **state)
+{
+  pj_status_t status;
+  struct sippak_app *app = *state;
+  char *argv[] = { "./sippak", "--proxy=foo", "sip:bob@foo.com" };
+  int argc = sizeof(argv) / sizeof(char*);
+
+  status = sippak_getopts (argc, argv, app);
+
+  assert_int_equal (0, app->cfg.proxy.cnt);
 }
 
 int main(int argc, const char *argv[])
@@ -620,6 +700,11 @@ int main(int argc, const char *argv[])
     cmocka_unit_test_setup_teardown(set_custom_header, setup_app, teardown_app),
     cmocka_unit_test_setup_teardown(set_invalid_custom_header, setup_app, teardown_app),
     cmocka_unit_test_setup_teardown(set_multiple_custom_headers, setup_app, teardown_app),
+
+    cmocka_unit_test_setup_teardown(set_single_proxy_without_lr, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(set_single_proxy_with_lr, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(set_multiple_proxies, setup_app, teardown_app),
+    cmocka_unit_test_setup_teardown(set_single_proxy_fails, setup_app, teardown_app),
   };
 
   status = cmocka_run_group_tests_name("Agruments parsing", tests, NULL, NULL);

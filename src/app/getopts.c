@@ -38,6 +38,7 @@ static pj_bool_t pres_status_open (const char *status);
 static int transport_proto (const char *proto);
 static int set_port_value (const char *port);
 static pj_status_t add_custom_header (char *header, struct sippak_app *app);
+static void add_proxy (char *proxy, struct sippak_app *app);
 static int parse_command_str (const char *cmd);
 static void set_mwi_list (struct sippak_app *app, char *mwi_list_str);
 static void post_parse_setup (struct sippak_app *app);
@@ -180,6 +181,36 @@ static pj_status_t add_custom_header (char *in_header, struct sippak_app *app)
   app->cfg.hdrs.cnt++;
 
   return PJ_SUCCESS;
+}
+
+static void add_proxy (char *proxy, struct sippak_app *app)
+{
+
+  if (app->cfg.proxy.cnt > MAX_PROXY_HEADERS) {
+    PJ_LOG(2, (PROJECT_NAME, "Max proxy allowed is %d. Skip proxy '%s'.",
+          MAX_PROXY_HEADERS, proxy));
+    return;
+  }
+
+  while(pj_isspace((unsigned char)*proxy)) proxy++; // trim leading spaces
+  pjsip_sip_uri *uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, proxy, pj_ansi_strlen(proxy), 0);
+
+  if(uri == NULL) {
+    PJ_LOG(2, (PROJECT_NAME, "Failed to parse proxy URI '%s'.", proxy));
+    return;
+  }
+
+  // force loose route parameter for the first proxy URI
+  if (app->cfg.proxy.cnt == 0) {
+    uri->lr_param = 1;
+  }
+  char *proxy_uri = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
+
+  if (pjsip_uri_print(PJSIP_URI_IN_ROUTING_HDR,
+        uri, proxy_uri, PJSIP_MAX_URL_SIZE) > 0) {
+    app->cfg.proxy.p[app->cfg.proxy.cnt] = proxy_uri;
+    app->cfg.proxy.cnt++;
+  }
 }
 
 static pj_bool_t pres_status_open (const char *status)
@@ -390,8 +421,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   app->cfg.hdrs.cnt         = 0;
 
   // proxy
-  app->cfg.proxy.slen       = 0;
-  app->cfg.proxy.ptr        = NULL;
+  app->cfg.proxy.cnt        = 0;
 
   return PJ_SUCCESS;
 }
@@ -573,7 +603,7 @@ pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
         }
         break;
       case 'R': // Proxy and route headers
-        app->cfg.proxy = pjstr_trimmed(pj_optarg);
+        add_proxy(pj_optarg, app);
         break;
       default:
         break;

@@ -131,39 +131,24 @@ static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
 
 static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
 {
-  /*
   pjsip_route_hdr route_set;
-  pjsip_route_hdr *route;
+  int i;
   const pj_str_t hname = { "Route", 5 };
 
-  if (app->cfg.proxy.ptr == NULL) {
+  if (app->cfg.proxy.cnt == 0) {
     return;
   }
 
-  pj_strcat2(&app->cfg.proxy, ";lr");
   pj_list_init(&route_set);
 
-  route = pjsip_parse_hdr( dlg->pool, &hname,
-      app->cfg.proxy.ptr, app->cfg.proxy.slen,
-      NULL);
-
-  if (route == NULL) {
-    return;
+  for(i = 0; i < app->cfg.proxy.cnt; i++) {
+    pjsip_route_hdr *route = pjsip_parse_hdr(dlg->pool, &hname,
+        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
+        NULL);
+    if (route) {
+      pj_list_push_back(&route_set, route);
+    }
   }
-
-  pj_list_push_back(&route_set, route);
-  pjsip_dlg_set_route_set(dlg, &route_set);
-  */
-  pjsip_route_hdr route_set;
-  pjsip_route_hdr *route;
-  const pj_str_t hname = { "Route", 5 };
-  pj_str_t uri = pj_str("sip:199.182.134.91:8060;lr");
-  printf("========> route: %s\n", app->cfg.proxy.ptr);
-  pj_list_init(&route_set);
-  route = pjsip_parse_hdr( dlg->pool, &hname,
-      uri.ptr, uri.slen, NULL);
-  if(route == NULL) return;
-  pj_list_push_back(&route_set, route);
   pjsip_dlg_set_route_set(dlg, &route_set);
 }
 

@@ -36,7 +36,7 @@ ok ($output =~ m/$regex/m, "Ringing 180 early response.");
 $regex = '^SIP\/2.0 200 OK Invite$';
 ok ($output =~ m/$regex/m, "Invite session is confirmed.");
 
-$regex = '^ACK sip:alice\@sip.corporate.big SIP\/2\.0$';
+$regex = '^ACK sip:alice\@127\.0\.0\.1:5060 SIP\/2\.0$';
 ok ($output =~ m/$regex/m, "Invite 200 in acknowlaged.");
 
 $regex = '^BYE sip:alice\@127\.0\.0\.1:5060 SIP\/2\.0$';
@@ -45,5 +45,17 @@ ok ($output =~ m/$regex/m, "Session is terminated with BYE.");
 $regex = '^SIP\/2.0 200 OK bye$';
 ok ($output =~ m/$regex/m, "BYE method is confirmed.");
 
+# test multiple proxies
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak INVITE --proxy=sip:127.0.0.1:5060 -R sip:foo.com:2525 -R sips:125.1.1.100:8080 sip:alice\@pbx.corporate.big`;
+
+$regex = '^Route: <sip:127.0.0.1:5060;lr>$';
+ok ($output =~ m/$regex/m, "First proxy with loose route parameter");
+
+$regex = '^Route: <sip:foo.com:2525>$';
+ok ($output =~ m/$regex/m, "Second proxy as Router header.");
+
+$regex = '^Route: <sips:125.1.1.100:8080>$';
+ok ($output =~ m/$regex/m, "Third proxy as Router header");
 
 done_testing();

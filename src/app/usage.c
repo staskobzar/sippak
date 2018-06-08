@@ -125,7 +125,14 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("    -H, --header=HEADER");
   puts("                    Add custom header to request. Multiple custom headers (up to 12) can be added.");
   puts("                    Parameter value must contain header name and value separated by colon.");
+  puts("                    Examples:");
   puts("                    --header=\"X-Foo: bar\", -H X-Foo:bar, -H \"X-Assert: sip:123@sip.com\"");
+  puts("    -R, --proxy=PROXY");
+  puts("                    Add proxy to request. Multiple proxies (up to 12) can be added.");
+  puts("                    The first proxy will be used as outbound proxy where the request will be sent.");
+  puts("                    All additional proxies will be added as Route headers to the request.");
+  puts("                    Examples:");
+  puts("                    --proxy=sip:sip.com:2585, -R sip:10.23.24.100:6060;lr");
   puts("");
 }
 
