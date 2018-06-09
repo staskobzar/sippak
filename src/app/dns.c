@@ -155,10 +155,10 @@ PJ_DEF(pj_status_t) sippak_set_resolver_ns(struct sippak_app *app)
   serv_num = sippak_get_ns_list (app, nameservers, ports);
 
   status = pjsip_endpt_create_resolver(app->endpt, &resv);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create end point resolver.");
 
   status = pj_dns_resolver_set_ns(resv, serv_num, nameservers, ports);
-  if (status != PJ_SUCCESS) return status;
+  SIPPAK_ASSERT_SUCC(status, "Failed to set DNS name servers.");
 
   return pjsip_endpt_set_resolver(app->endpt, resv);
 }

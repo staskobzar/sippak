@@ -142,13 +142,13 @@ PJ_DEF(pj_status_t) sippak_cmd_refer (struct sippak_app *app)
   pj_str_t ruri, from_uri, cnt;
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   status = pjsip_endpt_register_module(app->endpt, &mod_refer);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_refer.");
 
   ruri     = sippak_create_ruri(app);
   from_uri = sippak_create_from_hdr(app);
@@ -164,7 +164,7 @@ PJ_DEF(pj_status_t) sippak_cmd_refer (struct sippak_app *app)
               -1,                     // CSeq
               NULL,                   // body
               &tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create endpoint request.");
 
   add_referto_hdr(tdata, app);
   add_refersub_hdr(tdata, app);

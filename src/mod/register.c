@@ -126,19 +126,19 @@ PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
   pj_str_t contacts[1];
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   status = pjsip_endpt_register_module(app->endpt, &mod_register);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_register.");
 
   status = pjsip_regc_create(app->endpt,
       app, // void *token: A data to be associated with the client registration struct.
       &reg_callback, // Pointer to callback function to receive registration status
       &regc);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create register client.");
 
   srv_url = sippak_create_reg_ruri(app);
   to_uri = sippak_create_ruri(app);
@@ -148,22 +148,27 @@ PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
   status = pjsip_regc_init(regc, &srv_url, &from_uri, &to_uri,
       app->cfg.is_clist == PJ_TRUE ? 0: 1, // no contact header, means return contacts list
       contacts, app->cfg.expires);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate register client.");
 
   sippak_set_cred(app, cred);
   status = pjsip_regc_set_credentials(regc, 1, cred);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");
 
   set_regc_outbound_proxy(regc, app);
 
   if (app->cfg.cancel_all_reg == PJ_TRUE) {
     status = pjsip_regc_unregister_all(regc, &tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to cancel all registarations for %.*s.",
+        from_uri.slen, from_uri.ptr);
   } else if (app->cfg.cancel == PJ_TRUE) {
     status = pjsip_regc_unregister(regc, &tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to cancel registaration for %.*s.",
+        from_uri.slen, from_uri.ptr);
   } else {
     status = pjsip_regc_register(regc, PJ_FALSE, &tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to register %.*s.",
+        from_uri.slen, from_uri.ptr);
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   return pjsip_regc_send(regc, tdata);
 }

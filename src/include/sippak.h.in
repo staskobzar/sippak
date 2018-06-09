@@ -59,6 +59,10 @@
 
 #define MAX_PROXY_HEADERS 12
 
+#define SIPPAK_ASSERT_SUCC(status, frm, args...) if(status != PJ_SUCCESS) {\
+  PJ_LOG(1, (PROJECT_NAME, frm, ##args)); return status;\
+}
+
 typedef enum {
   SIPPAK_CODEC_SPEEX  = 1 << 0,
   SIPPAK_CODEC_ILBC   = 1 << 1,

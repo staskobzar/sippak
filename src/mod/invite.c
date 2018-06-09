@@ -168,17 +168,17 @@ PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
   early_cancel = app->cfg.cancel;
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   status = pjsip_ua_init_module(app->endpt, NULL);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate UA module.");
 
   /* Initialize 100rel support */
   status = pjsip_100rel_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate 100rel module.");
 
   /* invite usage module */
   pj_bzero(&inv_cb, sizeof(inv_cb));
@@ -186,10 +186,10 @@ PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
   inv_cb.on_new_session = &call_on_forked;
   inv_cb.on_tsx_state_changed = &call_tsx_state_changed;
   status = pjsip_inv_usage_init(app->endpt, &inv_cb);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set invite callback usage functions.");
 
   status = pjsip_endpt_register_module(app->endpt, &mod_invite);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_invite.");
 
   cnt  = sippak_create_contact_hdr(app, local_addr, local_port);
   from = sippak_create_from_hdr(app);
@@ -197,27 +197,27 @@ PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
 
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
       &from, &cnt, &ruri, &ruri, &dlg);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create dialog uac.");
 
   /* auth credentials */
   sippak_set_cred(app, cred);
   status = pjsip_auth_clt_set_credentials(&dlg->auth_sess, 1, cred);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");
 
   /* SDP */
   status = sippak_set_media_sdp (app, &sdp_sess);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set media SDP.");
 
   /* invite session */
   status = pjsip_inv_create_uac( dlg, sdp_sess, 0, &inv);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create invite UAC.");
 
   /* outbound proxy */
   set_dlg_outbound_proxy(dlg, app);
 
   /* create invite request */
   status = pjsip_inv_invite(inv, &tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create invite request.");
 
   /* send invite */
   return pjsip_inv_send_msg(inv, tdata);

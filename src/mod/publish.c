@@ -135,7 +135,7 @@ PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
   }
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   target_uri = sippak_create_ruri(app); // also as To header URI
   from_uri = sippak_create_from_hdr(app); // also entity
@@ -154,38 +154,39 @@ PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
   pjsip_publishc_opt_default(&publish_opt);
 
   status = pjsip_publishc_create(app->endpt, &publish_opt, NULL, &publish_cb, &publish_sess);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create publish client.");
 
   status = pjsip_publishc_init(publish_sess, &event, &target_uri, &from_uri, &target_uri, app->cfg.expires);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate publish client.");
 
   sippak_set_cred(app, cred);
 
   set_pubc_outbound_proxy(publish_sess, app);
 
   status = pjsip_publishc_set_credentials(publish_sess, 1, cred);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");
 
   status = pjsip_publishc_publish(publish_sess, PJ_TRUE, &tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create publish client.");
 
   if (app->cfg.ctype_e == CTYPE_XPIDF) {
     status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
+    SIPPAK_ASSERT_SUCC(status, "Failed to create XPIDF publish body.");
   } else if (app->cfg.ctype_e == CTYPE_PIDF) {
     status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
+    SIPPAK_ASSERT_SUCC(status, "Failed to create PIDF publish body.");
   } else {
     PJ_LOG(2, (PROJECT_NAME,
       "Content type \"%.*s\" can not be used. Fall back to pidf content type.",
       app->cfg.ctype_media.subtype.slen, app->cfg.ctype_media.subtype.ptr));
     status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   status = pjsip_endpt_register_module(app->endpt, &mod_publish);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_publish.");
 
   return pjsip_publishc_send(publish_sess, tdata);
 }

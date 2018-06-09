@@ -126,7 +126,7 @@ PJ_DEF(pj_status_t) sippak_cmd_ping (struct sippak_app *app)
   pj_str_t cnt, from, ruri;
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   cnt  = sippak_create_contact_hdr(app, local_addr, local_port);
   from = sippak_create_from_hdr(app);
@@ -142,13 +142,13 @@ PJ_DEF(pj_status_t) sippak_cmd_ping (struct sippak_app *app)
               -1,                     // CSeq
               NULL,                   // body
               &tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create endpoint request.");
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   status = pjsip_endpt_register_module(app->endpt, &mod_ping);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_ping.");
 
   return pjsip_endpt_send_request(app->endpt, tdata, -1, app, &send_cb);
 }

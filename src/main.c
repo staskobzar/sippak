@@ -48,32 +48,33 @@ int main(int argc, char *argv[])
   pj_status_t status;
   pj_caching_pool cp;
 
+
   pj_log_set_level(MIN_LOG_LEVEL);
   status = pj_init();
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
+  SIPPAK_ASSERT_SUCC(status, "Failed to init PJSIP.");
 
   status = sippak_init(&app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to init SIPPAK.");
 
   pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
   app.cp = &cp;
 
   status = pjsip_endpt_create(&cp.factory, PROJECT_NAME, &app.endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create end point.");
 
   app.pool = pjsip_endpt_create_pool(app.endpt, PROJECT_NAME, POOL_INIT, POOL_INCR);
 
   status = sippak_getopts(argc, argv, &app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to process parameters.");
 
   status = sippak_mod_logger_register(&app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register logger module.");
 
   status = sippak_set_resolver_ns (&app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set DNS resolvers.");
 
   status = sippak_mod_sip_mangler_register (&app);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register SIP mangler module.");
 
   // run
   switch (app.cfg.cmd)
@@ -88,35 +89,35 @@ int main(int argc, char *argv[])
       break;
     case CMD_PING:
       status = sippak_cmd_ping(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed PING command.");
       break;
     case CMD_PUBLISH:
       status = sippak_cmd_publish(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed PUBLISH command.");
       break;
     case CMD_SUBSCRIBE:
       status = sippak_cmd_subscribe(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed SUBSCRIBE command.");
       break;
     case CMD_NOTIFY:
       status = sippak_cmd_notify(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed NOTIFY command.");
       break;
     case CMD_REGISTER:
       status = sippak_cmd_register(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed REGISTER command.");
       break;
     case CMD_REFER:
       status = sippak_cmd_refer(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed REFER command.");
       break;
     case CMD_MESSAGE:
       status = sippak_cmd_message(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed MESSAGE command.");
       break;
     case CMD_INVITE:
       status = sippak_cmd_invite(&app);
-      PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      SIPPAK_ASSERT_SUCC(status, "Failed INVITE command.");
       break;
 
     // fail

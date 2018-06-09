@@ -186,39 +186,40 @@ PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app)
   sippak_evtype_e evtype = set_sub_evtype(app);
 
   status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transport.");
 
   cnt  = sippak_create_contact_hdr(app, local_addr, local_port);
   from = sippak_create_from_hdr(app);
   ruri = sippak_create_ruri(app);
 
   status = pjsip_ua_init_module(app->endpt, NULL);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate UA module.");
 
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
       &from, &cnt, &ruri, &ruri, &dlg);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create dialog uac.");
 
   // TODO: set routes for subscribe
   // set_dlg_outbound_proxy(dlg, app);
 
   sippak_set_cred(app, cred);
   status = pjsip_auth_clt_set_credentials(&dlg->auth_sess, 1, cred);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");
 
   /* Init core SIMPLE module : */
   status = pjsip_evsub_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to intiate events subscribe module.");
 
   if (app->cfg.pres_ev == EVTYPE_MWI) {
     status = pjsip_mwi_init_module(app->endpt, &mod_subscribe);
+    SIPPAK_ASSERT_SUCC(status, "Failed to intiate MWI module.");
   } else {
     status = pjsip_pres_init_module(app->endpt, &mod_subscribe);
+    SIPPAK_ASSERT_SUCC(status, "Failed to intiate presence module.");
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_endpt_register_module(app->endpt, &mod_subscribe);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register module mod_subscribe.");
 
   pj_bzero(&pres_cb, sizeof(pres_cb));
   pres_cb.on_tsx_state = &on_tsx_state;
@@ -227,25 +228,29 @@ PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app)
 
   if (app->cfg.pres_ev == EVTYPE_MWI) {
     status = pjsip_mwi_create_uac(dlg, &pres_cb, 1, &sub);
+    SIPPAK_ASSERT_SUCC(status, "Failed to create MWI UAC.");
   } else {
     status = pjsip_pres_create_uac(dlg, &pres_cb, 1, &sub);
+    SIPPAK_ASSERT_SUCC(status, "Failed to create presence UAC.");
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   if (app->cfg.pres_ev == EVTYPE_MWI) {
     status = pjsip_mwi_initiate(sub, app->cfg.expires, &tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to initiate MWI request.");
   } else {
     status = pjsip_pres_initiate(sub, app->cfg.expires, &tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to initiate presence request.");
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   status = pjsip_tsx_layer_init_module(app->endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate transaction layer.");
 
   if (app->cfg.pres_ev == EVTYPE_MWI) {
     status = pjsip_mwi_send_request(sub, tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to send MWI request.");
   } else {
     status = pjsip_pres_send_request(sub, tdata);
+    SIPPAK_ASSERT_SUCC(status, "Failed to send presence request.");
   }
   return status;
 }

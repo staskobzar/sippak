@@ -109,61 +109,73 @@ static pj_status_t set_media_codecs(pjmedia_endpt *med_endpt,
 #if PJMEDIA_HAS_SPEEX_CODEC
       case SIPPAK_CODEC_SPEEX:
         status = pjmedia_codec_speex_init_default(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec SPEEX.");
         break;
 #endif
 #if PJMEDIA_HAS_ILBC_CODEC
       case SIPPAK_CODEC_ILBC:
         status = pjmedia_codec_ilbc_init(med_endpt, codec_cfg->ilbc.mode);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec ILBC.");
         break;
 #endif
 #if PJMEDIA_HAS_GSM_CODEC
       case SIPPAK_CODEC_GSM:
         status = pjmedia_codec_gsm_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec GSM.");
         break;
 #endif
 #if PJMEDIA_HAS_G711_CODEC
       case SIPPAK_CODEC_G711:
         status = pjmedia_codec_g711_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec g711.");
         break;
 #endif
 #if PJMEDIA_HAS_G722_CODEC
       case SIPPAK_CODEC_G722:
         status = pjmedia_codec_g722_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec g722.");
         break;
 #endif
 #if PJMEDIA_HAS_INTEL_IPP
       case SIPPAK_CODEC_IPP:
         status = pjmedia_codec_ipp_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec IPP.");
         break;
 #endif
 #if PJMEDIA_HAS_G7221_CODEC
       case SIPPAK_CODEC_G7221:
         status = pjmedia_codec_g7221_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec g722.1.");
         break;
 #endif
 #if PJMEDIA_HAS_L16_CODEC
       case SIPPAK_CODEC_L16:
         status = pjmedia_codec_l16_init(med_endpt, 0);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec L16.");
         break;
 #endif
 #if PJMEDIA_HAS_OPENCORE_AMRNB_CODEC || PJMEDIA_HAS_OPENCORE_AMRWB_CODEC
       case SIPPAK_CODEC_OCAMR:
         status = pjmedia_codec_opencore_amr_init(med_endpt, 0);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec AMR.");
         break;
 #endif
 #if PJMEDIA_HAS_SILK_CODEC
       case SIPPAK_CODEC_SILK:
         status = pjmedia_codec_silk_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec SILK.");
         break;
 #endif
 #if PJMEDIA_HAS_OPUS_CODEC
       case SIPPAK_CODEC_OPUS:
         status = pjmedia_codec_opus_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec OPUS.");
         break;
 #endif
 #if PJMEDIA_HAS_BCG729
       case SIPPAK_CODEC_BCG729:
         status = pjmedia_codec_bcg729_init(med_endpt);
+        SIPPAK_ASSERT_SUCC(status, "Failed to set media codec bcg729.");
         break;
 #endif
       default:
@@ -171,7 +183,6 @@ static pj_status_t set_media_codecs(pjmedia_endpt *med_endpt,
         return PJ_EINVAL;
         break;
     }
-    PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
   }
   return PJ_SUCCESS;
 }
@@ -271,26 +282,26 @@ PJ_DEF(pj_status_t) sippak_set_media_sdp (struct sippak_app *app,
   pjmedia_audio_codec_config_default(&codec_cfg);
 
   status = pjmedia_endpt_create(&app->cp->factory, NULL, 1, &med_endpt);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create media end point.");
 
   if (app->cfg.media.cnt == NUM_CODECS_AVAIL) {
     status = pjmedia_codec_register_audio_codecs(med_endpt, &codec_cfg);
   } else {
     status = set_media_codecs(med_endpt, app, &codec_cfg);
   }
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to register audio codecs.");
 
   status = pjmedia_transport_udp_create(med_endpt,
       NAME,     // transport name
       app->cfg.media.rtp_port,    // rtp port
       0,        // options
       &med_transport);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create media UDP transport.");
 
   pjmedia_transport_info_init(&med_tpinfo);
 
   status = pjmedia_transport_get_info(med_transport, &med_tpinfo);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to get media transport info.");
 
   pj_memcpy(&sock_info, &med_tpinfo.sock_info, sizeof(pjmedia_sock_info));
 
@@ -299,7 +310,7 @@ PJ_DEF(pj_status_t) sippak_set_media_sdp (struct sippak_app *app,
       1, // # of streams
       &sock_info,  // rtp sock
       &sdp_sess); // local sdp
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to create end point SDP body.");
 
   // session name (subject)
   sdp_sess->name = pj_str("sippak");

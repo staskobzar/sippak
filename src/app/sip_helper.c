@@ -137,7 +137,8 @@ PJ_DEF(pj_status_t) sippak_transport_init(struct sippak_app *app,
   pjsip_tpfactory *tpfactory = NULL;
 
   status = pj_sockaddr_in_init(&addr, &app->cfg.local_host, app->cfg.local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  SIPPAK_ASSERT_SUCC(status, "Failed to initiate socket %.*s:%d.",
+      app->cfg.local_host.slen, app->cfg.local_host.ptr, app->cfg.local_port);
 
   // set transport TCP/UDP
   if (app->cfg.proto == PJSIP_TRANSPORT_TCP) {
