@@ -99,7 +99,6 @@ static void on_evsub_state(pjsip_evsub *sub, pjsip_event *event)
 {
   PJ_UNUSED_ARG(event);
   pjsip_evsub_state state = pjsip_evsub_get_state(sub);
-  // printf("-------> on_evsub_state %d : %s\n", pjsip_evsub_get_state(sub), pjsip_evsub_get_state_name(sub));
   // Stop when subscription is activated
   if (state == PJSIP_EVSUB_STATE_ACTIVE) {
     PJ_LOG(3, (NAME,
@@ -125,8 +124,6 @@ static void on_rx_notify(pjsip_evsub *sub,
   PJ_UNUSED_ARG(*p_st_text);
   PJ_UNUSED_ARG(res_hdr);
   PJ_UNUSED_ARG(*p_body);
-  // printf("-------> on_rx_notify p_st_text %.*s\n", (*p_st_text)->slen, (*p_st_text)->ptr);
-  // printf("-------> on_rx_notify p_st_code %d\n", *p_st_code);
 }
 
 static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event)

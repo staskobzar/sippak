@@ -131,6 +131,7 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("                    Add proxy to request. Multiple proxies (up to 12) can be added.");
   puts("                    The first proxy will be used as outbound proxy where the request will be sent.");
   puts("                    All additional proxies will be added as Route headers to the request.");
+  puts("                    Supported methods are INVITE, REGISTER and PUBLISH.");
   puts("                    Examples:");
   puts("                    --proxy=sip:sip.com:2585, -R sip:10.23.24.100:6060;lr");
   puts("");

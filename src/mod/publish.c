@@ -114,6 +114,7 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   int local_port;
   pj_str_t target_uri;
   pj_str_t from_uri;
+  pj_str_t pres_id;
 
   pjsip_publishc  *publish_sess = NULL;
   pjsip_publishc_opt publish_opt;
@@ -133,21 +134,22 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
     exit(PJ_CLI_EINVARG);
   }
 
+  status = sippak_transport_init(app, &local_addr, &local_port);
+  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
   target_uri = sippak_create_ruri(app); // also as To header URI
   from_uri = sippak_create_from_hdr(app); // also entity
+  pres_id = sippak_create_contact_hdr(app, local_addr, local_port);
 
   // set presence status
   pj_bzero(&pres_status, sizeof(pres_status));
   pres_status.info_cnt = 1;
   pres_status.info[0].basic_open = app->cfg.pres_status_open;
-  pres_status.info[0].id = from_uri;
+  pres_status.info[0].id = pres_id;
   pres_status.info[0].rpid.note = app->cfg.pres_note;
   pres_status.info[0].rpid.activity = app->cfg.pres_status_open
     ? PJRPID_ACTIVITY_UNKNOWN
     : PJRPID_ACTIVITY_BUSY;
-
-  status = sippak_transport_init(app, &local_addr, &local_port);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   pjsip_publishc_opt_default(&publish_opt);
 
@@ -168,14 +170,14 @@ pj_status_t sippak_cmd_publish (struct sippak_app *app)
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   if (app->cfg.ctype_e == CTYPE_XPIDF) {
-    status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+    status = pjsip_pres_create_xpidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
   } else if (app->cfg.ctype_e == CTYPE_PIDF) {
-    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
   } else {
     PJ_LOG(2, (PROJECT_NAME,
       "Content type \"%.*s\" can not be used. Fall back to pidf content type.",
       app->cfg.ctype_media.subtype.slen, app->cfg.ctype_media.subtype.ptr));
-    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &from_uri, &tdata->msg->body);
+    status = pjsip_pres_create_pidf(tdata->pool, &pres_status, &pres_id, &tdata->msg->body);
   }
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
