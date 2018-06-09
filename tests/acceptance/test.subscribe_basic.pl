@@ -68,4 +68,19 @@ $output = `$sippak SUBSCRIBE --header="X-SIP-foo: Subscriber" sip:alice\@127.0.0
 $regex = '^X-SIP-foo: Subscriber$';
 ok ($output =~ m/$regex/m, "Add custom header.");
 
+# TODO: Set outbound proxy for SUBSCRIBE and Route headers
+# # Outbound proxy set
+# system("$sipp $sippargs -sf $scenario");
+# $output = `$sippak SUBSCRIBE --proxy=sip:127.0.0.1:5060 sip:alice\@sip.sub.pbx`;
+# 
+# $regex = '^SUBSCRIBE sip:alice\@sip.sub.pbx SIP\/2\.0$';
+# ok ($output =~ m/$regex/m, "Use outbound proxy.");
+# 
+# # Route headers with multiple proxies
+# system("$sipp $sippargs -sf $scenario");
+# $output = `$sippak SUBSCRIBE -R sip:127.0.0.1:5060 -R sips:router01.sip.local:5856 sip:alice\@sip.home.pbx`;
+# 
+# $regex = '^Route: <sips:router01.sip.local:5856>$';
+# ok ($output =~ m/$regex/m, "Route header for second proxy.");
+
 done_testing();
