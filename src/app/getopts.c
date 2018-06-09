@@ -151,11 +151,11 @@ static int set_port_value (const char *port_str) {
 
 static pj_status_t add_custom_header (char *in_header, struct sippak_app *app)
 {
-  pj_ssize_t found_idx = 0;
-  pj_str_t hname;
-  pj_str_t hvalue;
-  pj_str_t token;
-  pj_str_t header = pj_str(in_header);
+  char *delim = NULL;
+  char *hname = NULL;
+  char *value = NULL;
+  pj_str_t hdr_name, hdr_value;
+  unsigned int len = 0;
 
   if (app->cfg.hdrs.cnt > MAX_CUSTOM_HEADERS) {
     PJ_LOG(2, (PROJECT_NAME, "Only %d max custom headers allowed. Skip header: %s",
@@ -163,21 +163,38 @@ static pj_status_t add_custom_header (char *in_header, struct sippak_app *app)
     return PJ_SUCCESS;
   }
 
-  found_idx = pj_strtok2 (&header, ":", &token, 0);
+  // trim leading spaces
+  while(pj_isspace((unsigned char)*in_header)) in_header++;
+  delim = pj_ansi_strchr(in_header, (int)':');
 
-  if (pj_ansi_strlen(in_header) == token.slen) {
+  if (delim == NULL) {
     PJ_LOG(1, (PROJECT_NAME, "Invalid header: %s", in_header));
     return PJ_EINVAL;
   }
 
-  pj_strdup(app->pool, &hname, &token);
-  pj_strtrim(&hname);
+  /* Header content */
+  len = delim - in_header;
+  hname = (char*)pj_pool_alloc(app->pool, len + 1);
 
-  // all then left to header value
-  hvalue = pj_str(in_header + token.slen + 1);
-  pj_strtrim(&hvalue);
+  pj_ansi_strncpy(hname, in_header, len);
+  hname[len] = '\0';
 
-  app->cfg.hdrs.h[app->cfg.hdrs.cnt] = pjsip_generic_string_hdr_create(app->pool, &hname, &hvalue);
+  in_header += len + 1; // next after ':'
+  // trim leading values whitespaces
+  while(pj_isspace((unsigned int)*in_header)) in_header++;
+
+  /* Value content */
+  len = pj_ansi_strlen(in_header);
+  value = (char*)pj_pool_alloc(app->pool, len + 1);
+  pj_ansi_strncpy(value, in_header, len);
+  value[len] = '\0';
+
+  hdr_name = pj_str(hname);
+  hdr_value = pj_str(value);
+
+  app->cfg.hdrs.h[app->cfg.hdrs.cnt] = pjsip_generic_string_hdr_create(app->pool,
+      &hdr_name, &hdr_value);
+
   app->cfg.hdrs.cnt++;
 
   return PJ_SUCCESS;

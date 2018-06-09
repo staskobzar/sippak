@@ -548,36 +548,20 @@ static void set_multiple_custom_headers (void **state)
   assert_int_equal (status, PJ_SUCCESS);
   assert_int_equal (4, app->cfg.hdrs.cnt);
 
-  char *hname = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
-  pj_memcpy(hname, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
-  char *hval = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
-  pj_memcpy(hval, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
-  assert_string_equal ("Subject", hname);
-  assert_string_equal ("Ping Pong", hval);
+  assert_string_equal ("Subject", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("Ping Pong", app->cfg.hdrs.h[i]->hvalue.ptr);
 
   i++;
-  char *hname1 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
-  pj_memcpy(hname1, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
-  char *hval1 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
-  pj_memcpy(hval1, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
-  assert_string_equal ("X-Foo", hname1);
-  assert_string_equal ("bar", hval1);
+  assert_string_equal ("X-Foo", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("bar", app->cfg.hdrs.h[i]->hvalue.ptr);
 
   i++;
-  char *hname2 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
-  pj_memcpy(hname2, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
-  char *hval2 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
-  pj_memcpy(hval2, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
-  assert_string_equal ("P-user", hname2);
-  assert_string_equal ("<sip:bob@foo.com>;x-fer: false", hval2);
+  assert_string_equal ("P-user", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("<sip:bob@foo.com>;x-fer: false", app->cfg.hdrs.h[i]->hvalue.ptr);
 
   i++;
-  char *hname3 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->name.slen);
-  pj_memcpy(hname3, app->cfg.hdrs.h[i]->name.ptr, app->cfg.hdrs.h[i]->name.slen);
-  char *hval3 = (char*)pj_pool_alloc(app->pool, app->cfg.hdrs.h[i]->hvalue.slen);
-  pj_memcpy(hval3, app->cfg.hdrs.h[i]->hvalue.ptr, app->cfg.hdrs.h[i]->hvalue.slen);
-  assert_string_equal ("Timeout", hname3);
-  assert_string_equal ("3600", hval3);
+  assert_string_equal ("Timeout", app->cfg.hdrs.h[i]->name.ptr);
+  assert_string_equal ("3600", app->cfg.hdrs.h[i]->hvalue.ptr);
 }
 
 static void set_single_proxy_without_lr (void **state)
