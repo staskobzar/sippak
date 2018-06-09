@@ -179,29 +179,29 @@ struct sippak_app {
 
 };
 
-pj_status_t sippak_mod_sip_mangler_register (struct sippak_app *app);
-pj_status_t sippak_mod_logger_register (struct sippak_app *app);
-pj_status_t sippak_set_resolver_ns (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_mod_sip_mangler_register (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_mod_logger_register (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_set_resolver_ns (struct sippak_app *app);
 
-pj_status_t sippak_cmd_ping (struct sippak_app *app);
-pj_status_t sippak_cmd_publish(struct sippak_app *app);
-pj_status_t sippak_cmd_subscribe (struct sippak_app *app);
-pj_status_t sippak_cmd_notify (struct sippak_app *app);
-pj_status_t sippak_cmd_register (struct sippak_app *app);
-pj_status_t sippak_cmd_refer (struct sippak_app *app);
-pj_status_t sippak_cmd_message (struct sippak_app *app);
-pj_status_t sippak_cmd_invite (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_ping (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_publish(struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_notify (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_refer (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_message (struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app);
 
-pj_status_t sippak_getopts(int argc, char *argv[], struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_getopts(int argc, char *argv[], struct sippak_app *app);
 
-pj_status_t sippak_init (struct sippak_app *app);
-void sippak_loop_cancel();
-void usage ();
-void version ();
+PJ_DEF(pj_status_t) sippak_init (struct sippak_app *app);
+PJ_DEF(void) sippak_loop_cancel();
+PJ_DEF(void) usage ();
+PJ_DEF(void) version ();
 
 /* sip helper function */
-pj_str_t sippak_create_from_hdr(struct sippak_app *app);
-pj_str_t sippak_create_ruri(struct sippak_app *app);
+PJ_DEF(pj_str_t) sippak_create_from_hdr(struct sippak_app *app);
+PJ_DEF(pj_str_t) sippak_create_ruri(struct sippak_app *app);
 /**
  * Register Request-URI respecting rfc3261 section 10.2.
  * The "userinfo" and "@" components of the
@@ -210,16 +210,16 @@ pj_str_t sippak_create_ruri(struct sippak_app *app);
  * @param app      sippak main application structure.
  * @return         pj_str Request RURI
  */
-pj_str_t sippak_create_reg_ruri(struct sippak_app *app);
-pj_str_t sippak_create_contact_hdr(struct sippak_app *app,
+PJ_DEF(pj_str_t) sippak_create_reg_ruri(struct sippak_app *app);
+PJ_DEF(pj_str_t) sippak_create_contact_hdr(struct sippak_app *app,
                                 pj_str_t *local_addr,
                                 int local_port);
 
-pj_status_t sippak_transport_init(struct sippak_app *app,
+PJ_DEF(pj_status_t) sippak_transport_init(struct sippak_app *app,
                                   pj_str_t **local_addr,
                                   int *local_port);
 
-void sippak_set_cred(struct sippak_app *app, pjsip_cred_info *cred);
+PJ_DEF(void) sippak_set_cred(struct sippak_app *app, pjsip_cred_info *cred);
 
 /**
  * Get name servers and ports list and store in "ns" and "ports" arrays.
@@ -234,7 +234,7 @@ void sippak_set_cred(struct sippak_app *app, pjsip_cred_info *cred);
  *
  * @return              Number of found servers or 0.
  */
-int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
+PJ_DEF(int) sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports);
 
 /**
  * Detect if pjsip built supports given codec.
@@ -243,7 +243,7 @@ int sippak_get_ns_list (struct sippak_app *app, pj_str_t *ns, pj_uint16_t *ports
  *
  * @return    PJ_TRUE if supported.
  */
-pj_bool_t sippak_support_codec (codec_e codec);
+PJ_DEF(pj_bool_t) sippak_support_codec (codec_e codec);
 
 /**
  * Parse codecs comma separated string and set config array.
@@ -254,7 +254,7 @@ pj_bool_t sippak_support_codec (codec_e codec);
  * @return          PJ_SUCCESS status on success or PJ_EINVAL if
  *                  codec invalid or not supported.
  */
-pj_status_t sippak_set_media_codecs_cfg (char *codecs, struct sippak_app *app);
+PJ_DEF(pj_status_t) sippak_set_media_codecs_cfg (char *codecs, struct sippak_app *app);
 
 /**
  * Set media SDP with configured codecs.
@@ -264,7 +264,7 @@ pj_status_t sippak_set_media_codecs_cfg (char *codecs, struct sippak_app *app);
  *
  * @return          PJ_SUCCESS on success
  */
-pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **sdp);
+PJ_DEF(pj_status_t) sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **sdp);
 
 /**
  * Add SIP headers set by cli options. User-Agent and custom headers.
@@ -273,6 +273,6 @@ pj_status_t sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_session **s
  * @param app       Sippak application.
  * @return          void
  */
-void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app);
+PJ_DEF(void) sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app);
 
 #endif

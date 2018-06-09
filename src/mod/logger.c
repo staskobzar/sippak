@@ -255,7 +255,7 @@ static pj_status_t logging_on_tx_msg(pjsip_tx_data *tdata)
   return PJ_SUCCESS; //continue with other modules
 }
 
-pj_status_t sippak_mod_logger_register(struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_mod_logger_register(struct sippak_app *app)
 {
   ENABLE_COLORS = (app->cfg.log_decor & PJ_LOG_HAS_COLOR)
     ? PJ_TRUE

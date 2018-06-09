@@ -151,7 +151,7 @@ static void send_cb(void *token, pjsip_event *e)
 }
 
 /* Message */
-pj_status_t sippak_cmd_message (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_cmd_message (struct sippak_app *app)
 {
   pj_status_t status;
   pj_str_t *local_addr;

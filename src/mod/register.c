@@ -113,7 +113,7 @@ static void set_regc_outbound_proxy(pjsip_regc *regc, struct sippak_app *app)
 }
 
 /* Register */
-pj_status_t sippak_cmd_register (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
 {
   pj_status_t status;
   pj_str_t *local_addr;

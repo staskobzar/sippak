@@ -385,7 +385,51 @@ static int is_string_numeric(const char *optarg)
   return 1;
 }
 
-pj_status_t sippak_init (struct sippak_app *app)
+static void post_parse_setup (struct sippak_app *app)
+{
+  // set log decoration and level
+  pj_log_set_decor(app->cfg.log_decor);
+  pj_log_set_level(app->cfg.log_level);
+
+  // command REFER requires refer-to parameter
+  if (app->cfg.cmd == CMD_REFER && app->cfg.refer_to.ptr == NULL) {
+    PJ_LOG(1, (PROJECT_NAME,
+          "Failed. Requires parameter \"--to\" to initiate REFER request."));
+    exit(PJ_CLI_EINVARG);
+  }
+
+  // command MESSAGE requires body parameter
+  if (app->cfg.cmd == CMD_MESSAGE && app->cfg.body.ptr == NULL) {
+    PJ_LOG(1, (PROJECT_NAME,
+          "Failed. Requires parameter \"--body\" to initiate MESSAGE."));
+    exit(PJ_CLI_EINVARG);
+  }
+
+  // reset event and presence to follow MWI routin
+  if (app->cfg.is_mwi == PJ_TRUE) {
+    app->cfg.pres_ev = EVTYPE_MWI;
+    app->cfg.ctype_media.type = pj_str("application");
+    app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
+    app->cfg.ctype_e = CTYPE_MWI;
+    if (app->cfg.mwi_acc.slen == 0) {
+      app->cfg.mwi_acc = app->cfg.dest;
+    }
+  }
+
+  // default username is user part of destination URI
+  if (app->cfg.username.ptr == NULL && app->cfg.dest.ptr != NULL) {
+    pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
+                          app->cfg.dest.slen, 0);
+    if (dest_uri == NULL) {
+      PJ_LOG(1, (PROJECT_NAME, "Failed to parse destination URI: %.*s",
+            app->cfg.dest.slen, app->cfg.dest.ptr));
+      exit(PJ_CLI_EINVARG);
+    }
+    app->cfg.username = dest_uri->user;
+  }
+}
+
+PJ_DEF(pj_status_t) sippak_init (struct sippak_app *app)
 {
   // init main application structure
   app->cfg.dest.slen        = 0;
@@ -443,51 +487,7 @@ pj_status_t sippak_init (struct sippak_app *app)
   return PJ_SUCCESS;
 }
 
-static void post_parse_setup (struct sippak_app *app)
-{
-  // set log decoration and level
-  pj_log_set_decor(app->cfg.log_decor);
-  pj_log_set_level(app->cfg.log_level);
-
-  // command REFER requires refer-to parameter
-  if (app->cfg.cmd == CMD_REFER && app->cfg.refer_to.ptr == NULL) {
-    PJ_LOG(1, (PROJECT_NAME,
-          "Failed. Requires parameter \"--to\" to initiate REFER request."));
-    exit(PJ_CLI_EINVARG);
-  }
-
-  // command MESSAGE requires body parameter
-  if (app->cfg.cmd == CMD_MESSAGE && app->cfg.body.ptr == NULL) {
-    PJ_LOG(1, (PROJECT_NAME,
-          "Failed. Requires parameter \"--body\" to initiate MESSAGE."));
-    exit(PJ_CLI_EINVARG);
-  }
-
-  // reset event and presence to follow MWI routin
-  if (app->cfg.is_mwi == PJ_TRUE) {
-    app->cfg.pres_ev = EVTYPE_MWI;
-    app->cfg.ctype_media.type = pj_str("application");
-    app->cfg.ctype_media.subtype = pj_str("simple-message-summary");
-    app->cfg.ctype_e = CTYPE_MWI;
-    if (app->cfg.mwi_acc.slen == 0) {
-      app->cfg.mwi_acc = app->cfg.dest;
-    }
-  }
-
-  // default username is user part of destination URI
-  if (app->cfg.username.ptr == NULL && app->cfg.dest.ptr != NULL) {
-    pjsip_sip_uri *dest_uri = (pjsip_sip_uri*)pjsip_parse_uri(app->pool, app->cfg.dest.ptr,
-                          app->cfg.dest.slen, 0);
-    if (dest_uri == NULL) {
-      PJ_LOG(1, (PROJECT_NAME, "Failed to parse destination URI: %.*s",
-            app->cfg.dest.slen, app->cfg.dest.ptr));
-      exit(PJ_CLI_EINVARG);
-    }
-    app->cfg.username = dest_uri->user;
-  }
-}
-
-pj_status_t sippak_getopts (int argc, char *argv[], struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_getopts (int argc, char *argv[], struct sippak_app *app)
 {
   int c = 0, opt_index = 0;
   /*

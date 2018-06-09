@@ -171,7 +171,7 @@ static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
   pjsip_dlg_set_route_set(dlg, &route_set);
 }
 
-pj_status_t sippak_cmd_subscribe (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app)
 {
   pj_status_t status;
   pjsip_dialog *dlg = NULL;

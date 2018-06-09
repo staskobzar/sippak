@@ -38,7 +38,7 @@ static void sippak_main_loop()
   }
 }
 
-void sippak_loop_cancel()
+PJ_DEF(void) sippak_loop_cancel()
 {
   sippak_loop_stop = PJ_TRUE;
 }

@@ -30,7 +30,7 @@
 #define NAME "sip_helper"
 
 /* Create From SIP header */
-pj_str_t sippak_create_from_hdr(struct sippak_app *app)
+PJ_DEF(pj_str_t) sippak_create_from_hdr(struct sippak_app *app)
 {
   pj_str_t from = {0,0};
   from.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
@@ -61,7 +61,7 @@ pj_str_t sippak_create_from_hdr(struct sippak_app *app)
 }
 
 /* Create Requst-URI */
-pj_str_t sippak_create_ruri(struct sippak_app *app)
+PJ_DEF(pj_str_t) sippak_create_ruri(struct sippak_app *app)
 {
   pj_str_t ruri = {0,0};
   ruri.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
@@ -86,7 +86,7 @@ pj_str_t sippak_create_ruri(struct sippak_app *app)
 }
 
 /* Create REGISTER Requst-URI */
-pj_str_t sippak_create_reg_ruri(struct sippak_app *app)
+PJ_DEF(pj_str_t) sippak_create_reg_ruri(struct sippak_app *app)
 {
   pj_str_t reg_ruri = {0,0};
   reg_ruri.ptr = (char*)pj_pool_alloc(app->pool, PJSIP_MAX_URL_SIZE);
@@ -106,7 +106,7 @@ pj_str_t sippak_create_reg_ruri(struct sippak_app *app)
 }
 
 /* Create Contact SIP header */
-pj_str_t sippak_create_contact_hdr (struct sippak_app *app,
+PJ_DEF(pj_str_t) sippak_create_contact_hdr (struct sippak_app *app,
                                 pj_str_t *local_addr,
                                 int local_port)
 {
@@ -127,7 +127,7 @@ pj_str_t sippak_create_contact_hdr (struct sippak_app *app,
 }
 
 /* Init transport */
-pj_status_t sippak_transport_init(struct sippak_app *app,
+PJ_DEF(pj_status_t) sippak_transport_init(struct sippak_app *app,
                                   pj_str_t **local_addr,
                                   int *local_port)
 {
@@ -168,7 +168,7 @@ pj_status_t sippak_transport_init(struct sippak_app *app,
   return status;
 }
 
-void sippak_set_cred(struct sippak_app *app,
+PJ_DEF(void) sippak_set_cred(struct sippak_app *app,
                             pjsip_cred_info *cred)
 {
   cred->realm     = pj_str("*");
@@ -178,7 +178,7 @@ void sippak_set_cred(struct sippak_app *app,
   cred->data      = app->cfg.password;
 }
 
-void sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
+PJ_DEF(void) sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app)
 {
   pj_str_t ua_hname = pj_str("User-Agent");
   pjsip_hdr *hdr;

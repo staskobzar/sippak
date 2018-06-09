@@ -153,7 +153,7 @@ static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
 }
 
 /* Ping */
-pj_status_t sippak_cmd_invite (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
 {
   pj_status_t status;
   pjsip_dialog *dlg = NULL;

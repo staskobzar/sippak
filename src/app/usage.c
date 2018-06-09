@@ -27,7 +27,7 @@
 
 #include "sippak.h"
 
-void usage ()
+PJ_DEF(void) usage ()
 {
   version ();
   puts("Usage: " PROJECT_NAME " [COMMAND] [OPTIONS] [DESTINATION]");
@@ -137,7 +137,7 @@ printf("    --ns=LIST       Define DNS nameservers to use. Comma separated list 
   puts("");
 }
 
-void version ()
+PJ_DEF(void) version ()
 {
   puts(PROJECT_NAME " " PROJECT_VERSION " (" PROJECT_ARCH ") " LICENSE);
   puts("built with pjproject " PJSIP_VERSION ", at " PROJECT_BUILTTIME);

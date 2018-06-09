@@ -56,7 +56,7 @@ static pj_status_t on_tx_request(pjsip_tx_data *tdata)
 }
 
 /* Ping */
-pj_status_t sippak_mod_sip_mangler_register (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_mod_sip_mangler_register (struct sippak_app *app)
 {
   local_app = app;
   return pjsip_endpt_register_module(app->endpt, &mod_sip_mangler);

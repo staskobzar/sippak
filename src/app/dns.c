@@ -129,7 +129,7 @@ static int system_resolv_ns ( pj_pool_t *pool,
   return ns_idx;
 }
 
-int sippak_get_ns_list (struct sippak_app *app,
+PJ_DEF(int) sippak_get_ns_list (struct sippak_app *app,
                         pj_str_t *ns,
                         pj_uint16_t *ports)
 {
@@ -144,7 +144,7 @@ int sippak_get_ns_list (struct sippak_app *app,
   }
 }
 
-pj_status_t sippak_set_resolver_ns(struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_set_resolver_ns(struct sippak_app *app)
 {
   pj_status_t status;
   pj_dns_resolver *resv;

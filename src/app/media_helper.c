@@ -176,7 +176,7 @@ static pj_status_t set_media_codecs(pjmedia_endpt *med_endpt,
   return PJ_SUCCESS;
 }
 
-pj_bool_t sippak_support_codec (codec_e codec)
+PJ_DEF(pj_bool_t) sippak_support_codec (codec_e codec)
 {
   int supported = 0;
 
@@ -219,7 +219,7 @@ pj_bool_t sippak_support_codec (codec_e codec)
   return (supported & codec) == codec ? PJ_TRUE : PJ_FALSE;
 }
 
-pj_status_t sippak_set_media_codecs_cfg (char *codecs_str,
+PJ_DEF(pj_status_t) sippak_set_media_codecs_cfg (char *codecs_str,
                                          struct sippak_app *app)
 {
   pj_status_t status;
@@ -257,7 +257,7 @@ pj_status_t sippak_set_media_codecs_cfg (char *codecs_str,
   return PJ_SUCCESS;
 }
 
-pj_status_t sippak_set_media_sdp (struct sippak_app *app,
+PJ_DEF(pj_status_t) sippak_set_media_sdp (struct sippak_app *app,
                                 pjmedia_sdp_session **sdp)
 {
   pj_status_t status;

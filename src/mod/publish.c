@@ -107,7 +107,7 @@ static void set_pubc_outbound_proxy(pjsip_publishc *pubc, struct sippak_app *app
   pjsip_publishc_set_route_set (pubc, &route_set);
 }
 
-pj_status_t sippak_cmd_publish (struct sippak_app *app)
+PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
 {
   pj_status_t status;
   pj_str_t *local_addr;
