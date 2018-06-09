@@ -99,4 +99,21 @@ $output = `$sippak REGISTER --header="X-PID: 1235:55" sip:alice\@127.0.0.1:5060`
 $regex = '^X-PID: 1235.55$';
 ok ($output =~ m/$regex/m, "Add custom header.");
 
+# Proxy set
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak REGISTER --proxy=sip:127.0.0.1:5060 sip:alice\@host.sip.local`;
+
+$regex = '^REGISTER sip:host.sip.local SIP\/2.0$';
+ok ($output =~ m/$regex/m, "Register send to proxy IP");
+
+# Proxy set multi Routes
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak REGISTER -R sip:127.0.0.1:5060 -R sip:foo.bar:8585 sip:alice\@sip.local.pbx`;
+
+$regex = '^REGISTER sip:sip.local.pbx SIP\/2.0$';
+ok ($output =~ m/$regex/m, "Register send with multi proxies.");
+
+$regex = '^Route: <sip:foo.bar:8585>$';
+ok ($output =~ m/$regex/m, "Register with Route header.");
+
 done_testing();
