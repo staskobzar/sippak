@@ -143,4 +143,18 @@ $output = `$sippak PUBLISH -H SIP-Hdr:Publisher sip:alice\@127.0.0.1:5060`;
 $regex = '^SIP-Hdr: Publisher$';
 ok ($output =~ m/$regex/m, "Add custom header.");
 
+# Outbound proxy set
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH --proxy=sip:127.0.0.1:5060 sip:alice\@sip.home.pbx`;
+
+$regex = '^PUBLISH sip:alice\@sip.home.pbx SIP\/2\.0$';
+ok ($output =~ m/$regex/m, "Use outbound proxy.");
+
+# Route headers with multiple proxies
+system("$sipp $sippargs -sf $scenario");
+$output = `$sippak PUBLISH -R sip:127.0.0.1:5060 -R "sips:102.10.10.1:8787;lr" sip:alice\@sip.home.pbx`;
+
+$regex = '^Route: <sips:102.10.10.1:8787;lr>$';
+ok ($output =~ m/$regex/m, "Route header for second proxy.");
+
 done_testing();
