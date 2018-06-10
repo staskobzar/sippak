@@ -6,6 +6,10 @@ all: build
 install:
 	@cd ${BUILD_DIR} && make install
 
+package: build
+	@cd build && make package
+	@cp build/sippak-*.rpm dist
+
 build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake .. && make

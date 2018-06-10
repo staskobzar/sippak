@@ -18,22 +18,21 @@
 # along with sippack.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-configure_file (
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/sippak.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/sippak.h"
-  @ONLY)
+# create distribution packages
 
-# PJPROJECT compile flags
-pkg_check_modules (PJSIP REQUIRED libpjproject>=2.7.1)
+SET(SIPPAK_PKG_VER "${sippak_VERSION}-beta")
 
-add_subdirectory (mod)
-add_subdirectory (app)
+set (CPACK_GENERATOR "RPM")
+set (CPACK_PACKAGE_VERSION ${SIPPAK_PKG_VER})
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "SIP protocol command line utility.")
 
-add_executable (${PROJECT_NAME} main.c
-  $<TARGET_OBJECTS:mod>
-  $<TARGET_OBJECTS:app>
-  )
-target_link_libraries (${PROJECT_NAME} ${PJSIP_LIBRARIES} resolv ${EXTRA_LIBS})
+set (CPACK_DEBIAN_PACKAGE_MAINTAINER "Stas Kobzar <staskobzar@gmail.com>")
+set (CPACK_DEBIAN_PACKAGE_DEPENDS "pjproject>=2.7.1")
 
-install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+set (CPACK_RPM_PACKAGE_VENDOR "Stas Kobzar <staskobzar@gmail.com>")
+set (CPACK_RPM_PACKAGE_REQUIRES "libpjproject>=2.7.1")
+set (CPACK_RPM_PACKAGE_LICENSE "GNU General Public License v3.0")
+set (CPACK_RPM_PACKAGE_GROUP "Networking Tools")
 
+include (CPack)
