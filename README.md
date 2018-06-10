@@ -1,6 +1,7 @@
 # sippak
 ## SIP command line utility
 
+[![codecov](https://codecov.io/gh/staskobzar/sippak/branch/master/graph/badge.svg)](https://codecov.io/gh/staskobzar/sippak)
 Simple command line utility for SIP protocol based on PJPROJECT.
 
 ### Install

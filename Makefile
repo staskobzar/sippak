@@ -30,7 +30,10 @@ build-cov: clean
 	@mkdir ${BUILD_DIR}/coverage
 	@genhtml --output-directory ${BUILD_DIR}/coverage --title "sippak utility" \
 		--legend --show-details ${BUILD_DIR}/cov.info
-	@xdg-open ${BUILD_DIR}/coverage/index.html
+#	@xdg-open ${BUILD_DIR}/coverage/index.html
+
+codecov: build-cov
+	@bash <(curl -s https://codecov.io/bash) -t 49d36735-c7ba-47a3-8b19-d07e2de188fa
 
 test:
 	@cd build && env CTEST_OUTPUT_ON_FAILURE=1 ctest
