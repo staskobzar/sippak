@@ -25,9 +25,6 @@ configure_file (
 
 # PJPROJECT compile flags
 pkg_check_modules (PJSIP REQUIRED libpjproject>=2.7.1)
-#include_directories (${PJSIP_INCLUDE_DIRS})
-#link_directories (${PJSIP_LIBRARY_DIRS})
-#set(CMAKE_CXX_FLAGS ${PJSIP_CFLAGS_OTHER})
 
 add_subdirectory (mod)
 add_subdirectory (app)
@@ -38,3 +35,4 @@ add_executable (${PROJECT_NAME} main.c
   )
 target_link_libraries (${PROJECT_NAME} ${PJSIP_LIBRARIES} resolv ${EXTRA_LIBS})
 
+install (TARGETS ${PROJECT_NAME} DESTINATION bin)

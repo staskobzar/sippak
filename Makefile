@@ -3,6 +3,9 @@
 BUILD_DIR=build
 all: build
 
+install:
+	@cd ${BUILD_DIR} && make install
+
 build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
 	@cd ${BUILD_DIR} && cmake .. && make
