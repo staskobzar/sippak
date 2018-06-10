@@ -1,0 +1,12 @@
+language: c
+sudo: required
+dist: trusty
+os:
+  - linux
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install cmake -y
+  - sudo apt-get install pjproject -y
+
+script: make && make test
+
