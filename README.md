@@ -15,6 +15,8 @@ sudo make install
 ### Usage
 
 ```
+sippak [COMMAND] [OPTIONS] [DESTINATION]
+
   COMMAND:
   Default commans is "PING".
     PING      Send OPTIONS packet to destination.
