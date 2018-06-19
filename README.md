@@ -1,12 +1,15 @@
 # sippak
 ## SIP command line utility
 
+[![Build Status](https://travis-ci.org/staskobzar/sippak.svg?branch=master)](https://travis-ci.org/staskobzar/sippak)
 [![codecov](https://codecov.io/gh/staskobzar/sippak/branch/master/graph/badge.svg)](https://codecov.io/gh/staskobzar/sippak)
+![GPL3](https://img.shields.io/badge/license-GPL_3-green.svg "License")
+
 Simple command line utility for SIP protocol based on PJPROJECT.
 
 ### Install
 
-Requires pjproject library.
+Requires pjproject library and CMake 3.
 
 ```
 make
