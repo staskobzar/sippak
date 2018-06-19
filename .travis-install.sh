@@ -19,3 +19,11 @@ make dep
 make
 sudo make install
 
+# install sipp
+
+cd /tmp
+git clone https://github.com/SIPp/sipp.git
+cd sipp
+git checkout -b 3.5.1 v3.5.1
+sh build.sh
+sudo make install

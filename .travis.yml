@@ -5,8 +5,8 @@ os:
   - linux
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install build-essential pkg-config cmake3 -y
-  - sudo apt-get install libasound2-dev libalsaplayer-dev sip-tester -y
+  - sudo apt-get install build-essential pkg-config cmake3 autotools autoconf -y
+  - sudo apt-get install libasound2-dev libalsaplayer-dev openssl libssl-dev ncurses-dev -y
   - bash .travis-install.sh
 
 script: make && make test
