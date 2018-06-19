@@ -22,16 +22,17 @@
 
 SET(SIPPAK_PKG_VER "${sippak_VERSION}-beta")
 
-set (CPACK_GENERATOR "RPM")
+set (CPACK_GENERATOR "RPM;DEB;TGZ")
 set (CPACK_PACKAGE_VERSION ${SIPPAK_PKG_VER})
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "SIP protocol command line utility.")
 
 set (CPACK_DEBIAN_PACKAGE_MAINTAINER "Stas Kobzar <staskobzar@gmail.com>")
-set (CPACK_DEBIAN_PACKAGE_DEPENDS "pjproject>=2.7.1")
+set (CPACK_DEBIAN_PACKAGE_DEPENDS "libalsaplayer0,libasound2")
+set (CPACK_DEBIAN_PACKAGE_SECTION "net")
 
 set (CPACK_RPM_PACKAGE_VENDOR "Stas Kobzar <staskobzar@gmail.com>")
-set (CPACK_RPM_PACKAGE_REQUIRES "libpjproject>=2.7.1")
+set (CPACK_RPM_PACKAGE_REQUIRES "alsa-lib>=1.1.4")
 set (CPACK_RPM_PACKAGE_LICENSE "GNU General Public License v3.0")
 set (CPACK_RPM_PACKAGE_GROUP "Networking Tools")
 

@@ -9,6 +9,8 @@ install:
 package: build
 	@cd build && make package
 	@cp build/sippak-*.rpm dist
+	@cp build/sippak-*.deb dist
+	@cp build/sippak-*.tar.gz dist
 
 build:
 	@test -d ${BUILD_DIR} || mkdir ${BUILD_DIR}
