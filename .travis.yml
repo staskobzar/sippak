@@ -5,8 +5,9 @@ os:
   - linux
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install cmake -y
-  - sudo apt-get install pjproject -y
+  - sudo apt-get install build-essential pkg-config cmake3 -y
+  - sudo apt-get install libasound2-dev libalsaplayer-dev sip-tester -y
+  - bash .travis-install.sh
 
 script: make && make test
 

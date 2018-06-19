@@ -53,3 +53,4 @@ ctags:
 clean:
 	@echo "Clean build directory..."
 	@rm -rf ${BUILD_DIR}
+	@rm -rf *gcov
