@@ -40,7 +40,6 @@ static void on_rx_notify(pjsip_evsub *sub, pjsip_rx_data *rdata, int *p_st_code,
     pj_str_t **p_st_text, pjsip_hdr *res_hdr, pjsip_msg_body **p_body);
 static void on_tsx_state(pjsip_evsub *sub, pjsip_transaction *tsx, pjsip_event *event);
 static sippak_evtype_e set_sub_evtype(struct sippak_app *app);
-static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app);
 static short unsigned auth_tries = 0;
 
 static pjsip_module mod_subscribe =
@@ -148,29 +147,6 @@ static sippak_evtype_e set_sub_evtype(struct sippak_app *app)
   return app->cfg.pres_ev;
 }
 
-static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
-{
-  pjsip_route_hdr route_set;
-  int i;
-  const pj_str_t hname = { "Route", 5 };
-
-  if (app->cfg.proxy.cnt == 0) {
-    return;
-  }
-
-  pj_list_init(&route_set);
-
-  for(i = 0; i < app->cfg.proxy.cnt; i++) {
-    pjsip_route_hdr *route = pjsip_parse_hdr(dlg->pool, &hname,
-        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
-        NULL);
-    if (route) {
-      pj_list_push_back(&route_set, route);
-    }
-  }
-  pjsip_dlg_set_route_set(dlg, &route_set);
-}
-
 PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app)
 {
   pj_status_t status;
@@ -200,7 +176,7 @@ PJ_DEF(pj_status_t) sippak_cmd_subscribe (struct sippak_app *app)
   SIPPAK_ASSERT_SUCC(status, "Failed to create dialog uac.");
 
   // TODO: set routes for subscribe
-  // set_dlg_outbound_proxy(dlg, app);
+  // sippak_set_dlg_outbound_proxy(dlg, app);
 
   sippak_set_cred(app, cred);
   status = pjsip_auth_clt_set_credentials(&dlg->auth_sess, 1, cred);

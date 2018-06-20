@@ -279,4 +279,13 @@ PJ_DEF(pj_status_t) sippak_set_media_sdp(struct sippak_app *app, pjmedia_sdp_ses
  */
 PJ_DEF(void) sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *app);
 
+/**
+ * Set proxies list.
+ *
+ * @param dlg       PJSIP dialog instance
+ * @param list      Route set
+ * @return          PJ_TRUE if set
+ */
+PJ_DEF(pj_bool_t) sippak_set_proxies_list(struct sippak_app *app, pjsip_route_hdr **route_set);
+
 #endif

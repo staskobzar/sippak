@@ -34,7 +34,6 @@
 static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static short unsigned auth_tries = 0;
 static int pj_str_toi(pj_str_t val);
-static void set_pubc_outbound_proxy(pjsip_publishc *pubc, struct sippak_app *app);
 
 static pjsip_module mod_publish =
 {
@@ -84,29 +83,6 @@ static void publish_cb(struct pjsip_publishc_cbparam *param)
   sippak_loop_cancel();
 }
 
-static void set_pubc_outbound_proxy(pjsip_publishc *pubc, struct sippak_app *app)
-{
-  pjsip_route_hdr route_set;
-  int i;
-  const pj_str_t hname = { "Route", 5 };
-
-  if (app->cfg.proxy.cnt == 0) {
-    return;
-  }
-
-  pj_list_init(&route_set);
-
-  for(i = 0; i < app->cfg.proxy.cnt; i++) {
-    pjsip_route_hdr *route = pjsip_parse_hdr(app->pool, &hname,
-        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
-        NULL);
-    if (route) {
-      pj_list_push_back(&route_set, route);
-    }
-  }
-  pjsip_publishc_set_route_set (pubc, &route_set);
-}
-
 PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
 {
   pj_status_t status;
@@ -119,6 +95,7 @@ PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
   pjsip_publishc  *publish_sess = NULL;
   pjsip_publishc_opt publish_opt;
   pjsip_tx_data *tdata;
+  pjsip_route_hdr *route_set;
   pjsip_pres_status pres_status;
   pjsip_cred_info cred[1];
   pj_str_t event;
@@ -161,7 +138,9 @@ PJ_DEF(pj_status_t) sippak_cmd_publish (struct sippak_app *app)
 
   sippak_set_cred(app, cred);
 
-  set_pubc_outbound_proxy(publish_sess, app);
+  if (sippak_set_proxies_list(app, &route_set) == PJ_TRUE) {
+    pjsip_publishc_set_route_set (publish_sess, route_set);
+  }
 
   status = pjsip_publishc_set_credentials(publish_sess, 1, cred);
   SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");

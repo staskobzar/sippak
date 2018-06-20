@@ -3,9 +3,16 @@
 
 [![Build Status](https://travis-ci.org/staskobzar/sippak.svg?branch=master)](https://travis-ci.org/staskobzar/sippak)
 [![codecov](https://codecov.io/gh/staskobzar/sippak/branch/master/graph/badge.svg)](https://codecov.io/gh/staskobzar/sippak)
+[![CodeFactor](https://www.codefactor.io/repository/github/staskobzar/sippak/badge/master)](https://www.codefactor.io/repository/github/staskobzar/sippak/overview/master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c43374de75b492e9e0be3d97612e643)](https://www.codacy.com/app/staskobzar/sippak?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=staskobzar/sippak&amp;utm_campaign=Badge_Grade)
 ![GPL3](https://img.shields.io/badge/license-GPL_3-green.svg "License")
 
-Simple command line utility for SIP protocol based on PJPROJECT.
+Simple command line utility for SIP protocol based on [PJPROJECT](http://www.pjsip.org/).
+Can be useful for SIP administrators and developers.
+
+<p align="center">
+  <img src="https://github.com/staskobzar/sippak/blob/master/sippak.png?raw=true" width="600"/>
+</p>
 
 ### Install
 
@@ -15,6 +22,8 @@ Requires pjproject library and CMake 3.
 make
 sudo make install
 ```
+
+Also, packages (rpm, deb and tgz) are available in "[dist](https://github.com/staskobzar/sippak/tree/master/dist)" directory.
 
 ### Usage
 

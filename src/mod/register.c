@@ -31,7 +31,6 @@
 
 static void reg_callback(struct pjsip_regc_cbparam *param);
 static void print_reg_success(struct pjsip_regc_cbparam *regp);
-static void set_regc_outbound_proxy(pjsip_regc *regc, struct sippak_app *app);
 
 static pjsip_module mod_register =
 {
@@ -89,29 +88,6 @@ static void reg_callback(struct pjsip_regc_cbparam *regp)
   sippak_loop_cancel();
 }
 
-static void set_regc_outbound_proxy(pjsip_regc *regc, struct sippak_app *app)
-{
-  pjsip_route_hdr route_set;
-  int i;
-  const pj_str_t hname = { "Route", 5 };
-
-  if (app->cfg.proxy.cnt == 0) {
-    return;
-  }
-
-  pj_list_init(&route_set);
-
-  for(i = 0; i < app->cfg.proxy.cnt; i++) {
-    pjsip_route_hdr *route = pjsip_parse_hdr(app->pool, &hname,
-        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
-        NULL);
-    if (route) {
-      pj_list_push_back(&route_set, route);
-    }
-  }
-  pjsip_regc_set_route_set(regc, &route_set);
-}
-
 /* Register */
 PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
 {
@@ -121,6 +97,7 @@ PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
   pjsip_tx_data *tdata;
   pjsip_regc *regc;
   pjsip_cred_info cred[1];
+  pjsip_route_hdr *route_set;
 
   pj_str_t srv_url, from_uri, to_uri;
   pj_str_t contacts[1];
@@ -154,7 +131,9 @@ PJ_DEF(pj_status_t) sippak_cmd_register (struct sippak_app *app)
   status = pjsip_regc_set_credentials(regc, 1, cred);
   SIPPAK_ASSERT_SUCC(status, "Failed to set auth credentials.");
 
-  set_regc_outbound_proxy(regc, app);
+  if (sippak_set_proxies_list(app, &route_set) == PJ_TRUE) {
+    pjsip_regc_set_route_set(regc, route_set);
+  }
 
   if (app->cfg.cancel_all_reg == PJ_TRUE) {
     status = pjsip_regc_unregister_all(regc, &tdata);

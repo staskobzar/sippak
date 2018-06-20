@@ -202,3 +202,27 @@ PJ_DEF(void) sippak_add_sip_headers (pjsip_tx_data *tdata, struct sippak_app *ap
     }
   }
 }
+
+PJ_DEF(pj_bool_t) sippak_set_proxies_list(struct sippak_app *app, pjsip_route_hdr **rset)
+{
+  pjsip_route_hdr *route_set = pj_pool_alloc(app->pool, sizeof(pjsip_route_hdr));
+  int i;
+  const pj_str_t hname = { "Route", 5 };
+
+  if (app->cfg.proxy.cnt == 0) {
+    return PJ_FALSE;
+  }
+
+  pj_list_init(route_set);
+
+  for(i = 0; i < app->cfg.proxy.cnt; i++) {
+    pjsip_route_hdr *route = pjsip_parse_hdr(app->pool, &hname,
+        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
+        NULL);
+    if (route) {
+      pj_list_push_back(route_set, route);
+    }
+  }
+  *rset = route_set;
+  return PJ_TRUE;
+}

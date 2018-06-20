@@ -36,7 +36,6 @@ static pj_bool_t on_rx_response (pjsip_rx_data *rdata);
 static void call_on_state_changed( pjsip_inv_session *inv, pjsip_event *e);
 static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e);
 static void call_tsx_state_changed(pjsip_inv_session *inv, pjsip_transaction *tsx, pjsip_event *e);
-static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app);
 
 static pj_bool_t early_cancel;
 static pjsip_inv_session *inv;
@@ -129,29 +128,6 @@ static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
   PJ_UNUSED_ARG(inv);
 }
 
-static void set_dlg_outbound_proxy(pjsip_dialog *dlg, struct sippak_app *app)
-{
-  pjsip_route_hdr route_set;
-  int i;
-  const pj_str_t hname = { "Route", 5 };
-
-  if (app->cfg.proxy.cnt == 0) {
-    return;
-  }
-
-  pj_list_init(&route_set);
-
-  for(i = 0; i < app->cfg.proxy.cnt; i++) {
-    pjsip_route_hdr *route = pjsip_parse_hdr(dlg->pool, &hname,
-        app->cfg.proxy.p[i], pj_ansi_strlen(app->cfg.proxy.p[i]),
-        NULL);
-    if (route) {
-      pj_list_push_back(&route_set, route);
-    }
-  }
-  pjsip_dlg_set_route_set(dlg, &route_set);
-}
-
 /* Ping */
 PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
 {
@@ -164,6 +140,7 @@ PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
   pjsip_inv_callback inv_cb;
   pjsip_cred_info cred[1];
   pjmedia_sdp_session *sdp_sess;
+  pjsip_route_hdr *route_set;
 
   early_cancel = app->cfg.cancel;
 
@@ -213,7 +190,9 @@ PJ_DEF(pj_status_t) sippak_cmd_invite (struct sippak_app *app)
   SIPPAK_ASSERT_SUCC(status, "Failed to create invite UAC.");
 
   /* outbound proxy */
-  set_dlg_outbound_proxy(dlg, app);
+  if (sippak_set_proxies_list(app, &route_set) == PJ_TRUE) {
+    pjsip_dlg_set_route_set(dlg, route_set);
+  }
 
   /* create invite request */
   status = pjsip_inv_invite(inv, &tdata);
