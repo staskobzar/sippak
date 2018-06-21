@@ -1,0 +1,34 @@
+# Maintainer: Stas Kobzar <staskobzar at gmail dot com>
+pkgname=sippak
+pkgver=v1.0.0.beta
+pkgrel=1
+pkgdesc='SIP protocol command line utility.'
+arch=('x86_64')
+url='https://github.com/staskobzar/sippak.git'
+license=('GPL3')
+groups=('voip')
+depends=('alsa-lib' 'openssl')
+makedepends=('git' 'pkgconf' 'cmake>=3.5' 'pjproject>=2.7')
+source=("${pkgname}::git+https://github.com/staskobzar/sippak.git")
+noextract=()
+md5sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${pkgname}"
+    git describe --tags --abbrev=0 | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+    cd "${srcdir}/${pkgname}"
+    mkdir build
+    cd build
+    cmake ..
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}/build"
+    make DESTDIR=$pkgdir install
+}
+
+# vim:set ts=2 sw=2 et:
