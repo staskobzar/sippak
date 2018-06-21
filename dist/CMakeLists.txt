@@ -32,7 +32,7 @@ set (CPACK_DEBIAN_PACKAGE_DEPENDS "libalsaplayer0,libasound2")
 set (CPACK_DEBIAN_PACKAGE_SECTION "net")
 
 set (CPACK_RPM_PACKAGE_VENDOR "Stas Kobzar <staskobzar@gmail.com>")
-set (CPACK_RPM_PACKAGE_REQUIRES "alsa-lib>=1.1.4")
+set (CPACK_RPM_PACKAGE_REQUIRES "alsa-lib")
 set (CPACK_RPM_PACKAGE_LICENSE "GNU General Public License v3.0")
 set (CPACK_RPM_PACKAGE_GROUP "Networking Tools")
 
