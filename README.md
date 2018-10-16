@@ -25,6 +25,21 @@ sudo make install
 
 Also, packages (rpm, deb and tgz) are available in "[dist](https://github.com/staskobzar/sippak/tree/master/dist)" directory.
 
+### Try with docker without installing
+
+```
+docker pull staskobzar/sippak
+docker run -ti staskobzar/sippak sippak --color --trail-dot sip:alice@sip.zoiper.com
+```
+
+OR
+
+```
+docker build -t sippak .
+docker run -ti sippak sippak --help
+```
+
+
 ### Usage
 
 ```
@@ -132,5 +147,4 @@ sippak [COMMAND] [OPTIONS] [DESTINATION]
                     --proxy=sip:sip.com:2585, -R sip:10.23.24.100:6060;lr
 
 ```
-
 
