@@ -9,9 +9,9 @@ ADD . /app
 RUN apt-get update && apt-get upgrade -y && apt-get install -y xterm
 
 RUN apt-get -y --no-install-recommends install build-essential automake ncurses-dev cmake libcmocka0 git \
-    pkg-config autoconf libterm-ui-perl libasound2-dev libalsaplayer-dev openssl libssl-dev
+    pkg-config autoconf libterm-ui-perl libasound2-dev libalsaplayer-dev openssl libssl-dev apt-utils
 
-RUN apt-get -y install curl ncurses-dev libsctp-dev libpcap-dev
+RUN apt-get -y install curl ncurses-dev libsctp-dev libpcap-dev ca-certificates
 
 RUN mkdir /build && cd /build && \
     git clone https://github.com/SIPp/sipp.git && cd sipp && git checkout -b v3.5.2 v3.5.2

@@ -27,3 +27,5 @@ cd sipp
 git checkout -b 3.5.1 v3.5.1
 sh build.sh
 sudo make install
+
+sudo ldconfig
