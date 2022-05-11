@@ -1,10 +1,10 @@
 # sippak
 ## SIP command line utility
 
-[![Build Status](https://travis-ci.org/staskobzar/sippak.svg?branch=master)](https://travis-ci.org/staskobzar/sippak)
+[![CI](https://github.com/staskobzar/sippak/actions/workflows/main.yml/badge.svg)](https://github.com/staskobzar/sippak/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/staskobzar/sippak/branch/master/graph/badge.svg)](https://codecov.io/gh/staskobzar/sippak)
 [![CodeFactor](https://www.codefactor.io/repository/github/staskobzar/sippak/badge/master)](https://www.codefactor.io/repository/github/staskobzar/sippak/overview/master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c43374de75b492e9e0be3d97612e643)](https://www.codacy.com/app/staskobzar/sippak?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=staskobzar/sippak&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9e9b166cfa944b7aba5248e2c8665df2)](https://www.codacy.com/gh/staskobzar/sippak/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=staskobzar/sippak&amp;utm_campaign=Badge_Grade)
 ![GPL3](https://img.shields.io/badge/license-GPL_3-green.svg "License")
 
 Simple command line utility for SIP protocol based on [PJPROJECT](http://www.pjsip.org/).
@@ -13,6 +13,52 @@ Can be useful for SIP administrators and developers.
 <p align="center">
   <img src="https://github.com/staskobzar/sippak/blob/master/sippak.png?raw=true" width="600"/>
 </p>
+
+### Usage examples
+> Ping remote server with SIP NOTIFY message
+```
+sippak --color PING sip:1001@DOMAIN_OR_IP
+```
+
+> Initiate call from user 1001 with auth password MYPASS and caller ID "Alice Home" to 1002
+> When remote end-point answer then sippak will hang-up the call.
+```
+sippak INVITE --color -u 1001 -pMYPASSWD -F "Alice Home"  sip:1002@DOMAIN_OR_IP
+```
+
+> Register to user 8852 with password MYPASS, then list all contacts
+> registered to 8852. Last command cancel all registations to user 8852.
+```
+sippak REGISTER --color -u 8852 -pMYPASSWD sip:8852@DOMAIN_OR_IP
+sippak REGISTER --color -u 8852 -pMYPASSWD sip:8852@DOMAIN_OR_IP --clist
+sippak REGISTER --color -u 8852 -pMYPASSWD sip:8852@DOMAIN_OR_IP --cancel-all
+```
+
+> Send MWI update to a phone using phone's IP
+```
+sippak notify --color --mwi=0 sip:alice@10.XX.XX.100
+```
+
+> Publish UA "1001" status busy or has do-not-disturb activated
+```
+sippak PUBLISH --color -u 1001 -pMYPASSWD --pres-status=closed sip:1001@DOMAIN_OR_IP
+```
+
+> Command phone 1001 to initiate call to 1002. Not all phones support this option
+> or might need extra configuration to support it.
+```
+sippak REFER --color --to=sip:1002@10.XX.XX.160:12345 sip:1001@10.XX.XX.100:5060
+```
+
+> Restart remote phone 1000. Event might depend on phone vendor. Not all phones support it.
+```
+sippak notify --event=check-sync sip:1000@192.168.1.148 --color
+```
+
+> Send SIP MESSAGE chat message to user 1000 and attach additional SIP header X-Token
+```
+sippak MESSAGE --body="Hello there" --header="X-Token: f7c0265e" --color sip:1001@DOMAIN_OR_IP
+```
 
 ### Install
 

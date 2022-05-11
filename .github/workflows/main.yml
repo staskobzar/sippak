@@ -25,12 +25,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          sudo apt-get -y --no-install-recommends install build-essential automake ncurses-dev cmake libcmocka0 git pkg-config autoconf libterm-ui-perl libasound2-dev libalsaplayer-dev openssl libssl-dev apt-utils xterm
+          sudo apt-get -y install curl ncurses-dev libsctp-dev libpcap-dev ca-certificates sip-tester
+          sudo apt-get -y install libpjproject-dev libpj2
+
+      - name: Build
+        run: make
+
+      - name: Test
+        run: make test

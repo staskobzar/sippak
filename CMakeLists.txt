@@ -20,7 +20,7 @@
 
 cmake_minimum_required (VERSION 3.5)
 
-project (sippak VERSION 1.0.0 LANGUAGES C)
+project (sippak VERSION 1.1.0 LANGUAGES C)
 set (CMAKE_C_STANDARD 99)
 set (PROJECT_URL "https://gitlab.com/staskobzar/sippak")
 set (PROJECT_AUTHOR "Stas Kobzar <staskobzar@gmail.com>")
