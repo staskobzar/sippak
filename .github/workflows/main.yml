@@ -27,6 +27,7 @@ jobs:
 
       - name: Install
         run: |
+          sudo apt-get -qq update
           sudo apt-get -y --no-install-recommends install build-essential automake ncurses-dev cmake libcmocka0 git pkg-config autoconf libterm-ui-perl libasound2-dev libalsaplayer-dev openssl libssl-dev apt-utils xterm
           sudo apt-get -y install curl ncurses-dev libsctp-dev libpcap-dev ca-certificates sip-tester
           sudo apt-get -y install libpjproject-dev libpj2
