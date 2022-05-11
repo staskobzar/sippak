@@ -79,7 +79,7 @@ typedef enum {
   SIPPAK_CODEC_ALL    = 1 << 12
 } codec_e;
 
-enum app_command {
+typedef enum {
 
   CMD_UNKNOWN = 0x100,
   CMD_HELP,
@@ -121,7 +121,7 @@ struct sippak_app {
 
   struct {
 
-    enum app_command cmd;         /*<! Command ID. Default CMD_PING */
+    unsigned int cmd;             /*<! Command ID. Default CMD_PING */
 
     int log_level;                /*<! Log level. Default MIN_LOG_LEVEL */
     unsigned log_decor;           /*<! Log decoration: color, indent, time etc. */
