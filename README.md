@@ -14,8 +14,8 @@ Can be useful for SIP administrators and developers.
   <img src="https://github.com/staskobzar/sippak/blob/master/sippak.png?raw=true" width="600"/>
 </p>
 
-### Usage examples
-> Ping remote server with SIP NOTIFY message
+## Usage examples
+> Ping remote server with SIP OPTIONS message
 ```
 sippak --color PING sip:1001@DOMAIN_OR_IP
 ```
@@ -60,15 +60,22 @@ sippak notify --event=check-sync sip:1000@192.168.1.148 --color
 sippak MESSAGE --body="Hello there" --header="X-Token: f7c0265e" --color sip:1001@DOMAIN_OR_IP
 ```
 
-### Install
+## Install
 
+### make
 Requires pjproject library and CMake 3.
 
 ```
 make
 sudo make install
 ```
+CMake will require pkg-config path to libpjproject. If it has custom path
+it can be provided with PKG_CONFIG_PATH variable. For example:
+```
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make
+```
 
+### Ubuntu
 Also, packages (rpm, deb and tgz) are available in "[dist](https://github.com/staskobzar/sippak/tree/master/dist)" directory.
 
 Here is step by step install example for Ubuntu. Note version 2.7.x of pjproject. This will install everything for deployement and development. "make test" is optional.
@@ -88,7 +95,16 @@ $ make test
 $ make install
 ```
 
-### Try with docker without installing
+### nix package
+Nix package is available in ```dist/nix/```. Inside this folder run
+
+``` sh
+nix-build
+```
+
+binary file will be available in ```result/bin```
+
+## Try with docker without installing
 
 ```
 docker pull staskobzar/sippak
@@ -103,7 +119,7 @@ docker run -ti sippak sippak --help
 ```
 
 
-### Usage
+## Usage
 
 ```
 sippak [COMMAND] [OPTIONS] [DESTINATION]
