@@ -78,14 +78,16 @@ PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make
 ### Ubuntu
 Also, packages (rpm, deb and tgz) are available in "[dist](https://github.com/staskobzar/sippak/tree/master/dist)" directory.
 
-Here is step by step install example for Ubuntu. Note version 2.7.x of pjproject. This will install everything for deployement and development. "make test" is optional.
+Here is step by step install example for Ubuntu. Note version 2.9 of pjproject. This will install everything for deployement and development. "make test" is optional.
 ```sh
 $ apt-get update
 $ apt-get -y install build-essential automake ncurses-dev cmake libcmocka0 git \
   pkg-config autoconf libterm-ui-perl libasound2-dev libalsaplayer-dev openssl libssl-dev apt-utils xterm \
   curl ncurses-dev libsctp-dev libpcap-dev ca-certificates sip-tester
-$ git clone -b 2.7.x --depth 1 https://github.com/pjsip/pjproject.git
-$ cd pjproject
+$ git clone -b 2. --depth 1 https://github.com/pjsip/pjproject.git
+$ wget https://github.com/pjsip/pjproject/archive/refs/tags/2.9.zip
+$ unzip 2.9.zip
+$ cd pjproject-2.9
 $ ./configure --prefix=/usr && make dep && make && make install
 $ cd ..
 $ git clone https://github.com/staskobzar/sippak.git
