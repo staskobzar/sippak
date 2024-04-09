@@ -32,7 +32,7 @@ jobs:
           sudo apt-get -y install curl ncurses-dev libsctp-dev libpcap-dev ca-certificates sip-tester wget unzip
           wget https://github.com/pjsip/pjproject/archive/refs/tags/2.9.zip
           unzip 2.9.zip
-          cd pjproject-2.0 && ./configure --prefix=/usr && make dep && make && sudo make install
+          cd pjproject-2.9 && ./configure --prefix=/usr && make dep && make && sudo make install
 
       - name: Build
         run: make
